@@ -1,0 +1,32 @@
+services:
+  frontend:
+    ports:
+      - "8080:80"
+
+  backend:
+    ports:
+      - "4000:4000"
+    environment:
+      PUBLIC_BASE_URL: http://localhost:8080
+      CORS_ORIGIN: http://localhost:8080
+      JWT_SECRET: local_dev_secret
+      DATABASE_URL: postgresql://tracking:tracking@postgres:5432/tracking?schema=public
+      KAFKA_ENABLED: "true"
+      KAFKA_BROKER: ${KAFKA_BROKER:-72.60.245.62:19092}
+      KAFKA_TOPIC: ${KAFKA_TOPIC:-rastreamento}
+      KAFKA_CLIENT_ID: ${KAFKA_CLIENT_ID:-trackflow-backend}
+      KAFKA_GROUP_ID: ${KAFKA_GROUP_ID:-trackflow-consumer-group}
+      KAFKA_SSL: ${KAFKA_SSL:-false}
+      KAFKA_SASL_MECHANISM: ${KAFKA_SASL_MECHANISM:-}
+      KAFKA_SASL_USERNAME: ${KAFKA_SASL_USERNAME:-}
+      KAFKA_SASL_PASSWORD: ${KAFKA_SASL_PASSWORD:-}
+
+  postgres:
+    environment:
+      POSTGRES_PASSWORD: tracking
+    ports:
+      - "5432:5432"
+
+  redis:
+    ports:
+      - "6379:6379"

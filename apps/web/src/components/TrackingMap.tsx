@@ -1,0 +1,81 @@
+import L from "leaflet";
+import { MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
+import type { DeliveryPerson, LocationEvent } from "../types";
+import { useEffect } from "react";
+
+const MANAUS: [number, number] = [-3.119, -60.0217];
+const COURIER_ICON = "/assets/courier-top.png";
+
+function markerIcon(status: string, heading?: number | null) {
+  const className = status === "sem sinal" ? "sem-sinal" : status;
+  const rotation = Number.isFinite(heading) ? Number(heading) : 0;
+  return L.divIcon({
+    className: "",
+    html: `<img class="courier-marker ${className}" src="${COURIER_ICON}" alt="" style="transform: rotate(${rotation}deg)" />`,
+    iconSize: [42, 58],
+    iconAnchor: [21, 29]
+  });
+}
+
+function FitBounds({ points }: { points: Array<[number, number]> }) {
+  const map = useMap();
+  useEffect(() => {
+    if (points.length === 0) return;
+    map.fitBounds(L.latLngBounds(points), { padding: [48, 48], maxZoom: 15 });
+  }, [map, points]);
+  return null;
+}
+
+export function TrackingMap({ deliveryPeople }: { deliveryPeople: DeliveryPerson[] }) {
+  const visible = deliveryPeople.filter((person) => person.last_location);
+  const points = visible.map((person) => [person.last_location!.lat, person.last_location!.lng] as [number, number]);
+
+  return (
+    <MapContainer center={points[0] ?? MANAUS} zoom={13} scrollWheelZoom className="h-full min-h-[420px]">
+      <TileLayer
+        attribution="&copy; OpenStreetMap"
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+      />
+      <FitBounds points={points} />
+      {visible.map((person) => (
+        <Marker
+          key={person.id}
+          position={[person.last_location!.lat, person.last_location!.lng]}
+          icon={markerIcon(person.computed_status, person.last_location?.heading)}
+        >
+          <Popup>
+            <strong>{person.name}</strong>
+            <br />
+            {person.device_id}
+            <br />
+            Bateria: {person.last_location?.battery ?? "-"}%
+            <br />
+            Velocidade: {person.last_location?.speed ?? 0} km/h
+          </Popup>
+        </Marker>
+      ))}
+    </MapContainer>
+  );
+}
+
+export function PublicMap({ location, status, name }: { location: LocationEvent | null; status: string; name: string }) {
+  const points = location ? ([[location.lat, location.lng]] as Array<[number, number]>) : [];
+  return (
+    <MapContainer center={points[0] ?? MANAUS} zoom={14} scrollWheelZoom className="h-full min-h-[360px] sm:min-h-[460px]">
+      <TileLayer
+        attribution="&copy; OpenStreetMap"
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+      />
+      <FitBounds points={points} />
+      {location ? (
+        <Marker position={[location.lat, location.lng]} icon={markerIcon(status, location.heading)}>
+          <Popup>
+            <strong>{name}</strong>
+            <br />
+            {location.lat.toFixed(5)}, {location.lng.toFixed(5)}
+          </Popup>
+        </Marker>
+      ) : null}
+    </MapContainer>
+  );
+}

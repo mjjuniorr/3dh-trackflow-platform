@@ -1,0 +1,93 @@
+services:
+  frontend:
+    image: ${FRONTEND_IMAGE:-3dh-trackflow-web:producao}
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    networks:
+      - PortainerRede
+    depends_on:
+      - backend
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      labels:
+        - traefik.enable=true
+        - traefik.docker.network=PortainerRede
+        - traefik.http.routers.trackflow-prod.rule=Host(`${APP_HOST:-track.3dhmanaus.shop}`)
+        - traefik.http.routers.trackflow-prod.entrypoints=${TRAEFIK_ENTRYPOINTS:-websecure}
+        - traefik.http.routers.trackflow-prod.tls=true
+        - traefik.http.routers.trackflow-prod.tls.certresolver=${TRAEFIK_CERTRESOLVER:-letsencrypt}
+        - traefik.http.services.trackflow-prod.loadbalancer.server.port=80
+
+  backend:
+    image: ${BACKEND_IMAGE:-3dh-trackflow-backend:producao}
+    build:
+      context: .
+      dockerfile: services/backend/Dockerfile
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-https://track.3dhmanaus.shop}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-tracking}:${POSTGRES_PASSWORD:?configure POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-tracking}?schema=public
+      REDIS_URL: redis://redis:6379
+      KAFKA_BROKER: ${KAFKA_BROKER:-kafka:9092}
+      KAFKA_TOPIC: ${KAFKA_TOPIC:-rastreamento}
+      KAFKA_CLIENT_ID: ${KAFKA_CLIENT_ID:-trackflow-backend}
+      KAFKA_GROUP_ID: ${KAFKA_GROUP_ID:-trackflow-consumer-group-prod}
+      KAFKA_ENABLED: ${KAFKA_ENABLED:-true}
+      KAFKA_SSL: ${KAFKA_SSL:-false}
+      KAFKA_SASL_MECHANISM: ${KAFKA_SASL_MECHANISM:-}
+      KAFKA_SASL_USERNAME: ${KAFKA_SASL_USERNAME:-}
+      KAFKA_SASL_PASSWORD: ${KAFKA_SASL_PASSWORD:-}
+      JWT_SECRET: ${JWT_SECRET:?configure JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-8h}
+      CORS_ORIGIN: ${CORS_ORIGIN:-https://track.3dhmanaus.shop}
+      SEED_ADMIN_EMAIL: ${SEED_ADMIN_EMAIL:-admin@3dhmanaus.shop}
+      SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-admin123}
+    networks:
+      - PortainerRede
+    depends_on:
+      - postgres
+      - redis
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-tracking}
+      POSTGRES_USER: ${POSTGRES_USER:-tracking}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?configure POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data_prod:/var/lib/postgresql/data
+    networks:
+      - PortainerRede
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data_prod:/data
+    networks:
+      - PortainerRede
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+
+volumes:
+  postgres_data_prod:
+  redis_data_prod:
+
+networks:
+  PortainerRede:
+    external: true
+    name: PortainerRede

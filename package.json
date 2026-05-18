@@ -1,0 +1,17 @@
+{
+  "name": "3dh-trackflow-platform",
+  "private": true,
+  "version": "1.0.0",
+  "workspaces": [
+    "services/backend",
+    "apps/web"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev --workspace @3dh-trackflow/backend\" \"npm run dev --workspace @3dh-trackflow/web\"",
+    "build": "npm run build --workspace @3dh-trackflow/backend && npm run build --workspace @3dh-trackflow/web",
+    "typecheck": "npm run typecheck --workspace @3dh-trackflow/backend && npm run typecheck --workspace @3dh-trackflow/web"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

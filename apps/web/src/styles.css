@@ -1,0 +1,334 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-panel);
+  color: var(--color-ink);
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+:root,
+[data-theme="classic"] {
+  --color-accent: #f4672c;
+  --color-accent-strong: #d9480f;
+  --color-ink: #1f2328;
+  --color-line: #e3e5e8;
+  --color-muted: #666666;
+  --color-panel: #f5f6f7;
+  --color-surface: #ffffff;
+  --color-chrome: #22262a;
+  --color-chrome-soft: #2d3238;
+  --color-chrome-ink: #f7f8f9;
+  --color-chrome-muted: #c2c7cc;
+  --color-tech: #0ea5e9;
+  --shadow-panel: 0 16px 38px rgb(31 35 40 / 0.08);
+}
+
+[data-theme="dark"] {
+  --color-accent: #ff7a3d;
+  --color-accent-strong: #f4672c;
+  --color-ink: #f6f7f8;
+  --color-line: #30363d;
+  --color-muted: #a7adb4;
+  --color-panel: #111315;
+  --color-surface: #1b1f23;
+  --color-chrome: #080a0c;
+  --color-chrome-soft: #14181c;
+  --color-chrome-ink: #f7f8f9;
+  --color-chrome-muted: #a7adb4;
+  --color-tech: #38bdf8;
+  --shadow-panel: 0 18px 45px rgb(0 0 0 / 0.32);
+}
+
+.leaflet-container {
+  height: 100%;
+  width: 100%;
+  background: #eef1f3;
+}
+
+.brand-mark {
+  align-items: center;
+  background: #111315;
+  border-radius: 8px;
+  box-shadow: inset 0 -3px 0 var(--color-accent);
+  color: #ffffff;
+  display: inline-flex;
+  font-size: 13px;
+  font-weight: 900;
+  height: 36px;
+  justify-content: center;
+  letter-spacing: 0;
+  width: 48px;
+}
+
+[data-theme="dark"] .brand-mark {
+  background: #ffffff;
+  color: #111315;
+}
+
+.brand-kicker {
+  color: var(--color-accent);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.brand-card {
+  box-shadow: var(--shadow-panel);
+}
+
+.btn-primary {
+  background: var(--color-accent);
+  color: #ffffff;
+}
+
+.btn-primary:hover {
+  background: var(--color-accent-strong);
+}
+
+.app-chrome {
+  background:
+    linear-gradient(90deg, var(--color-chrome), var(--color-chrome-soft));
+  border-color: rgb(255 255 255 / 0.08);
+  color: var(--color-chrome-ink);
+}
+
+.app-chrome .text-muted,
+.app-chrome .brand-kicker {
+  color: var(--color-chrome-muted);
+}
+
+.app-chrome .brand-mark {
+  background: #ffffff;
+  color: #111315;
+}
+
+.app-chrome-button {
+  background: rgb(255 255 255 / 0.08);
+  border-color: rgb(255 255 255 / 0.14);
+  color: #ffffff;
+}
+
+.app-chrome-button:hover {
+  background: rgb(255 255 255 / 0.14);
+}
+
+.app-sidebar {
+  background:
+    linear-gradient(180deg, #eef1f3, #e6eaee);
+}
+
+[data-theme="dark"] .app-sidebar {
+  background:
+    linear-gradient(180deg, #15191d, #101316);
+}
+
+.app-sidebar-header {
+  background: #262b30;
+  border-color: rgb(255 255 255 / 0.08);
+  color: #ffffff;
+}
+
+.app-sidebar-header .text-muted {
+  color: #c2c7cc;
+}
+
+.fleet-stat {
+  background: rgb(255 255 255 / 0.08);
+  border: 1px solid rgb(255 255 255 / 0.1);
+  border-radius: 8px;
+  padding: 8px 6px;
+}
+
+.fleet-stat strong,
+.fleet-stat span {
+  display: block;
+}
+
+.fleet-stat strong {
+  color: #ffffff;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.fleet-stat span {
+  color: var(--color-chrome-muted);
+  margin-top: 4px;
+}
+
+.fleet-card {
+  background: rgb(255 255 255 / 0.72);
+  border-left: 3px solid transparent;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.fleet-card:hover {
+  background: #ffffff;
+  box-shadow: 0 14px 30px rgb(31 35 40 / 0.08);
+  transform: translateY(-1px);
+}
+
+.fleet-card.selected {
+  background: #ffffff;
+  border-left-color: var(--color-accent);
+  box-shadow:
+    inset 0 0 0 1px rgb(244 103 44 / 0.2),
+    0 16px 34px rgb(31 35 40 / 0.1);
+}
+
+[data-theme="dark"] .fleet-card {
+  background: rgb(27 31 35 / 0.82);
+}
+
+[data-theme="dark"] .fleet-card:hover,
+[data-theme="dark"] .fleet-card.selected {
+  background: #20262b;
+}
+
+.status-pill {
+  align-items: center;
+  border: 1px solid var(--color-line);
+  border-radius: 999px;
+  display: inline-flex;
+  flex-shrink: 0;
+  gap: 6px;
+  padding: 5px 8px;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.status-pill span {
+  border-radius: 999px;
+  height: 7px;
+  width: 7px;
+}
+
+.status-online {
+  background: rgb(14 165 233 / 0.1);
+  border-color: rgb(14 165 233 / 0.28);
+  color: #0369a1;
+}
+
+.status-online span {
+  background: #0ea5e9;
+  box-shadow: 0 0 14px rgb(14 165 233 / 0.7);
+}
+
+.status-signal {
+  background: rgb(217 119 6 / 0.1);
+  border-color: rgb(217 119 6 / 0.28);
+  color: #92400e;
+}
+
+.status-signal span {
+  background: #d97706;
+}
+
+.status-offline {
+  background: rgb(102 102 102 / 0.1);
+  border-color: rgb(102 102 102 / 0.24);
+  color: #555555;
+}
+
+.status-offline span {
+  background: #858b91;
+}
+
+[data-theme="dark"] .status-online {
+  color: #7dd3fc;
+}
+
+[data-theme="dark"] .status-signal {
+  color: #fdba74;
+}
+
+[data-theme="dark"] .status-offline {
+  color: #c2c7cc;
+}
+
+.battery-track {
+  background: rgb(102 102 102 / 0.14);
+  border-radius: 999px;
+  height: 7px;
+  overflow: hidden;
+}
+
+.battery-fill {
+  border-radius: inherit;
+  height: 100%;
+}
+
+.battery-good {
+  background: linear-gradient(90deg, #0ea5e9, #22c55e);
+}
+
+.battery-mid {
+  background: linear-gradient(90deg, #f4672c, #f59e0b);
+}
+
+.battery-low {
+  background: linear-gradient(90deg, #ef4444, #f4672c);
+}
+
+.speed-box {
+  align-items: flex-end;
+  color: var(--color-accent);
+  display: flex;
+  gap: 3px;
+  justify-content: flex-end;
+  min-width: 72px;
+}
+
+.speed-box strong {
+  font-size: 24px;
+  line-height: 0.9;
+}
+
+.speed-box span {
+  color: var(--color-muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.app-footer {
+  background:
+    linear-gradient(90deg, #24292e, #30363d);
+  border-color: rgb(255 255 255 / 0.08);
+  color: #ffffff;
+}
+
+.app-footer .text-muted {
+  color: #c2c7cc;
+}
+
+.courier-marker {
+  display: block;
+  filter: drop-shadow(0 8px 10px rgb(23 32 38 / 0.35));
+  height: 58px;
+  object-fit: contain;
+  transform-origin: center;
+  width: 42px;
+}
+
+.courier-marker.offline {
+  filter: grayscale(1) opacity(0.76) drop-shadow(0 8px 10px rgb(23 32 38 / 0.28));
+}
+
+.courier-marker.sem-sinal {
+  filter: sepia(0.55) saturate(1.5) hue-rotate(345deg) drop-shadow(0 8px 10px rgb(23 32 38 / 0.32));
+}

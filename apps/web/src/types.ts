@@ -1,0 +1,34 @@
+export type LocationEvent = {
+  id?: string;
+  device_id: string;
+  lat: number;
+  lng: number;
+  speed: number;
+  heading?: number;
+  battery?: number;
+  accuracy?: number;
+  timestamp: string;
+  created_at?: string;
+};
+
+export type DeliveryPerson = {
+  id: string;
+  name: string;
+  device_id: string;
+  phone?: string;
+  status: string;
+  computed_status: "online" | "offline" | "sem sinal";
+  last_location: LocationEvent | null;
+};
+
+export type PublicTrackingPayload = {
+  public_token: string;
+  title?: string;
+  expires_at: string;
+  delivery_person: {
+    name: string;
+    device_id: string;
+    status: string;
+  };
+  last_location: LocationEvent | null;
+};

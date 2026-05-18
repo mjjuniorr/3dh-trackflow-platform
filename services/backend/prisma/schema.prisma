@@ -1,0 +1,66 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String            @id @default(cuid())
+  name          String
+  email         String            @unique
+  password_hash String
+  role          String            @default("employee")
+  created_at    DateTime          @default(now())
+  sessions      TrackingSession[] @relation("TrackingSessionCreator")
+
+  @@map("users")
+}
+
+model DeliveryPerson {
+  id         String            @id @default(cuid())
+  name       String
+  device_id  String            @unique
+  phone      String?
+  status     String            @default("offline")
+  created_at DateTime          @default(now())
+  sessions   TrackingSession[]
+
+  @@map("delivery_people")
+}
+
+model LocationEvent {
+  id         String   @id @default(cuid())
+  device_id  String
+  lat        Float
+  lng        Float
+  speed      Float
+  heading    Float?
+  battery    Int?
+  accuracy   Float?
+  timestamp  DateTime
+  created_at DateTime @default(now())
+
+  @@index([device_id, timestamp])
+  @@map("location_events")
+}
+
+model TrackingSession {
+  id                 String         @id @default(cuid())
+  public_token       String         @unique
+  delivery_person_id String
+  created_by_user_id String
+  title              String?
+  status             String         @default("active")
+  expires_at         DateTime
+  created_at         DateTime       @default(now())
+  last_seen_at       DateTime?
+  delivery_person    DeliveryPerson @relation(fields: [delivery_person_id], references: [id], onDelete: Cascade)
+  created_by_user    User           @relation("TrackingSessionCreator", fields: [created_by_user_id], references: [id], onDelete: Restrict)
+
+  @@index([public_token, status, expires_at])
+  @@index([delivery_person_id, status])
+  @@map("tracking_sessions")
+}

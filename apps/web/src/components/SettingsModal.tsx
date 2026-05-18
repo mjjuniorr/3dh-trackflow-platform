@@ -1,0 +1,194 @@
+import { CheckCircle2, Save, ShieldCheck, TestTube2, X, XCircle } from "lucide-react";
+import { useEffect, useState } from "react";
+import { getKafkaSettings, saveKafkaSettings, testKafkaSettings, type KafkaSettings } from "../api";
+
+const emptySettings: KafkaSettings = {
+  broker: "kafka:9092",
+  topic: "rastreamento",
+  clientId: "trackflow-backend",
+  groupId: "trackflow-consumer-group",
+  ssl: false,
+  saslMechanism: "",
+  saslUsername: "",
+  saslPassword: ""
+};
+
+const productionBroker = "kafka:9092";
+
+type ConnectionState = "idle" | "ok" | "fail";
+
+export function SettingsModal({
+  theme,
+  onThemeChange,
+  onClose
+}: {
+  theme: "classic" | "dark";
+  onThemeChange: (theme: "classic" | "dark") => void;
+  onClose: () => void;
+}) {
+  const [settings, setSettings] = useState<KafkaSettings>(emptySettings);
+  const [adminPassword, setAdminPassword] = useState("");
+  const [status, setStatus] = useState<ConnectionState>("idle");
+  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    getKafkaSettings()
+      .then((response) => setSettings({ ...emptySettings, ...response.settings, saslPassword: "" }))
+      .catch((error) => setMessage(error instanceof Error ? error.message : "Nao foi possivel carregar configuracoes."));
+  }, []);
+
+  function update<K extends keyof KafkaSettings>(key: K, value: KafkaSettings[K]) {
+    setSettings((current) => ({ ...current, [key]: value }));
+    setStatus("idle");
+  }
+
+  function applyProductionPreset() {
+    setSettings((current) => ({
+      ...current,
+      broker: productionBroker,
+      topic: "rastreamento",
+      clientId: "trackflow-backend",
+      groupId: "trackflow-consumer-group",
+      ssl: false,
+      saslMechanism: "",
+      saslUsername: "",
+      saslPassword: ""
+    }));
+    setStatus("idle");
+    setMessage("Preset de producao aplicado. Salve para reiniciar o consumidor.");
+  }
+
+  async function testConnection() {
+    setLoading(true);
+    setMessage("");
+    try {
+      const result = await testKafkaSettings(settings, adminPassword);
+      setStatus(result.ok ? "ok" : "fail");
+      setMessage(result.ok ? (result.topic_exists ? "Conexao estabelecida e topico encontrado." : "Conexao estabelecida, mas o topico nao foi encontrado.") : result.message ?? "Falha na conexao.");
+    } catch (error) {
+      setStatus("fail");
+      setMessage(error instanceof Error ? error.message : "Falha na conexao.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function save() {
+    setLoading(true);
+    setMessage("");
+    try {
+      const response = await saveKafkaSettings(settings, adminPassword);
+      setSettings({ ...emptySettings, ...response.settings, saslPassword: "" });
+      setStatus("ok");
+      setMessage(response.message);
+    } catch (error) {
+      setStatus("fail");
+      setMessage(error instanceof Error ? error.message : "Nao foi possivel salvar.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-ink/50 p-4">
+      <div className="w-full max-w-2xl rounded-lg border border-line bg-surface text-ink shadow-2xl">
+        <div className="flex items-center justify-between border-b border-line px-5 py-4">
+          <div>
+            <h2 className="text-lg font-semibold">Configuracoes administrativas</h2>
+            <p className="text-sm text-muted">Tema e conexao Kafka do backend</p>
+          </div>
+          <button className="rounded-md p-2 hover:bg-panel" onClick={onClose} aria-label="Fechar">
+            <X size={20} />
+          </button>
+        </div>
+
+        <div className="space-y-5 px-5 py-5">
+          <section>
+            <h3 className="mb-3 text-sm font-semibold">Aparencia</h3>
+            <div className="inline-flex rounded-md border border-line bg-panel p-1">
+              <button className={`rounded px-3 py-2 text-sm font-semibold ${theme === "classic" ? "bg-surface shadow-sm" : ""}`} onClick={() => onThemeChange("classic")}>
+                Classica
+              </button>
+              <button className={`rounded px-3 py-2 text-sm font-semibold ${theme === "dark" ? "bg-surface shadow-sm" : ""}`} onClick={() => onThemeChange("dark")}>
+                Dark
+              </button>
+            </div>
+          </section>
+
+          <section className="grid gap-3 sm:grid-cols-2">
+            <label className="text-sm font-medium">
+              Kafka broker
+              <input className="mt-2 w-full rounded-md border border-line bg-surface px-3 py-2 outline-none focus:border-accent" value={settings.broker} onChange={(event) => update("broker", event.target.value)} />
+            </label>
+            <label className="text-sm font-medium">
+              Topic
+              <input className="mt-2 w-full rounded-md border border-line bg-surface px-3 py-2 outline-none focus:border-accent" value={settings.topic} onChange={(event) => update("topic", event.target.value)} />
+            </label>
+            <label className="text-sm font-medium">
+              Client ID
+              <input className="mt-2 w-full rounded-md border border-line bg-surface px-3 py-2 outline-none focus:border-accent" value={settings.clientId} onChange={(event) => update("clientId", event.target.value)} />
+            </label>
+            <label className="text-sm font-medium">
+              Group ID
+              <input className="mt-2 w-full rounded-md border border-line bg-surface px-3 py-2 outline-none focus:border-accent" value={settings.groupId} onChange={(event) => update("groupId", event.target.value)} />
+            </label>
+            <label className="flex items-center gap-2 text-sm font-medium">
+              <input type="checkbox" checked={settings.ssl} onChange={(event) => update("ssl", event.target.checked)} />
+              Usar SSL
+            </label>
+            <label className="text-sm font-medium">
+              SASL
+              <select className="mt-2 w-full rounded-md border border-line bg-surface px-3 py-2 outline-none focus:border-accent" value={settings.saslMechanism ?? ""} onChange={(event) => update("saslMechanism", event.target.value as KafkaSettings["saslMechanism"])}>
+                <option value="">Sem SASL</option>
+                <option value="plain">plain</option>
+                <option value="scram-sha-256">scram-sha-256</option>
+                <option value="scram-sha-512">scram-sha-512</option>
+              </select>
+            </label>
+            <label className="text-sm font-medium">
+              Usuario SASL
+              <input className="mt-2 w-full rounded-md border border-line bg-surface px-3 py-2 outline-none focus:border-accent" value={settings.saslUsername ?? ""} onChange={(event) => update("saslUsername", event.target.value)} />
+            </label>
+            <label className="text-sm font-medium">
+              Senha SASL
+              <input className="mt-2 w-full rounded-md border border-line bg-surface px-3 py-2 outline-none focus:border-accent" type="password" value={settings.saslPassword ?? ""} onChange={(event) => update("saslPassword", event.target.value)} />
+            </label>
+          </section>
+
+          <div className="rounded-md border border-line bg-panel p-3 text-sm text-muted">
+            <div className="mb-2 font-semibold text-ink">Broker correto para producao</div>
+            <p>Backend na VPS: <strong>kafka:9092</strong>. Teste externo Windows: <strong>72.60.245.62:19092</strong>. Kafka UI: <strong>kafka.3dhmanaus.shop</strong> nao deve ser usado como broker.</p>
+            <button className="mt-3 rounded-md border border-line bg-surface px-3 py-2 text-sm font-semibold text-ink" onClick={applyProductionPreset}>
+              Usar preset producao
+            </button>
+          </div>
+
+          <label className="block text-sm font-medium">
+            Credenciais adm
+            <div className="mt-2 flex items-center rounded-md border border-line bg-surface px-3 focus-within:border-accent">
+              <ShieldCheck size={16} className="text-muted" />
+              <input className="w-full bg-transparent px-3 py-2 outline-none" type="password" value={adminPassword} onChange={(event) => setAdminPassword(event.target.value)} placeholder="Senha do administrador" />
+            </div>
+          </label>
+
+          <div className="flex items-center gap-2 text-sm">
+            {status === "ok" ? <CheckCircle2 className="text-emerald-500" size={18} /> : status === "fail" ? <XCircle className="text-red-500" size={18} /> : <span className="h-[18px] w-[18px] rounded-full border border-line" />}
+            <span>{message || "Conexao ainda nao testada."}</span>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap justify-end gap-2 border-t border-line px-5 py-4">
+          <button className="inline-flex items-center gap-2 rounded-md border border-line px-4 py-2 text-sm font-semibold" onClick={testConnection} disabled={loading}>
+            <TestTube2 size={16} />
+            Testar conexao
+          </button>
+          <button className="inline-flex items-center gap-2 rounded-md bg-accent px-4 py-2 text-sm font-semibold text-white disabled:opacity-60" onClick={save} disabled={loading}>
+            <Save size={16} />
+            Salvar configuracao
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}

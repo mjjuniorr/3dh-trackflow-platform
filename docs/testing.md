@@ -1,0 +1,80 @@
+# Testes e simulacoes
+
+## Credenciais locais padrao
+
+```text
+Email: admin@3dhmanaus.shop
+Senha: admin123
+```
+
+## Subir ambiente PC
+
+```bash
+docker compose --env-file .env.producao-pc.example -f docker-compose.producao-pc.yml up -d --build
+```
+
+URLs:
+
+- Web: `http://localhost:8080`
+- Backend: `http://localhost:4000`
+- Healthcheck: `http://localhost:4000/health`
+
+## Seed
+
+```bash
+docker compose --env-file .env.producao-pc.example -f docker-compose.producao-pc.yml exec backend npm run seed
+```
+
+## Simular uma localizacao
+
+```bash
+docker compose --env-file .env.producao-pc.example -f docker-compose.producao-pc.yml exec backend npm run kafka:test:produce
+```
+
+## Simular rotacao por heading
+
+```bash
+docker compose --env-file .env.producao-pc.example -f docker-compose.producao-pc.yml exec backend npm run kafka:test:heading
+```
+
+## Simular rota de entrega por 30 minutos
+
+```bash
+python scripts/simulate_delivery_route.py --duration-minutes 30 --interval-seconds 5 --device-id entregador_001
+```
+
+Padroes:
+
+- broker: `72.60.245.62:19092`
+- topico: `rastreamento`
+- intervalo: 5 segundos
+- payload inclui `lat`, `lng`, `speed`, `heading`, `battery`, `accuracy` e `timestamp`.
+
+## Simular todos os entregadores ao mesmo tempo
+
+```bash
+python scripts/simulate_multi_delivery_routes.py --duration-minutes 30 --interval-seconds 5
+```
+
+Esse teste publica rotas simultaneas para:
+
+- `entregador_001`
+- `entregador_002`
+- `entregador_003`
+- `entregador_004`
+- `entregador_005`
+
+Use para validar dashboard, memoria, WebSocket, Kafka e renderizacao de multiplos marcadores.
+
+## Roteiro manual
+
+1. Abrir `http://localhost:8080/login`.
+2. Entrar com as credenciais locais.
+3. Confirmar que a lista mostra 5 entregadores.
+4. Rodar uma simulacao Kafka.
+5. Confirmar que o entregador fica online e colorido.
+6. Confirmar que a moto aparece no mapa com PNG transparente.
+7. Gerar link de rastreio para o entregador.
+8. Abrir o link publico.
+9. Confirmar que a pagina publica mostra somente aquele entregador.
+10. Deixar a simulacao de rota rodando e acompanhar movimento/heading.
