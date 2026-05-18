@@ -26,8 +26,8 @@ A diferenca entre homologacao e producao deve ficar nos routers/entrypoints do T
 O arquivo `docker-compose.homologacao-vps.yml` nao faz build dentro do Swarm. Ele espera imagens ja publicadas:
 
 ```env
-FRONTEND_IMAGE=seu-registry/3dh-trackflow-web:homologacao
-BACKEND_IMAGE=seu-registry/3dh-trackflow-backend:homologacao
+FRONTEND_IMAGE=ghcr.io/mjjuniorr/3dh-trackflow-web:homologacao
+BACKEND_IMAGE=ghcr.io/mjjuniorr/3dh-trackflow-backend:homologacao
 ```
 
 Isso evita inconsistencias do Portainer/Swarm com `build:` e torna o deploy repetivel.

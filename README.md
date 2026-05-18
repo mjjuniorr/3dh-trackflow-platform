@@ -76,17 +76,17 @@ docker network ls | grep PortainerRede
 Exemplo:
 
 ```bash
-docker build -f services/backend/Dockerfile -t seu-registry/3dh-trackflow-backend:homologacao .
-docker build -f apps/web/Dockerfile -t seu-registry/3dh-trackflow-web:homologacao .
-docker push seu-registry/3dh-trackflow-backend:homologacao
-docker push seu-registry/3dh-trackflow-web:homologacao
+docker build -f services/backend/Dockerfile -t ghcr.io/mjjuniorr/3dh-trackflow-backend:homologacao .
+docker build -f apps/web/Dockerfile -t ghcr.io/mjjuniorr/3dh-trackflow-web:homologacao .
+docker push ghcr.io/mjjuniorr/3dh-trackflow-backend:homologacao
+docker push ghcr.io/mjjuniorr/3dh-trackflow-web:homologacao
 ```
 
 Depois configure no Portainer:
 
 ```env
-BACKEND_IMAGE=seu-registry/3dh-trackflow-backend:homologacao
-FRONTEND_IMAGE=seu-registry/3dh-trackflow-web:homologacao
+BACKEND_IMAGE=ghcr.io/mjjuniorr/3dh-trackflow-backend:homologacao
+FRONTEND_IMAGE=ghcr.io/mjjuniorr/3dh-trackflow-web:homologacao
 ```
 
 6. O dominio publico deve apontar para a VPS: `track.3dhmanaus.shop`.
@@ -132,6 +132,9 @@ Use o mesmo fluxo da homologacao, trocando:
 
 - Compose path: `docker-compose.producao-vps.yml`
 - Variaveis: `.env.producao-vps.example`
+- Imagens:
+  - `ghcr.io/mjjuniorr/3dh-trackflow-backend:producao`
+  - `ghcr.io/mjjuniorr/3dh-trackflow-web:producao`
 - Router Traefik: `trackflow-prod`
 - Grupo Kafka: `trackflow-consumer-group-prod`
 

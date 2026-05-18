@@ -1,9 +1,6 @@
 services:
   frontend:
-    image: ${FRONTEND_IMAGE:-3dh-trackflow-web:producao}
-    build:
-      context: .
-      dockerfile: apps/web/Dockerfile
+    image: ${FRONTEND_IMAGE:?configure FRONTEND_IMAGE com a imagem publicada no registry}
     networks:
       - PortainerRede
     depends_on:
@@ -22,10 +19,7 @@ services:
         - traefik.http.services.trackflow-prod.loadbalancer.server.port=80
 
   backend:
-    image: ${BACKEND_IMAGE:-3dh-trackflow-backend:producao}
-    build:
-      context: .
-      dockerfile: services/backend/Dockerfile
+    image: ${BACKEND_IMAGE:?configure BACKEND_IMAGE com a imagem publicada no registry}
     environment:
       NODE_ENV: production
       PORT: 4000
