@@ -31,13 +31,12 @@ Plataforma 3DH para rastreamento em tempo real, operacao de entregadores, links 
 
 | Ambiente | Arquivo | Onde roda | Kafka |
 | --- | --- | --- | --- |
-| Homologacao VPS | `docker-compose.homologacao-vps.yml` | Portainer / Docker Swarm / VPS Hostinger | `kafka:9092` |
+| Homologacao PC | `docker-compose.homologacao-pc.yml` | Docker local no Windows | `72.60.245.62:19092` |
 | Producao VPS | `docker-compose.producao-vps.yml` | Portainer / Docker Swarm / VPS Hostinger | `kafka:9092` |
-| Producao PC | `docker-compose.producao-pc.yml` | Docker local no Windows | `72.60.245.62:19092` |
 
-`docker-compose.yml` permanece como compose principal de referencia para a VPS. Para operacao diaria, prefira os arquivos explicitos acima.
+`docker-compose.producao-pc.yml` e `docker-compose.homologacao-vps.yml` existem como legado do desenvolvimento inicial, mas a nomenclatura oficial do projeto agora e: PC = Homologacao, VPS = Producao.
 
-A diferenca entre Homologacao VPS e Producao VPS fica principalmente nos entrypoints/routers do Traefik e nas variaveis de ambiente. A aplicacao, rede Docker, Kafka interno, PostgreSQL e Redis seguem o mesmo desenho.
+Para operacao diaria, prefira os arquivos oficiais acima.
 
 ## Funcionalidades implementadas
 
@@ -53,64 +52,18 @@ A diferenca entre Homologacao VPS e Producao VPS fica principalmente nos entrypo
 - Configuracao Kafka pelo painel administrativo.
 - Simulador Python de rota de entrega.
 
-## Homologacao VPS via Portainer e Git
-
-1. Garanta que a rede externa ja existe no Swarm:
-
-```bash
-docker network ls | grep PortainerRede
-```
-
-2. No Portainer, crie uma Stack usando a opcao de repositorio Git.
-
-3. Configure:
-
-- Repository URL: URL do repositorio `3dh-trackflow-platform`;
-- Compose path: `docker-compose.homologacao-vps.yml`;
-- Branch: branch principal do projeto.
-
-4. Configure as variaveis a partir de `.env.homologacao-vps.example`.
-
-5. Publique as imagens em um registry antes do deploy. A stack de homologacao nao faz build no Swarm; ela baixa imagens prontas.
-
-Exemplo:
-
-```bash
-docker build -f services/backend/Dockerfile -t ghcr.io/mjjuniorr/3dh-trackflow-backend:homologacao .
-docker build -f apps/web/Dockerfile -t ghcr.io/mjjuniorr/3dh-trackflow-web:homologacao .
-docker push ghcr.io/mjjuniorr/3dh-trackflow-backend:homologacao
-docker push ghcr.io/mjjuniorr/3dh-trackflow-web:homologacao
-```
-
-Depois configure no Portainer:
-
-```env
-BACKEND_IMAGE=ghcr.io/mjjuniorr/3dh-trackflow-backend:homologacao
-FRONTEND_IMAGE=ghcr.io/mjjuniorr/3dh-trackflow-web:homologacao
-```
-
-6. O dominio publico deve apontar para a VPS: `track.3dhmanaus.shop`.
-7. O Traefik ja existente publicara o frontend em `https://track.3dhmanaus.shop`.
-8. O frontend acessa a API por `/api` e Socket.IO por `/socket.io`, ambos roteados pelo Nginx do frontend para o backend.
-9. Kafka nao e exposto publicamente. O backend consome `kafka:9092` no topico `rastreamento`.
-10. Depois do primeiro deploy, execute o seed no container backend pelo console do Portainer:
-
-```bash
-npm run seed
-```
-
-## Producao PC via Docker local
+## Homologacao PC via Docker local
 
 1. Copie o ambiente de exemplo:
 
 ```bash
-copy .env.producao-pc.example .env
+copy .env.homologacao-pc.example .env
 ```
 
 2. Suba a stack local:
 
 ```bash
-docker compose --env-file .env -f docker-compose.producao-pc.yml up -d --build
+docker compose --env-file .env -f docker-compose.homologacao-pc.yml up -d --build
 ```
 
 3. Acesse:
@@ -126,17 +79,51 @@ KAFKA_BROKER=72.60.245.62:19092
 KAFKA_TOPIC=rastreamento
 ```
 
-## Producao VPS via Portainer
+## Producao VPS via Portainer e Git
 
-Use o mesmo fluxo da homologacao, trocando:
+1. Garanta que a rede externa ja existe no Swarm:
 
-- Compose path: `docker-compose.producao-vps.yml`
-- Variaveis: `.env.producao-vps.example`
-- Imagens:
-  - `ghcr.io/mjjuniorr/3dh-trackflow-backend:producao`
-  - `ghcr.io/mjjuniorr/3dh-trackflow-web:producao`
-- Router Traefik: `trackflow-prod`
-- Grupo Kafka: `trackflow-consumer-group-prod`
+```bash
+docker network ls | grep PortainerRede
+```
+
+2. No Portainer, crie uma Stack usando a opcao de repositorio Git.
+
+3. Configure:
+
+- Repository URL: URL do repositorio `3dh-trackflow-platform`;
+- Compose path: `docker-compose.producao-vps.yml`;
+- Branch: branch principal do projeto.
+
+4. Configure as variaveis a partir de `.env.producao-vps.example`.
+
+5. Publique as imagens em um registry antes do deploy. A stack de producao nao faz build no Swarm; ela baixa imagens prontas.
+
+Exemplo:
+
+```bash
+docker build -f services/backend/Dockerfile -t ghcr.io/mjjuniorr/3dh-trackflow-backend:producao .
+docker build -f apps/web/Dockerfile -t ghcr.io/mjjuniorr/3dh-trackflow-web:producao .
+docker push ghcr.io/mjjuniorr/3dh-trackflow-backend:producao
+docker push ghcr.io/mjjuniorr/3dh-trackflow-web:producao
+```
+
+Depois configure no Portainer:
+
+```env
+BACKEND_IMAGE=ghcr.io/mjjuniorr/3dh-trackflow-backend:producao
+FRONTEND_IMAGE=ghcr.io/mjjuniorr/3dh-trackflow-web:producao
+```
+
+6. O dominio publico deve apontar para a VPS: `track.3dhmanaus.shop`.
+7. O Traefik ja existente publicara o frontend em `https://track.3dhmanaus.shop`.
+8. O frontend acessa a API por `/api` e Socket.IO por `/socket.io`, ambos roteados pelo Nginx do frontend para o backend.
+9. Kafka nao e exposto publicamente. O backend consome `kafka:9092` no topico `rastreamento`.
+10. Depois do primeiro deploy, execute o seed no container backend pelo console do Portainer:
+
+```bash
+npm run seed
+```
 
 O Kafka da Producao VPS tambem deve ser interno:
 

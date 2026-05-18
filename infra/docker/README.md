@@ -6,26 +6,26 @@ Imagens principais:
 
 - `3dh-trackflow-backend:pc`;
 - `3dh-trackflow-web:pc`;
-- `ghcr.io/mjjuniorr/3dh-trackflow-backend:homologacao`;
-- `ghcr.io/mjjuniorr/3dh-trackflow-web:homologacao`.
+- `ghcr.io/mjjuniorr/3dh-trackflow-backend:producao`;
+- `ghcr.io/mjjuniorr/3dh-trackflow-web:producao`.
 
 Build local:
 
 ```bash
-docker compose --env-file .env.producao-pc.example -f docker-compose.producao-pc.yml up -d --build
+docker compose --env-file .env.homologacao-pc.example -f docker-compose.homologacao-pc.yml up -d --build
 ```
 
-Build para registry de homologacao:
+Build para registry de producao:
 
 ```bash
-docker build -f services/backend/Dockerfile -t ghcr.io/mjjuniorr/3dh-trackflow-backend:homologacao .
-docker build -f apps/web/Dockerfile -t ghcr.io/mjjuniorr/3dh-trackflow-web:homologacao .
-docker push ghcr.io/mjjuniorr/3dh-trackflow-backend:homologacao
-docker push ghcr.io/mjjuniorr/3dh-trackflow-web:homologacao
+docker build -f services/backend/Dockerfile -t ghcr.io/mjjuniorr/3dh-trackflow-backend:producao .
+docker build -f apps/web/Dockerfile -t ghcr.io/mjjuniorr/3dh-trackflow-web:producao .
+docker push ghcr.io/mjjuniorr/3dh-trackflow-backend:producao
+docker push ghcr.io/mjjuniorr/3dh-trackflow-web:producao
 ```
 
-Para Producao PC, use:
+Para Homologacao PC, use:
 
 ```bash
-docker compose --env-file .env -f docker-compose.producao-pc.yml up -d --build
+docker compose --env-file .env -f docker-compose.homologacao-pc.yml up -d --build
 ```

@@ -1,0 +1,68 @@
+services:
+  frontend:
+    image: 3dh-trackflow-web:pc
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    ports:
+      - "${FRONTEND_PORT:-8080}:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  backend:
+    image: 3dh-trackflow-backend:pc
+    build:
+      context: .
+      dockerfile: services/backend/Dockerfile
+    ports:
+      - "${BACKEND_PORT:-4000}:4000"
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost:8080}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-tracking}:${POSTGRES_PASSWORD:-tracking}@postgres:5432/${POSTGRES_DB:-tracking}?schema=public
+      REDIS_URL: redis://redis:6379
+      KAFKA_BROKER: ${KAFKA_BROKER:-72.60.245.62:19092}
+      KAFKA_TOPIC: ${KAFKA_TOPIC:-rastreamento}
+      KAFKA_CLIENT_ID: ${KAFKA_CLIENT_ID:-trackflow-backend}
+      KAFKA_GROUP_ID: ${KAFKA_GROUP_ID:-trackflow-consumer-group-pc}
+      KAFKA_ENABLED: ${KAFKA_ENABLED:-true}
+      KAFKA_SSL: ${KAFKA_SSL:-false}
+      KAFKA_SASL_MECHANISM: ${KAFKA_SASL_MECHANISM:-}
+      KAFKA_SASL_USERNAME: ${KAFKA_SASL_USERNAME:-}
+      KAFKA_SASL_PASSWORD: ${KAFKA_SASL_PASSWORD:-}
+      JWT_SECRET: ${JWT_SECRET:-local_dev_secret}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-8h}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:8080}
+      SEED_ADMIN_EMAIL: ${SEED_ADMIN_EMAIL:-admin@3dhmanaus.shop}
+      SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-admin123}
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-tracking}
+      POSTGRES_USER: ${POSTGRES_USER:-tracking}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-tracking}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data_pc:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data_pc:/data
+    restart: unless-stopped
+
+volumes:
+  postgres_data_pc:
+  redis_data_pc:

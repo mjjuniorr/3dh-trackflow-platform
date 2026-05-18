@@ -79,6 +79,5 @@ KAFKA_TOPIC=rastreamento
 
 Ambientes:
 
-- Homologacao VPS: Portainer baixa o codigo do Git e usa `docker-compose.homologacao-vps.yml`.
+- Homologacao PC: Docker local usa `docker-compose.homologacao-pc.yml`.
 - Producao VPS: Portainer baixa o codigo do Git e usa `docker-compose.producao-vps.yml`.
-- Producao PC: Docker local usa `docker-compose.producao-pc.yml`.

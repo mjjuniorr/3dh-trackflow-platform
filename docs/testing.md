@@ -10,7 +10,7 @@ Senha: admin123
 ## Subir ambiente PC
 
 ```bash
-docker compose --env-file .env.producao-pc.example -f docker-compose.producao-pc.yml up -d --build
+docker compose --env-file .env.homologacao-pc.example -f docker-compose.homologacao-pc.yml up -d --build
 ```
 
 URLs:
@@ -22,19 +22,19 @@ URLs:
 ## Seed
 
 ```bash
-docker compose --env-file .env.producao-pc.example -f docker-compose.producao-pc.yml exec backend npm run seed
+docker compose --env-file .env.homologacao-pc.example -f docker-compose.homologacao-pc.yml exec backend npm run seed
 ```
 
 ## Simular uma localizacao
 
 ```bash
-docker compose --env-file .env.producao-pc.example -f docker-compose.producao-pc.yml exec backend npm run kafka:test:produce
+docker compose --env-file .env.homologacao-pc.example -f docker-compose.homologacao-pc.yml exec backend npm run kafka:test:produce
 ```
 
 ## Simular rotacao por heading
 
 ```bash
-docker compose --env-file .env.producao-pc.example -f docker-compose.producao-pc.yml exec backend npm run kafka:test:heading
+docker compose --env-file .env.homologacao-pc.example -f docker-compose.homologacao-pc.yml exec backend npm run kafka:test:heading
 ```
 
 ## Simular rota de entrega por 30 minutos
