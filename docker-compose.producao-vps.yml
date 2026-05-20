@@ -15,7 +15,7 @@ services:
         - traefik.http.routers.trackflow-prod.rule=Host(`${APP_HOST:-track.3dhmanaus.shop}`)
         - traefik.http.routers.trackflow-prod.entrypoints=${TRAEFIK_ENTRYPOINTS:-websecure}
         - traefik.http.routers.trackflow-prod.tls=true
-        - traefik.http.routers.trackflow-prod.tls.certresolver=${TRAEFIK_CERTRESOLVER:-letsencrypt}
+        - traefik.http.routers.trackflow-prod.tls.certresolver=${TRAEFIK_CERTRESOLVER:-letsencryptresolver}
         - traefik.http.services.trackflow-prod.loadbalancer.server.port=80
 
   backend:
