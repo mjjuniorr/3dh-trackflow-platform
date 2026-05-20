@@ -9,7 +9,7 @@ const telemetrySchema = z.object({
   device_id: z.string().min(2).max(120),
   lat: z.number(),
   lng: z.number(),
-  speed: z.number().default(0),
+  speed: z.number().min(0).max(220).default(0),
   heading: z.number().min(0).max(360).optional(),
   battery: z.number().int().min(0).max(100).optional(),
   accuracy: z.number().optional(),
@@ -30,6 +30,7 @@ export function createMobileHandlers(io: Server) {
 
       const event = await saveLocation({
         ...parsed.data,
+        speed: Math.round(parsed.data.speed * 10) / 10,
         timestamp: parsed.data.timestamp ?? new Date().toISOString()
       });
       await emitLocationUpdate(io, parsed.data.device_id);

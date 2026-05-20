@@ -81,7 +81,7 @@ class TrackingService : Service() {
                 val settings = settingsRepository.settings.first()
                 if (!settings.registered || settings.deviceId.isBlank()) return@launch
 
-                val speedKmh = location.speed * 3.6
+                val speedKmh = (location.speed * 3.6).coerceIn(0.0, 180.0)
                 val heading = when {
                     location.hasBearing() && speedKmh > 5 -> location.bearing.also { lastHeading = it }
                     lastHeading != null -> lastHeading
@@ -94,7 +94,7 @@ class TrackingService : Service() {
                             device_id = settings.deviceId,
                             lat = location.latitude,
                             lng = location.longitude,
-                            speed = speedKmh,
+                            speed = kotlin.math.round(speedKmh * 10.0) / 10.0,
                             heading = heading?.toDouble(),
                             battery = batteryPercent(),
                             accuracy = if (location.hasAccuracy()) location.accuracy.toDouble() else null,

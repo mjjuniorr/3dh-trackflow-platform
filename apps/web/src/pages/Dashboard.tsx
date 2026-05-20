@@ -29,6 +29,11 @@ function batteryClass(value?: number | null) {
   return "battery-low";
 }
 
+function formatSpeed(value?: number | null) {
+  if (value == null || !Number.isFinite(value)) return "0";
+  return Math.max(0, Math.min(220, value)).toFixed(1);
+}
+
 export function Dashboard() {
   const [people, setPeople] = useState<DeliveryPerson[]>([]);
   const [selected, setSelected] = useState<DeliveryPerson | null>(null);
@@ -140,7 +145,7 @@ export function Dashboard() {
                     </div>
                   </div>
                   <div className="speed-box">
-                    <strong>{person.last_location?.speed ?? 0}</strong>
+                    <strong>{formatSpeed(person.last_location?.speed)}</strong>
                     <span>km/h</span>
                   </div>
                 </div>

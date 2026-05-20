@@ -26,6 +26,11 @@ function FitBounds({ points }: { points: Array<[number, number]> }) {
   return null;
 }
 
+function formatSpeed(value?: number | null) {
+  if (value == null || !Number.isFinite(value)) return "0.0";
+  return Math.max(0, Math.min(220, value)).toFixed(1);
+}
+
 export function TrackingMap({ deliveryPeople }: { deliveryPeople: DeliveryPerson[] }) {
   const visible = deliveryPeople.filter((person) => person.last_location);
   const points = visible.map((person) => [person.last_location!.lat, person.last_location!.lng] as [number, number]);
@@ -50,7 +55,7 @@ export function TrackingMap({ deliveryPeople }: { deliveryPeople: DeliveryPerson
             <br />
             Bateria: {person.last_location?.battery ?? "-"}%
             <br />
-            Velocidade: {person.last_location?.speed ?? 0} km/h
+            Velocidade: {formatSpeed(person.last_location?.speed)} km/h
           </Popup>
         </Marker>
       ))}
