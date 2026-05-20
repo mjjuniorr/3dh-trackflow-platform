@@ -6,6 +6,7 @@ coverage
 *.log
 *.err
 apps/android/.gradle
+apps/android/.idea
 apps/android/build
 apps/android/app/build
 apps/android/local.properties
