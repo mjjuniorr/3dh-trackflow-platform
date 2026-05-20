@@ -40,6 +40,7 @@ services:
       CORS_ORIGIN: ${CORS_ORIGIN:-https://track.3dhmanaus.shop}
       SEED_ADMIN_EMAIL: ${SEED_ADMIN_EMAIL:-admin@3dhmanaus.shop}
       SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-admin123}
+      MOBILE_REGISTRATION_SECRET: ${MOBILE_REGISTRATION_SECRET:-}
     networks:
       - PortainerRede
     depends_on:

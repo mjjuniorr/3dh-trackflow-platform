@@ -17,6 +17,7 @@ export type DeliveryPerson = {
   device_id: string;
   phone?: string;
   status: string;
+  is_active?: boolean;
   computed_status: "online" | "offline" | "sem sinal";
   last_location: LocationEvent | null;
 };

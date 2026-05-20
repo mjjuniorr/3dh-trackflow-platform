@@ -28,5 +28,6 @@ export const config = {
   kafkaSsl: process.env.KAFKA_SSL === "true",
   kafkaSaslMechanism: process.env.KAFKA_SASL_MECHANISM,
   kafkaSaslUsername: process.env.KAFKA_SASL_USERNAME,
-  kafkaSaslPassword: process.env.KAFKA_SASL_PASSWORD
+  kafkaSaslPassword: process.env.KAFKA_SASL_PASSWORD,
+  mobileRegistrationSecret: process.env.MOBILE_REGISTRATION_SECRET
 };

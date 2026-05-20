@@ -24,6 +24,9 @@ export async function createTrackingSession(req: Request, res: Response) {
   if (!deliveryPerson) {
     return res.status(404).json({ message: "Entregador nao encontrado." });
   }
+  if (!deliveryPerson.is_active) {
+    return res.status(400).json({ message: "Entregador desativado." });
+  }
 
   const publicToken = token();
   const expiresAt = new Date(Date.now() + parsed.data.expires_in_minutes * 60_000);

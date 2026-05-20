@@ -42,7 +42,9 @@ Para operacao diaria, prefira os arquivos oficiais acima.
 
 - Login interno com JWT.
 - Dashboard protegido em `/dashboard`.
-- Lista dos 5 entregadores, mesmo offline.
+- Lista dinamica de entregadores cadastrados.
+- Cadastro, edicao e desativacao de entregadores pelo painel administrativo.
+- Cadastro automatico de entregadores pelo aplicativo Android.
 - Mapa com marcador PNG transparente da moto.
 - Rotacao da moto pelo campo Kafka `heading`.
 - Status visual: online colorido, sem sinal e offline.
@@ -51,6 +53,25 @@ Para operacao diaria, prefira os arquivos oficiais acima.
 - Backend retorna apenas `public_path` para nao expor endereco interno de servidor.
 - Configuracao Kafka pelo painel administrativo.
 - Simulador Python de rota de entrega.
+
+## Cadastro Android
+
+Antes de publicar localizacao no Kafka, o aplicativo Android deve registrar o entregador:
+
+```http
+POST /api/mobile/delivery-people/register
+X-Mobile-Registration-Secret: <MOBILE_REGISTRATION_SECRET>
+```
+
+```json
+{
+  "name": "Maria Silva",
+  "device_id": "android-a1b2c3",
+  "phone": "+5592999999999"
+}
+```
+
+Depois do cadastro, o app publica telemetria no Kafka usando o mesmo `device_id`. A dashboard mostra o nome real cadastrado, e administradores podem editar ou desativar o entregador pela engrenagem.
 
 ## Homologacao PC via Docker local
 

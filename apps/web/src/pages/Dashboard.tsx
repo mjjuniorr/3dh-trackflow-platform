@@ -175,7 +175,7 @@ export function Dashboard() {
       </section>
 
       {modalPerson ? <GenerateLinkModal person={modalPerson} onClose={() => setModalPerson(null)} /> : null}
-      {settingsOpen ? <SettingsModal theme={theme} onThemeChange={setTheme} onClose={() => setSettingsOpen(false)} /> : null}
+      {settingsOpen ? <SettingsModal theme={theme} onThemeChange={setTheme} onClose={() => setSettingsOpen(false)} deliveryPeople={people} onDeliveryPeopleChange={refresh} /> : null}
     </main>
   );
 }

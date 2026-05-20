@@ -8,6 +8,29 @@ Fluxo principal:
 4. Dashboard recebe todos os entregadores via Socket.IO.
 5. Link publico recebe somente o entregador vinculado a uma TrackingSession ativa.
 
+## Cadastro dinamico de entregadores
+
+O aplicativo Android registra o entregador antes de iniciar o envio de telemetria:
+
+```http
+POST /api/mobile/delivery-people/register
+X-Mobile-Registration-Secret: <MOBILE_REGISTRATION_SECRET>
+```
+
+Body:
+
+```json
+{
+  "name": "Maria Silva",
+  "device_id": "android-a1b2c3",
+  "phone": "+5592999999999"
+}
+```
+
+O backend cria ou reativa o `DeliveryPerson` pelo `device_id`. Depois disso, o dashboard passa a exibir o nome real cadastrado no Android. Funcionarios administradores tambem podem criar, editar e desativar entregadores pela engrenagem do painel.
+
+Entregadores desativados nao aparecem no dashboard e nao podem gerar novos links de rastreio. A desativacao e preferida em vez de exclusao fisica para preservar historico e evitar perda de auditoria.
+
 ## Link publico seguro
 
 Ao criar uma TrackingSession, o backend retorna somente:
@@ -55,6 +78,13 @@ Payload esperado:
   "timestamp": "2026-05-18T10:30:00-04:00"
 }
 ```
+
+O consumidor tambem aceita aliases uteis para o Android:
+
+- `deviceId` como alternativa a `device_id`;
+- `latitude` como alternativa a `lat`;
+- `longitude` ou `lon` como alternativa a `lng`;
+- `name`, `driver_name` ou `delivery_person_name` para atualizar o nome quando necessario.
 
 Para simular rotacao pelo Kafka:
 

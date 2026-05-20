@@ -5,6 +5,8 @@ import { prisma } from "./prisma.js";
 
 export type LocationMessage = {
   device_id: string;
+  delivery_person_name?: string;
+  phone?: string;
   lat: number;
   lng: number;
   speed: number;
@@ -34,6 +36,8 @@ export function computeStatus(timestamp?: Date | string | null): "online" | "off
 }
 
 export async function saveLocation(message: LocationMessage) {
+  await upsertDeliveryPersonFromDevice(message);
+
   const event = await prisma.locationEvent.create({
     data: {
       device_id: message.device_id,
@@ -51,12 +55,38 @@ export async function saveLocation(message: LocationMessage) {
   await Promise.all([
     redis.set(`${LAST_LOCATION_PREFIX}${message.device_id}`, JSON.stringify(event), "EX", 60 * 60 * 24),
     prisma.deliveryPerson.updateMany({
-      where: { device_id: message.device_id },
+      where: { device_id: message.device_id, is_active: true },
       data: { status }
     })
   ]);
 
   return event;
+}
+
+export async function upsertDeliveryPersonFromDevice(message: Pick<LocationMessage, "device_id" | "delivery_person_name" | "phone">) {
+  const name = message.delivery_person_name?.trim() || deviceNameFallback(message.device_id);
+  await prisma.deliveryPerson.upsert({
+    where: { device_id: message.device_id },
+    update: {
+      ...(message.delivery_person_name?.trim() ? { name } : {}),
+      ...(message.phone?.trim() ? { phone: message.phone.trim() } : {})
+    },
+    create: {
+      name,
+      device_id: message.device_id,
+      phone: message.phone?.trim() || null,
+      status: "offline",
+      is_active: true
+    }
+  });
+}
+
+function deviceNameFallback(deviceId: string) {
+  return deviceId
+    .split(/[_-]+/)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
 }
 
 export async function getLastLocation(deviceId: string) {
@@ -74,7 +104,10 @@ export async function getLastLocation(deviceId: string) {
 }
 
 export async function listDeliveryPeopleWithLocations(): Promise<DeliveryPersonWithLocation[]> {
-  const deliveryPeople = await prisma.deliveryPerson.findMany({ orderBy: { name: "asc" } });
+  const deliveryPeople = await prisma.deliveryPerson.findMany({
+    where: { is_active: true },
+    orderBy: { name: "asc" }
+  });
   return Promise.all(
     deliveryPeople.map(async (person) => {
       const lastLocation = await getLastLocation(person.device_id);

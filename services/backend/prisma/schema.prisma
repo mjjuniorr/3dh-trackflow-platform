@@ -25,7 +25,9 @@ model DeliveryPerson {
   device_id  String            @unique
   phone      String?
   status     String            @default("offline")
+  is_active  Boolean           @default(true)
   created_at DateTime          @default(now())
+  updated_at DateTime          @updatedAt
   sessions   TrackingSession[]
 
   @@map("delivery_people")

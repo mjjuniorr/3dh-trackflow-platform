@@ -43,6 +43,26 @@ export async function listDeliveryPeople() {
   return request<{ delivery_people: DeliveryPerson[] }>("/api/delivery-people");
 }
 
+export async function createDeliveryPerson(input: { name: string; device_id: string; phone?: string }) {
+  return request<{ delivery_person: DeliveryPerson }>("/api/delivery-people", {
+    method: "POST",
+    body: JSON.stringify(input)
+  });
+}
+
+export async function updateDeliveryPerson(id: string, input: { name?: string; device_id?: string; phone?: string; is_active?: boolean }) {
+  return request<{ delivery_person: DeliveryPerson }>(`/api/delivery-people/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(input)
+  });
+}
+
+export async function deactivateDeliveryPerson(id: string) {
+  return request<{ delivery_person: DeliveryPerson }>(`/api/delivery-people/${id}`, {
+    method: "DELETE"
+  });
+}
+
 export async function createTrackingSession(deliveryPersonId: string, expiresInMinutes: number, title?: string) {
   return request<{ public_path?: string; public_url?: string; session: { id: string; expires_at: string } }>("/api/tracking-sessions", {
     method: "POST",

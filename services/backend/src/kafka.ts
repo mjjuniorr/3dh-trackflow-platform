@@ -21,11 +21,32 @@ const SETTINGS_KEY = "settings:kafka";
 let currentConsumer: Consumer | undefined;
 let activeRunId = 0;
 
-const messageSchema = z.object({
+const rawMessageSchema = z.object({
+  device_id: z.string().min(1).optional(),
+  deviceId: z.string().min(1).optional(),
+  delivery_person_name: z.string().min(1).optional(),
+  driver_name: z.string().min(1).optional(),
+  name: z.string().min(1).optional(),
+  phone: z.string().min(1).optional(),
+  lat: z.number().optional(),
+  latitude: z.number().optional(),
+  lng: z.number().optional(),
+  lon: z.number().optional(),
+  longitude: z.number().optional(),
+  speed: z.number().default(0),
+  heading: z.number().optional(),
+  battery: z.number().int().min(0).max(100).optional(),
+  accuracy: z.number().optional(),
+  timestamp: z.string().datetime({ offset: true }).optional()
+});
+
+const locationMessageSchema = z.object({
   device_id: z.string().min(1),
+  delivery_person_name: z.string().min(1).optional(),
+  phone: z.string().min(1).optional(),
   lat: z.number(),
   lng: z.number(),
-  speed: z.number().default(0),
+  speed: z.number(),
   heading: z.number().optional(),
   battery: z.number().int().min(0).max(100).optional(),
   accuracy: z.number().optional(),
@@ -87,7 +108,7 @@ export async function startKafkaConsumer(io: Server) {
         console.warn("Mensagem Kafka ignorada: JSON invalido");
         return;
       }
-      const parsed = messageSchema.safeParse(raw);
+      const parsed = normalizeLocationMessage(raw);
       if (!parsed.success) {
         console.warn("Mensagem Kafka invalida", parsed.error.flatten());
         return;
@@ -96,6 +117,25 @@ export async function startKafkaConsumer(io: Server) {
       await saveLocation(parsed.data);
       await emitLocationUpdate(io, parsed.data.device_id);
     }
+  });
+}
+
+function normalizeLocationMessage(raw: unknown) {
+  const parsed = rawMessageSchema.safeParse(raw);
+  if (!parsed.success) return parsed;
+
+  const value = parsed.data;
+  return locationMessageSchema.safeParse({
+    device_id: value.device_id ?? value.deviceId,
+    delivery_person_name: value.delivery_person_name ?? value.driver_name ?? value.name,
+    phone: value.phone,
+    lat: value.lat ?? value.latitude,
+    lng: value.lng ?? value.lon ?? value.longitude,
+    speed: value.speed,
+    heading: value.heading,
+    battery: value.battery,
+    accuracy: value.accuracy,
+    timestamp: value.timestamp ?? new Date().toISOString()
   });
 }
 
