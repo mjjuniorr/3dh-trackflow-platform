@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import { z } from "zod";
-import { config } from "./config.js";
+import { isMobileRequestAuthorized } from "./mobile.js";
 import { prisma } from "./prisma.js";
 
 const createSchema = z.object({
@@ -66,11 +66,8 @@ export async function deactivateDeliveryPerson(req: Request, res: Response) {
 }
 
 export async function registerMobileDeliveryPerson(req: Request, res: Response) {
-  if (config.mobileRegistrationSecret) {
-    const secret = req.headers["x-mobile-registration-secret"];
-    if (secret !== config.mobileRegistrationSecret) {
-      return res.status(401).json({ message: "Cadastro mobile nao autorizado." });
-    }
+  if (!isMobileRequestAuthorized(req)) {
+    return res.status(401).json({ message: "Cadastro mobile nao autorizado." });
   }
 
   return createDeliveryPerson(req, res);

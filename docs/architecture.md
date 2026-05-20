@@ -31,6 +31,15 @@ O backend cria ou reativa o `DeliveryPerson` pelo `device_id`. Depois disso, o d
 
 Entregadores desativados nao aparecem no dashboard e nao podem gerar novos links de rastreio. A desativacao e preferida em vez de exclusao fisica para preservar historico e evitar perda de auditoria.
 
+O Android envia telemetria por HTTPS para o backend:
+
+```http
+POST /api/mobile/telemetry
+X-Mobile-Registration-Secret: <MOBILE_REGISTRATION_SECRET>
+```
+
+O backend usa o mesmo fluxo interno de persistencia e Socket.IO usado pelo consumidor Kafka. Kafka continua isolado da aplicacao Android.
+
 ## Link publico seguro
 
 Ao criar uma TrackingSession, o backend retorna somente:

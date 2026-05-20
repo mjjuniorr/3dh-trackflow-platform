@@ -3,15 +3,18 @@ import type { Server } from "socket.io";
 import { login, requireAdmin, requireAuth } from "./auth.js";
 import { createDeliveryPerson, deactivateDeliveryPerson, registerMobileDeliveryPerson, updateDeliveryPerson } from "./delivery-people.js";
 import { listDeliveryPeopleWithLocations } from "./location-store.js";
+import { createMobileHandlers } from "./mobile.js";
 import { createTrackingSession, getPublicTrackingSession, revokeTrackingSession } from "./tracking-sessions.js";
 import { createSettingsHandlers } from "./settings.js";
 
 export function createRouter(io: Server) {
   const router = Router();
   const settings = createSettingsHandlers(io);
+  const mobile = createMobileHandlers(io);
 
   router.post("/auth/login", login);
   router.post("/mobile/delivery-people/register", registerMobileDeliveryPerson);
+  router.post("/mobile/telemetry", mobile.sendTelemetry);
 
   router.get("/delivery-people", requireAuth, async (_req, res) => {
     res.json({ delivery_people: await listDeliveryPeopleWithLocations() });

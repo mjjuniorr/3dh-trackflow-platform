@@ -71,7 +71,16 @@ X-Mobile-Registration-Secret: <MOBILE_REGISTRATION_SECRET>
 }
 ```
 
-Depois do cadastro, o app publica telemetria no Kafka usando o mesmo `device_id`. A dashboard mostra o nome real cadastrado, e administradores podem editar ou desativar o entregador pela engrenagem.
+Depois do cadastro, o app envia telemetria usando o mesmo `device_id`. A dashboard mostra o nome real cadastrado, e administradores podem editar ou desativar o entregador pela engrenagem.
+
+O app nao publica direto no Kafka. Ele envia telemetria por HTTPS:
+
+```http
+POST /api/mobile/telemetry
+X-Mobile-Registration-Secret: <MOBILE_REGISTRATION_SECRET>
+```
+
+O backend persiste o evento e emite as atualizacoes em tempo real para o dashboard e links publicos.
 
 ## Homologacao PC via Docker local
 
