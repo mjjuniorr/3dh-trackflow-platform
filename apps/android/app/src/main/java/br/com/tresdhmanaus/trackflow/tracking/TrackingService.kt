@@ -13,7 +13,6 @@ import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import br.com.tresdhmanaus.trackflow.MainActivity
 import br.com.tresdhmanaus.trackflow.R
-import br.com.tresdhmanaus.trackflow.data.AppSettings
 import br.com.tresdhmanaus.trackflow.data.SettingsRepository
 import br.com.tresdhmanaus.trackflow.network.TelemetryRequest
 import br.com.tresdhmanaus.trackflow.network.TrackFlowApi
@@ -25,6 +24,7 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -88,18 +88,23 @@ class TrackingService : Service() {
                     else -> null
                 }
 
-                api.sendTelemetry(
-                    TelemetryRequest(
-                        device_id = settings.deviceId,
-                        lat = location.latitude,
-                        lng = location.longitude,
-                        speed = speedKmh,
-                        heading = heading?.toDouble(),
-                        battery = batteryPercent(),
-                        accuracy = if (location.hasAccuracy()) location.accuracy.toDouble() else null,
-                        timestamp = OffsetDateTime.now(ZoneOffset.UTC).toString()
+                runCatching {
+                    api.sendTelemetry(
+                        TelemetryRequest(
+                            device_id = settings.deviceId,
+                            lat = location.latitude,
+                            lng = location.longitude,
+                            speed = speedKmh,
+                            heading = heading?.toDouble(),
+                            battery = batteryPercent(),
+                            accuracy = if (location.hasAccuracy()) location.accuracy.toDouble() else null,
+                            timestamp = OffsetDateTime.now(ZoneOffset.UTC).toString()
+                        )
                     )
-                )
+                }.onFailure { error ->
+                    if (error is CancellationException) throw error
+                    android.util.Log.e("TrackingService", "Falha ao enviar telemetria", error)
+                }
             }
         }
     }
