@@ -19,7 +19,8 @@ const vehicleOptions: Array<{ value: VehicleType; label: string }> = [
   { value: "motorcycle", label: "Moto" },
   { value: "car", label: "Carro" },
   { value: "boat", label: "Barco" },
-  { value: "airplane", label: "Aviao" }
+  { value: "airplane", label: "Aviao" },
+  { value: "bus", label: "Onibus" }
 ];
 
 type ConnectionState = "idle" | "ok" | "fail";

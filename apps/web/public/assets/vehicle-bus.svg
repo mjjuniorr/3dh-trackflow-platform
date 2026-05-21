@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 72">
+  <defs>
+    <linearGradient id="body" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#eef2f7"/>
+    </linearGradient>
+    <filter id="shadow" x="-18%" y="-40%" width="140%" height="190%">
+      <feDropShadow dx="0" dy="6" stdDeviation="5" flood-color="#172026" flood-opacity=".36"/>
+    </filter>
+  </defs>
+  <g filter="url(#shadow)">
+    <path d="M18 11h142c8 0 13 5 15 14v22c-2 9-7 14-15 14H18C10 61 5 56 5 47V25c0-9 5-14 13-14z" fill="url(#body)"/>
+    <path d="M8 23c1-5 4-9 9-11l4 5c-6 3-9 8-9 14zM8 49c1 5 4 9 9 11l4-5c-6-3-9-8-9-14zM172 23c-1-5-4-9-9-11l-4 5c6 3 9 8 9 14zM172 49c-1 5-4 9-9 11l-4-5c6-3 9-8 9-14z" fill="#ff7667"/>
+    <path d="M24 15h131c6 0 9 3 10 9v24c-1 6-4 9-10 9H24c-6 0-9-3-10-9V24c1-6 4-9 10-9z" fill="none" stroke="#d9dde2" stroke-width="2"/>
+    <path d="M22 18h20c-6 8-6 28 0 36H22c-8-7-8-29 0-36z" fill="#050505"/>
+    <path d="M31 21h9c-3 6-3 24 0 30h-9c-4-7-4-23 0-30z" fill="#3f444a"/>
+    <path d="M54 26h14v8H54zM74 26h14v8H74zM94 26h14v8H94zM114 26h7v8h-7zM132 26h8v5h-8zM54 38h88v14H54z" fill="#14181d"/>
+    <path d="M55 39h86v12H55z" fill="#ffffff" opacity=".08"/>
+    <path d="M42 58h110v5H42z" fill="#101418"/>
+    <path d="M34 62a6 6 0 1 0 0-12 6 6 0 0 0 0 12zM135 62a6 6 0 1 0 0-12 6 6 0 0 0 0 12zM148 62a6 6 0 1 0 0-12 6 6 0 0 0 0 12z" fill="#050505"/>
+    <path d="M162 30h3v12h-3zM13 30h3v12h-3z" fill="#050505"/>
+  </g>
+</svg>

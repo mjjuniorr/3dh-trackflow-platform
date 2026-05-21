@@ -7,7 +7,7 @@ const createSchema = z.object({
   name: z.string().min(2).max(120),
   device_id: z.string().min(2).max(120),
   phone: z.string().max(40).optional(),
-  vehicle_type: z.enum(["motorcycle", "car", "boat", "airplane"]).default("motorcycle")
+  vehicle_type: z.enum(["motorcycle", "car", "boat", "airplane", "bus"]).default("motorcycle")
 });
 
 const updateSchema = createSchema.extend({

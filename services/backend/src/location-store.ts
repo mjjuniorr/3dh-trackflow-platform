@@ -7,7 +7,7 @@ export type LocationMessage = {
   device_id: string;
   delivery_person_name?: string;
   phone?: string;
-  vehicle_type?: "motorcycle" | "car" | "boat" | "airplane";
+  vehicle_type?: "motorcycle" | "car" | "boat" | "airplane" | "bus";
   lat: number;
   lng: number;
   speed: number;

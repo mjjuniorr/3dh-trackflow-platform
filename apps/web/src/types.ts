@@ -23,7 +23,7 @@ export type DeliveryPerson = {
   last_location: LocationEvent | null;
 };
 
-export type VehicleType = "motorcycle" | "car" | "boat" | "airplane";
+export type VehicleType = "motorcycle" | "car" | "boat" | "airplane" | "bus";
 
 export type PublicTrackingPayload = {
   public_token: string;

@@ -201,7 +201,8 @@ private fun VehicleTypePicker(selected: String, onSelected: (String) -> Unit) {
         "motorcycle" to "Moto",
         "car" to "Carro",
         "boat" to "Barco",
-        "airplane" to "Aviao"
+        "airplane" to "Aviao",
+        "bus" to "Onibus"
     )
     val selectedLabel = options.firstOrNull { it.first == selected }?.second ?: "Moto"
 
@@ -228,6 +229,7 @@ private fun vehicleTypeLabel(vehicleType: String) = when (vehicleType) {
     "car" -> "Carro"
     "boat" -> "Barco"
     "airplane" -> "Aviao"
+    "bus" -> "Onibus"
     else -> "Moto"
 }
 
