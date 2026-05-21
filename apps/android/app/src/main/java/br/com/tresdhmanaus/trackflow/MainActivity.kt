@@ -206,15 +206,10 @@ private fun VehicleTypePicker(selected: String, onSelected: (String) -> Unit) {
     val selectedLabel = options.firstOrNull { it.first == selected }?.second ?: "Moto"
 
     Column {
-        OutlinedTextField(
-            value = selectedLabel,
-            onValueChange = {},
-            label = { Text("Tipo de veiculo") },
-            readOnly = true,
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { expanded = true }
-        )
+        Text("Tipo de veiculo", color = Color(0xFF9CA3AF), style = MaterialTheme.typography.bodySmall)
+        OutlinedButton(onClick = { expanded = true }, modifier = Modifier.fillMaxWidth()) {
+            Text(selectedLabel)
+        }
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
             options.forEach { (value, label) ->
                 DropdownMenuItem(
