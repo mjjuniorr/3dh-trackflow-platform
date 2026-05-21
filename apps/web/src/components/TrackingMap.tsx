@@ -6,7 +6,7 @@ import { useEffect } from "react";
 const MANAUS: [number, number] = [-3.119, -60.0217];
 const VEHICLE_ICON: Record<VehicleType, string> = {
   motorcycle: "/assets/courier-top.png",
-  car: "/assets/vehicle-car.svg",
+  car: "/assets/vehicle-car.png",
   boat: "/assets/vehicle-boat.svg",
   airplane: "/assets/vehicle-airplane.svg",
   bus: "/assets/vehicle-bus.png"
@@ -18,7 +18,7 @@ function markerIcon(status: string, heading?: number | null, vehicleType: Vehicl
   const src = VEHICLE_ICON[vehicleType] ?? VEHICLE_ICON.motorcycle;
   const sizeByType: Record<VehicleType, [number, number]> = {
     motorcycle: [42, 58],
-    car: [44, 64],
+    car: [62, 42],
     boat: [46, 68],
     airplane: [72, 72],
     bus: [46, 76]
