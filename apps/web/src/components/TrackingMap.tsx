@@ -18,7 +18,7 @@ function markerIcon(status: string, heading?: number | null, vehicleType: Vehicl
   const src = VEHICLE_ICON[vehicleType] ?? VEHICLE_ICON.motorcycle;
   const sizeByType: Record<VehicleType, [number, number]> = {
     motorcycle: [42, 58],
-    car: [62, 42],
+    car: [82, 55],
     boat: [82, 46],
     airplane: [72, 48],
     bus: [110, 32]
