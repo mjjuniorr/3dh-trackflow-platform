@@ -23,7 +23,7 @@ Plataforma 3DH para rastreamento em tempo real, operacao de entregadores, links 
 
 - Backend: Node.js, TypeScript, Express, Socket.IO, KafkaJS, Prisma, PostgreSQL, Redis e JWT.
 - Web: React, Vite, TypeScript, TailwindCSS, Leaflet e Socket.IO Client.
-- Android: modulo reservado para o aplicativo dos entregadores.
+- Android: aplicativo nativo dos entregadores para cadastro e telemetria.
 - Firmware: modulo reservado para placas GPS.
 - Deploy: Docker Swarm/Portainer com Traefik e rede externa `PortainerRede`.
 
@@ -67,7 +67,8 @@ X-Mobile-Registration-Secret: <MOBILE_REGISTRATION_SECRET>
 {
   "name": "Maria Silva",
   "device_id": "android-a1b2c3",
-  "phone": "+5592999999999"
+  "phone": "+5592999999999",
+  "vehicle_type": "motorcycle"
 }
 ```
 
@@ -260,6 +261,10 @@ Usuario padrao configuravel por ambiente:
 
 - `docs/architecture.md`: fluxo tecnico, payload Kafka, heading e seguranca do link publico.
 - `docs/testing.md`: simulacoes Kafka e roteiro de validacao manual.
+- `docs/HANDOFF.md`: resumo para continuar em outra conversa Codex.
+- `docs/current-state.md`: estado atual do produto, deploy e problemas conhecidos.
+- `docs/vehicle-icons.md`: fluxo correto para trocar assets de veiculos.
+- `docs/operations.md`: comandos operacionais de deploy, Android e Kafka.
 - `infra/portainer/README.md`: deploy VPS com Portainer, Swarm, Traefik e registry.
 - `infra/docker/README.md`: builds Docker e execucao local.
 - `apps/android/README.md`: requisitos iniciais do app Android.

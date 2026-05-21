@@ -23,7 +23,8 @@ Body:
 {
   "name": "Maria Silva",
   "device_id": "android-a1b2c3",
-  "phone": "+5592999999999"
+  "phone": "+5592999999999",
+  "vehicle_type": "motorcycle"
 }
 ```
 
@@ -39,6 +40,29 @@ X-Mobile-Registration-Secret: <MOBILE_REGISTRATION_SECRET>
 ```
 
 O backend usa o mesmo fluxo interno de persistencia e Socket.IO usado pelo consumidor Kafka. Kafka continua isolado da aplicacao Android.
+
+## Tipos de veiculo
+
+O campo `vehicle_type` define qual marcador aparece no mapa.
+
+Valores aceitos:
+
+```text
+motorcycle
+car
+boat
+airplane
+bus
+```
+
+Fluxos que aceitam `vehicle_type`:
+
+- cadastro manual pelo painel;
+- cadastro Android;
+- eventos Kafka;
+- payloads usando alias `vehicleType`.
+
+O backend persiste esse valor em `DeliveryPerson.vehicle_type`.
 
 ## Link publico seguro
 
@@ -94,6 +118,7 @@ O consumidor tambem aceita aliases uteis para o Android:
 - `latitude` como alternativa a `lat`;
 - `longitude` ou `lon` como alternativa a `lng`;
 - `name`, `driver_name` ou `delivery_person_name` para atualizar o nome quando necessario.
+- `vehicleType` como alternativa a `vehicle_type`.
 
 Para simular rotacao pelo Kafka:
 
@@ -108,6 +133,21 @@ apps/web/public/assets/courier-top.png
 ```
 
 O PNG tem transparencia para nao cobrir ruas ou labels do mapa.
+
+Os demais assets ficam em:
+
+```text
+apps/web/public/assets/vehicle-car.png
+apps/web/public/assets/vehicle-boat.svg
+apps/web/public/assets/vehicle-airplane.png
+apps/web/public/assets/vehicle-bus.png
+```
+
+Ver tambem:
+
+```text
+docs/vehicle-icons.md
+```
 
 Broker de producao dentro do Swarm:
 

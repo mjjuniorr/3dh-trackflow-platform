@@ -66,6 +66,28 @@ Esse teste publica rotas simultaneas para:
 
 Use para validar dashboard, memoria, WebSocket, Kafka e renderizacao de multiplos marcadores.
 
+## Testar todos os tipos de veiculo
+
+```bash
+python scripts/send_vehicle_icon_test.py
+```
+
+Esse teste envia:
+
+- moto na 3DH Manaus;
+- carro no Amazonas Shopping;
+- barco no Roadway Porto Publico de Manaus;
+- aviao no Aeroporto Eduardo Gomes;
+- onibus no Terminal Rodoviario de Manaus.
+
+Se algum veiculo nao aparecer:
+
+1. Confirmar se o backend de producao foi atualizado.
+2. Confirmar se o entregador nao esta desativado.
+3. Usar um `device_id` novo para evitar conflito com registro desativado.
+4. Conferir se `vehicle_type` e aceito pelo backend.
+5. Conferir se o frontend foi atualizado e se o navegador nao esta com cache.
+
 ## Roteiro manual
 
 1. Abrir `http://localhost:8080/login`.

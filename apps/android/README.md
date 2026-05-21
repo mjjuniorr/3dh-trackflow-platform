@@ -14,7 +14,8 @@ Aplicativo Android nativo do entregador para cadastro, rastreamento em segundo p
 1. Entregador abre o app.
 2. App gera ou recupera um `device_id`.
 3. Entregador informa nome e telefone.
-4. App registra o entregador:
+4. Entregador seleciona tipo de veiculo.
+5. App registra o entregador:
 
 ```http
 POST /api/mobile/delivery-people/register
@@ -46,6 +47,28 @@ Payload:
 }
 ```
 
+## Tipo de veiculo
+
+O app permite escolher:
+
+- Moto;
+- Carro;
+- Barco;
+- Aviao;
+- Onibus.
+
+Valores enviados ao backend:
+
+```text
+motorcycle
+car
+boat
+airplane
+bus
+```
+
+Esse valor e salvo em `DeliveryPerson.vehicle_type` e usado pelo mapa para escolher o icone.
+
 ## Heading
 
 O app deve enviar `heading` em graus:
@@ -75,6 +98,7 @@ Antes de gerar APK de producao, troque `MOBILE_REGISTRATION_SECRET` em `app/buil
 ## Primeiras telas
 
 - Cadastro do entregador.
+- Campo tipo de veiculo.
 - Rastreamento ativo.
 - Status de GPS, internet, bateria, velocidade e ultimo envio.
 - Botao iniciar/parar rastreamento.
