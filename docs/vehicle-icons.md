@@ -50,7 +50,7 @@ const sizeByType: Record<VehicleType, [number, number]> = {
   motorcycle: [42, 58],
   car: [82, 55],
   boat: [82, 46],
-  airplane: [88, 52],
+  airplane: [82, 55],
   bus: [110, 32]
 };
 ```
@@ -172,7 +172,7 @@ car: [82, 55]
 
 ### Aviao
 
-Status: usando PNG transparente real fornecido pelo usuario, com tamanho aumentado no mapa.
+Status: substituido por PNG transparente real fornecido pelo usuario.
 
 Arquivo esperado:
 
@@ -185,7 +185,7 @@ Importante: antes de commitar novo aviao, garantir que e PNG transparente real e
 Tamanho atual no mapa:
 
 ```ts
-airplane: [88, 52]
+airplane: [82, 55]
 ```
 
 ### Barco

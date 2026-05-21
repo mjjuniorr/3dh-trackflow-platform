@@ -20,7 +20,7 @@ function markerIcon(status: string, heading?: number | null, vehicleType: Vehicl
     motorcycle: [42, 58],
     car: [82, 55],
     boat: [82, 46],
-    airplane: [88, 52],
+    airplane: [82, 55],
     bus: [110, 32]
   };
   const iconSize = sizeByType[vehicleType] ?? sizeByType.motorcycle;
