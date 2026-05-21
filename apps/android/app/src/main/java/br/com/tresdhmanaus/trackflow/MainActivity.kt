@@ -48,6 +48,8 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import br.com.tresdhmanaus.trackflow.tracking.TrackingService
 import br.com.tresdhmanaus.trackflow.ui.TrackFlowTheme
 
@@ -170,7 +172,6 @@ private fun RegisterForm(deviceId: String, onRegister: (String, String, String, 
                 keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
                 modifier = Modifier.fillMaxWidth()
             )
-            Text("Tipo de veiculo", color = Color.White, fontWeight = FontWeight.SemiBold)
             VehicleTypePicker(selected = vehicleType, onSelected = { vehicleType = it })
             Text("Device ID: ${deviceId.ifBlank { "gerando..." }}", color = Color(0xFF9CA3AF), style = MaterialTheme.typography.bodySmall)
             Button(
@@ -195,27 +196,34 @@ private fun RegisterForm(deviceId: String, onRegister: (String, String, String, 
 
 @Composable
 private fun VehicleTypePicker(selected: String, onSelected: (String) -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
     val options = listOf(
         "motorcycle" to "Moto",
         "car" to "Carro",
         "boat" to "Barco",
         "airplane" to "Aviao"
     )
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        options.chunked(2).forEach { rowOptions ->
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-                rowOptions.forEach { (value, label) ->
-                    val active = selected == value
-                    Button(
-                        onClick = { onSelected(value) },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = if (active) Color(0xFFF4672C) else Color(0xFF2A3038)
-                        ),
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text(label)
+    val selectedLabel = options.firstOrNull { it.first == selected }?.second ?: "Moto"
+
+    Column {
+        OutlinedTextField(
+            value = selectedLabel,
+            onValueChange = {},
+            label = { Text("Tipo de veiculo") },
+            readOnly = true,
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { expanded = true }
+        )
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            options.forEach { (value, label) ->
+                DropdownMenuItem(
+                    text = { Text(label) },
+                    onClick = {
+                        onSelected(value)
+                        expanded = false
                     }
-                }
+                )
             }
         }
     }
