@@ -8,7 +8,7 @@ const VEHICLE_ICON: Record<VehicleType, string> = {
   motorcycle: "/assets/courier-top.png",
   car: "/assets/vehicle-car.png",
   boat: "/assets/vehicle-boat.svg",
-  airplane: "/assets/vehicle-airplane.svg",
+  airplane: "/assets/vehicle-airplane.png",
   bus: "/assets/vehicle-bus.png"
 };
 
@@ -20,7 +20,7 @@ function markerIcon(status: string, heading?: number | null, vehicleType: Vehicl
     motorcycle: [42, 58],
     car: [62, 42],
     boat: [46, 68],
-    airplane: [72, 72],
+    airplane: [72, 48],
     bus: [46, 76]
   };
   const iconSize = sizeByType[vehicleType] ?? sizeByType.motorcycle;
