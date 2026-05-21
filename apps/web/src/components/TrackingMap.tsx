@@ -16,8 +16,14 @@ function markerIcon(status: string, heading?: number | null, vehicleType: Vehicl
   const className = status === "sem sinal" ? "sem-sinal" : status;
   const rotation = Number.isFinite(heading) ? Number(heading) : 0;
   const src = VEHICLE_ICON[vehicleType] ?? VEHICLE_ICON.motorcycle;
-  const isWideVehicle = vehicleType !== "motorcycle";
-  const iconSize: [number, number] = isWideVehicle ? [68, 52] : [42, 58];
+  const sizeByType: Record<VehicleType, [number, number]> = {
+    motorcycle: [42, 58],
+    car: [44, 64],
+    boat: [46, 68],
+    airplane: [72, 72],
+    bus: [46, 76]
+  };
+  const iconSize = sizeByType[vehicleType] ?? sizeByType.motorcycle;
   const iconAnchor: [number, number] = [iconSize[0] / 2, iconSize[1] / 2];
   return L.divIcon({
     className: "",
