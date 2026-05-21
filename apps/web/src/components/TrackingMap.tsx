@@ -7,7 +7,7 @@ const MANAUS: [number, number] = [-3.119, -60.0217];
 const VEHICLE_ICON: Record<VehicleType, string> = {
   motorcycle: "/assets/courier-top.png",
   car: "/assets/vehicle-car.png",
-  boat: "/assets/vehicle-boat.svg",
+  boat: "/assets/vehicle-boat.png",
   airplane: "/assets/vehicle-airplane.png",
   bus: "/assets/vehicle-bus.png"
 };
@@ -19,7 +19,7 @@ function markerIcon(status: string, heading?: number | null, vehicleType: Vehicl
   const sizeByType: Record<VehicleType, [number, number]> = {
     motorcycle: [42, 58],
     car: [62, 42],
-    boat: [46, 68],
+    boat: [82, 46],
     airplane: [72, 48],
     bus: [110, 32]
   };

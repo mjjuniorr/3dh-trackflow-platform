@@ -7,7 +7,7 @@ Este documento registra como os icones de veiculos funcionam e como devem ser su
 ```text
 apps/web/public/assets/courier-top.png          # Moto
 apps/web/public/assets/vehicle-car.png          # Carro
-apps/web/public/assets/vehicle-boat.svg         # Barco
+apps/web/public/assets/vehicle-boat.png         # Barco
 apps/web/public/assets/vehicle-airplane.png     # Aviao
 apps/web/public/assets/vehicle-bus.png          # Onibus
 ```
@@ -37,7 +37,7 @@ Trecho importante:
 const VEHICLE_ICON: Record<VehicleType, string> = {
   motorcycle: "/assets/courier-top.png",
   car: "/assets/vehicle-car.png",
-  boat: "/assets/vehicle-boat.svg",
+  boat: "/assets/vehicle-boat.png",
   airplane: "/assets/vehicle-airplane.png",
   bus: "/assets/vehicle-bus.png"
 };
@@ -49,7 +49,7 @@ Tamanhos atuais:
 const sizeByType: Record<VehicleType, [number, number]> = {
   motorcycle: [42, 58],
   car: [62, 42],
-  boat: [46, 68],
+  boat: [82, 46],
   airplane: [72, 48],
   bus: [110, 32]
 };
@@ -178,15 +178,19 @@ Importante: antes de commitar novo aviao, garantir que e PNG transparente real e
 
 ### Barco
 
-Status: ainda usando SVG antigo.
+Status: substituido por PNG transparente real fornecido pelo usuario.
 
 Arquivo atual:
 
 ```text
-apps/web/public/assets/vehicle-boat.svg
+apps/web/public/assets/vehicle-boat.png
 ```
 
-Proximo passo: substituir por PNG transparente real quando o usuario trouxer asset aprovado.
+Tamanho atual no mapa:
+
+```ts
+boat: [82, 46]
+```
 
 ### Onibus
 
@@ -203,4 +207,3 @@ Tamanho atual no mapa:
 ```ts
 bus: [110, 32]
 ```
-

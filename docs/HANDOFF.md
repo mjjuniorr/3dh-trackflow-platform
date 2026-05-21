@@ -144,10 +144,10 @@ Foi substituido por PNG fornecido pelo usuario e o tamanho foi aumentado no mapa
 Barco:
 
 ```text
-apps/web/public/assets/vehicle-boat.svg
+apps/web/public/assets/vehicle-boat.png
 ```
 
-Ainda precisa virar PNG transparente real quando o usuario trouxer asset pronto. Nao processar fundo automaticamente.
+Foi substituido por PNG transparente real fornecido pelo usuario, sem processamento automatico. O mapa usa tamanho proporcional ao asset.
 
 ## Ultimo ponto da conversa
 
@@ -206,4 +206,3 @@ python scripts/send_vehicle_icon_test.py
 ```
 
 Observacao: esse script pode ser atualizado com coordenadas finais quando os icones forem aprovados.
-
