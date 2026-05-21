@@ -9,7 +9,7 @@ const VEHICLE_ICON: Record<VehicleType, string> = {
   car: "/assets/vehicle-car.svg",
   boat: "/assets/vehicle-boat.svg",
   airplane: "/assets/vehicle-airplane.svg",
-  bus: "/assets/vehicle-bus.svg"
+  bus: "/assets/vehicle-bus.png"
 };
 
 function markerIcon(status: string, heading?: number | null, vehicleType: VehicleType = "motorcycle") {
