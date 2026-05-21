@@ -68,6 +68,7 @@ export function PublicTracking({ publicToken }: { publicToken: string }) {
           location={data?.last_location ?? null}
           status={data?.delivery_person.status ?? "offline"}
           name={data?.delivery_person.name ?? "Entregador"}
+          vehicleType={data?.delivery_person.vehicle_type ?? "motorcycle"}
         />
         <div className="app-footer border-t px-4 py-4 sm:px-5">
           <div className="mx-auto grid max-w-6xl grid-cols-2 gap-3 text-sm sm:grid-cols-4">

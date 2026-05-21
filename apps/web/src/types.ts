@@ -16,11 +16,14 @@ export type DeliveryPerson = {
   name: string;
   device_id: string;
   phone?: string;
+  vehicle_type: VehicleType;
   status: string;
   is_active?: boolean;
   computed_status: "online" | "offline" | "sem sinal";
   last_location: LocationEvent | null;
 };
+
+export type VehicleType = "motorcycle" | "car" | "boat" | "airplane";
 
 export type PublicTrackingPayload = {
   public_token: string;
@@ -29,6 +32,7 @@ export type PublicTrackingPayload = {
   delivery_person: {
     name: string;
     device_id: string;
+    vehicle_type: VehicleType;
     status: string;
   };
   last_location: LocationEvent | null;

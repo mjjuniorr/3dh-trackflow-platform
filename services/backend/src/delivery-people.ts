@@ -6,7 +6,8 @@ import { prisma } from "./prisma.js";
 const createSchema = z.object({
   name: z.string().min(2).max(120),
   device_id: z.string().min(2).max(120),
-  phone: z.string().max(40).optional()
+  phone: z.string().max(40).optional(),
+  vehicle_type: z.enum(["motorcycle", "car", "boat", "airplane"]).default("motorcycle")
 });
 
 const updateSchema = createSchema.extend({
@@ -24,12 +25,14 @@ export async function createDeliveryPerson(req: Request, res: Response) {
     update: {
       name: parsed.data.name,
       phone: parsed.data.phone || null,
+      vehicle_type: parsed.data.vehicle_type,
       is_active: true
     },
     create: {
       name: parsed.data.name,
       device_id: parsed.data.device_id,
       phone: parsed.data.phone || null,
+      vehicle_type: parsed.data.vehicle_type,
       is_active: true
     }
   });
@@ -49,6 +52,7 @@ export async function updateDeliveryPerson(req: Request, res: Response) {
       ...(parsed.data.name ? { name: parsed.data.name } : {}),
       ...(parsed.data.device_id ? { device_id: parsed.data.device_id } : {}),
       ...(parsed.data.phone !== undefined ? { phone: parsed.data.phone || null } : {}),
+      ...(parsed.data.vehicle_type ? { vehicle_type: parsed.data.vehicle_type } : {}),
       ...(parsed.data.is_active !== undefined ? { is_active: parsed.data.is_active } : {})
     }
   });

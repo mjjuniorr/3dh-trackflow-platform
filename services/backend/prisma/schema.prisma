@@ -24,6 +24,7 @@ model DeliveryPerson {
   name       String
   device_id  String            @unique
   phone      String?
+  vehicle_type String          @default("motorcycle")
   status     String            @default("offline")
   is_active  Boolean           @default(true)
   created_at DateTime          @default(now())

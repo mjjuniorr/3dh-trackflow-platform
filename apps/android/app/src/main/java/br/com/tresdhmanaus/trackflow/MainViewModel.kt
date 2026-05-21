@@ -30,7 +30,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun register(name: String, phone: String, onResult: (Result<Unit>) -> Unit) {
+    fun register(name: String, phone: String, vehicleType: String, onResult: (Result<Unit>) -> Unit) {
         viewModelScope.launch {
             val result = runCatching {
                 val deviceId = settingsRepository.ensureDeviceId()
@@ -39,11 +39,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                         RegisterDeliveryPersonRequest(
                             name = name.trim(),
                             phone = phone.trim().ifBlank { null },
+                            vehicle_type = vehicleType,
                             device_id = deviceId
                         )
                     )
                 }
-                settingsRepository.saveRegistration(name.trim(), phone.trim(), deviceId)
+                settingsRepository.saveRegistration(name.trim(), phone.trim(), deviceId, vehicleType)
             }
             onResult(result)
         }

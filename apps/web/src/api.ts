@@ -1,4 +1,4 @@
-import type { DeliveryPerson, PublicTrackingPayload } from "./types";
+import type { DeliveryPerson, PublicTrackingPayload, VehicleType } from "./types";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
 
@@ -43,14 +43,14 @@ export async function listDeliveryPeople() {
   return request<{ delivery_people: DeliveryPerson[] }>("/api/delivery-people");
 }
 
-export async function createDeliveryPerson(input: { name: string; device_id: string; phone?: string }) {
+export async function createDeliveryPerson(input: { name: string; device_id: string; phone?: string; vehicle_type?: VehicleType }) {
   return request<{ delivery_person: DeliveryPerson }>("/api/delivery-people", {
     method: "POST",
     body: JSON.stringify(input)
   });
 }
 
-export async function updateDeliveryPerson(id: string, input: { name?: string; device_id?: string; phone?: string; is_active?: boolean }) {
+export async function updateDeliveryPerson(id: string, input: { name?: string; device_id?: string; phone?: string; vehicle_type?: VehicleType; is_active?: boolean }) {
   return request<{ delivery_person: DeliveryPerson }>(`/api/delivery-people/${id}`, {
     method: "PATCH",
     body: JSON.stringify(input)

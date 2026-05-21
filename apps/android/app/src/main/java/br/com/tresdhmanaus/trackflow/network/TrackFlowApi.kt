@@ -46,6 +46,7 @@ class TrackFlowApi(
 data class RegisterDeliveryPersonRequest(
     val name: String,
     val device_id: String,
+    val vehicle_type: String = "motorcycle",
     val phone: String? = null
 )
 

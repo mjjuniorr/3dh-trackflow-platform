@@ -17,6 +17,7 @@ class SettingsRepository(private val context: Context) {
             deviceId = prefs[DEVICE_ID].orEmpty(),
             deliveryName = prefs[DELIVERY_NAME].orEmpty(),
             phone = prefs[PHONE].orEmpty(),
+            vehicleType = prefs[VEHICLE_TYPE] ?: "motorcycle",
             registered = prefs[REGISTERED] ?: false
         )
     }
@@ -30,11 +31,12 @@ class SettingsRepository(private val context: Context) {
         return current
     }
 
-    suspend fun saveRegistration(name: String, phone: String, deviceId: String) {
+    suspend fun saveRegistration(name: String, phone: String, deviceId: String, vehicleType: String) {
         context.dataStore.edit { prefs ->
             prefs[DELIVERY_NAME] = name
             prefs[PHONE] = phone
             prefs[DEVICE_ID] = deviceId
+            prefs[VEHICLE_TYPE] = vehicleType
             prefs[REGISTERED] = true
         }
     }
@@ -43,6 +45,7 @@ class SettingsRepository(private val context: Context) {
         private val DEVICE_ID = stringPreferencesKey("device_id")
         private val DELIVERY_NAME = stringPreferencesKey("delivery_name")
         private val PHONE = stringPreferencesKey("phone")
+        private val VEHICLE_TYPE = stringPreferencesKey("vehicle_type")
         private val REGISTERED = booleanPreferencesKey("registered")
     }
 }

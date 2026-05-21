@@ -1,17 +1,23 @@
 import L from "leaflet";
 import { MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
-import type { DeliveryPerson, LocationEvent } from "../types";
+import type { DeliveryPerson, LocationEvent, VehicleType } from "../types";
 import { useEffect } from "react";
 
 const MANAUS: [number, number] = [-3.119, -60.0217];
-const COURIER_ICON = "/assets/courier-top.png";
+const VEHICLE_ICON: Record<VehicleType, string> = {
+  motorcycle: "/assets/courier-top.png",
+  car: "/assets/vehicle-car.svg",
+  boat: "/assets/vehicle-boat.svg",
+  airplane: "/assets/vehicle-airplane.svg"
+};
 
-function markerIcon(status: string, heading?: number | null) {
+function markerIcon(status: string, heading?: number | null, vehicleType: VehicleType = "motorcycle") {
   const className = status === "sem sinal" ? "sem-sinal" : status;
   const rotation = Number.isFinite(heading) ? Number(heading) : 0;
+  const src = VEHICLE_ICON[vehicleType] ?? VEHICLE_ICON.motorcycle;
   return L.divIcon({
     className: "",
-    html: `<img class="courier-marker ${className}" src="${COURIER_ICON}" alt="" style="transform: rotate(${rotation}deg)" />`,
+    html: `<img class="courier-marker ${className}" src="${src}" alt="" style="transform: rotate(${rotation}deg)" />`,
     iconSize: [42, 58],
     iconAnchor: [21, 29]
   });
@@ -46,7 +52,7 @@ export function TrackingMap({ deliveryPeople }: { deliveryPeople: DeliveryPerson
         <Marker
           key={person.id}
           position={[person.last_location!.lat, person.last_location!.lng]}
-          icon={markerIcon(person.computed_status, person.last_location?.heading)}
+          icon={markerIcon(person.computed_status, person.last_location?.heading, person.vehicle_type)}
         >
           <Popup>
             <strong>{person.name}</strong>
@@ -63,7 +69,7 @@ export function TrackingMap({ deliveryPeople }: { deliveryPeople: DeliveryPerson
   );
 }
 
-export function PublicMap({ location, status, name }: { location: LocationEvent | null; status: string; name: string }) {
+export function PublicMap({ location, status, name, vehicleType = "motorcycle" }: { location: LocationEvent | null; status: string; name: string; vehicleType?: VehicleType }) {
   const points = location ? ([[location.lat, location.lng]] as Array<[number, number]>) : [];
   return (
     <MapContainer center={points[0] ?? MANAUS} zoom={14} scrollWheelZoom className="h-full min-h-[360px] sm:min-h-[460px]">
@@ -73,7 +79,7 @@ export function PublicMap({ location, status, name }: { location: LocationEvent 
       />
       <FitBounds points={points} />
       {location ? (
-        <Marker position={[location.lat, location.lng]} icon={markerIcon(status, location.heading)}>
+        <Marker position={[location.lat, location.lng]} icon={markerIcon(status, location.heading, vehicleType)}>
           <Popup>
             <strong>{name}</strong>
             <br />

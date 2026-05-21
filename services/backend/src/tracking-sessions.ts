@@ -90,6 +90,7 @@ export async function getPublicTrackingSession(req: Request, res: Response) {
     delivery_person: {
       name: session.delivery_person.name,
       device_id: session.delivery_person.device_id,
+      vehicle_type: session.delivery_person.vehicle_type,
       status
     },
     last_location: lastLocation

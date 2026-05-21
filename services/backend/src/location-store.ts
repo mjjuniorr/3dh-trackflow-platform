@@ -7,6 +7,7 @@ export type LocationMessage = {
   device_id: string;
   delivery_person_name?: string;
   phone?: string;
+  vehicle_type?: "motorcycle" | "car" | "boat" | "airplane";
   lat: number;
   lng: number;
   speed: number;
@@ -63,18 +64,20 @@ export async function saveLocation(message: LocationMessage) {
   return event;
 }
 
-export async function upsertDeliveryPersonFromDevice(message: Pick<LocationMessage, "device_id" | "delivery_person_name" | "phone">) {
+export async function upsertDeliveryPersonFromDevice(message: Pick<LocationMessage, "device_id" | "delivery_person_name" | "phone" | "vehicle_type">) {
   const name = message.delivery_person_name?.trim() || deviceNameFallback(message.device_id);
   await prisma.deliveryPerson.upsert({
     where: { device_id: message.device_id },
     update: {
       ...(message.delivery_person_name?.trim() ? { name } : {}),
-      ...(message.phone?.trim() ? { phone: message.phone.trim() } : {})
+      ...(message.phone?.trim() ? { phone: message.phone.trim() } : {}),
+      ...(message.vehicle_type ? { vehicle_type: message.vehicle_type } : {})
     },
     create: {
       name,
       device_id: message.device_id,
       phone: message.phone?.trim() || null,
+      vehicle_type: message.vehicle_type ?? "motorcycle",
       status: "offline",
       is_active: true
     }

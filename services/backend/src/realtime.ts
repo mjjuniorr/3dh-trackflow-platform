@@ -52,6 +52,7 @@ export async function emitLocationUpdate(io: Server, deviceId: string) {
       delivery_person: {
         name: person.name,
         device_id: person.device_id,
+        vehicle_type: person.vehicle_type,
         status: person.computed_status
       },
       last_location: person.last_location

@@ -63,6 +63,7 @@ class MainActivity : ComponentActivity() {
                     registered = settings.registered,
                     deviceId = settings.deviceId,
                     deliveryName = settings.deliveryName,
+                    vehicleType = settings.vehicleType,
                     onRegister = viewModel::register,
                     onStartTracking = { startTrackingService() },
                     onStopTracking = { stopService(Intent(this, TrackingService::class.java)) }
@@ -86,7 +87,8 @@ private fun TrackFlowScreen(
     registered: Boolean,
     deviceId: String,
     deliveryName: String,
-    onRegister: (String, String, (Result<Unit>) -> Unit) -> Unit,
+    vehicleType: String,
+    onRegister: (String, String, String, (Result<Unit>) -> Unit) -> Unit,
     onStartTracking: () -> Unit,
     onStopTracking: () -> Unit
 ) {
@@ -113,6 +115,7 @@ private fun TrackFlowScreen(
                 TrackingHome(
                     name = deliveryName,
                     deviceId = deviceId,
+                    vehicleType = vehicleType,
                     onStart = {
                         val permissions = buildList {
                             add(Manifest.permission.ACCESS_FINE_LOCATION)
@@ -142,10 +145,11 @@ private fun Header() {
 }
 
 @Composable
-private fun RegisterForm(deviceId: String, onRegister: (String, String, (Result<Unit>) -> Unit) -> Unit) {
+private fun RegisterForm(deviceId: String, onRegister: (String, String, String, (Result<Unit>) -> Unit) -> Unit) {
     val focusManager = LocalFocusManager.current
     var name by remember { mutableStateOf("") }
     var phone by remember { mutableStateOf("") }
+    var vehicleType by remember { mutableStateOf("motorcycle") }
     var message by remember { mutableStateOf("") }
 
     Card(colors = CardDefaults.cardColors(containerColor = Color(0xFF1B1F24)), shape = RoundedCornerShape(18.dp)) {
@@ -166,10 +170,12 @@ private fun RegisterForm(deviceId: String, onRegister: (String, String, (Result<
                 keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
                 modifier = Modifier.fillMaxWidth()
             )
+            Text("Tipo de veiculo", color = Color.White, fontWeight = FontWeight.SemiBold)
+            VehicleTypePicker(selected = vehicleType, onSelected = { vehicleType = it })
             Text("Device ID: ${deviceId.ifBlank { "gerando..." }}", color = Color(0xFF9CA3AF), style = MaterialTheme.typography.bodySmall)
             Button(
                 onClick = {
-                    onRegister(name, phone) { result ->
+                    onRegister(name, phone, vehicleType) { result ->
                         message = result.fold(
                             onSuccess = { "Cadastro concluido." },
                             onFailure = { it.message ?: "Falha no cadastro." }
@@ -188,11 +194,47 @@ private fun RegisterForm(deviceId: String, onRegister: (String, String, (Result<
 }
 
 @Composable
-private fun TrackingHome(name: String, deviceId: String, onStart: () -> Unit, onStop: () -> Unit) {
+private fun VehicleTypePicker(selected: String, onSelected: (String) -> Unit) {
+    val options = listOf(
+        "motorcycle" to "Moto",
+        "car" to "Carro",
+        "boat" to "Barco",
+        "airplane" to "Aviao"
+    )
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        options.chunked(2).forEach { rowOptions ->
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                rowOptions.forEach { (value, label) ->
+                    val active = selected == value
+                    Button(
+                        onClick = { onSelected(value) },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (active) Color(0xFFF4672C) else Color(0xFF2A3038)
+                        ),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(label)
+                    }
+                }
+            }
+        }
+    }
+}
+
+private fun vehicleTypeLabel(vehicleType: String) = when (vehicleType) {
+    "car" -> "Carro"
+    "boat" -> "Barco"
+    "airplane" -> "Aviao"
+    else -> "Moto"
+}
+
+@Composable
+private fun TrackingHome(name: String, deviceId: String, vehicleType: String, onStart: () -> Unit, onStop: () -> Unit) {
     Card(colors = CardDefaults.cardColors(containerColor = Color(0xFF1B1F24)), shape = RoundedCornerShape(18.dp)) {
         Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             Text(name, color = Color.White, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
             Text(deviceId, color = Color(0xFF9CA3AF), style = MaterialTheme.typography.bodySmall)
+            StatusRow("Veiculo", vehicleTypeLabel(vehicleType))
             StatusRow("GPS", "aguardando permissao")
             StatusRow("Internet", "online")
             StatusRow("Ultimo envio", "pendente")

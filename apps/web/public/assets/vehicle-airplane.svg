@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 96">
+  <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+    <feGaussianBlur stdDeviation="4" result="blur"/>
+    <feColorMatrix in="blur" type="matrix" values="0 0 0 0 0.12 0 0 0 0 0.52 0 0 0 0 1 0 0 0 0.65 0"/>
+    <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter>
+  <g filter="url(#glow)">
+    <path d="M32 6c7 10 9 20 7 36l20 14v10L37 58l-2 18 10 8v7l-13-5-13 5v-7l10-8-2-18-22 8V56l20-14C23 26 25 16 32 6z" fill="#f8fafc" stroke="#0f172a" stroke-width="3"/>
+    <path d="M28 21h8l-2 27h-4z" fill="#38bdf8" opacity=".65"/>
+    <path d="M29 50h6l-1 22h-4z" fill="#f4672c"/>
+    <path d="M25 42h14l-2 10H27z" fill="#0f172a" opacity=".75"/>
+  </g>
+</svg>
