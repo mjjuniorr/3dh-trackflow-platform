@@ -21,7 +21,7 @@ function markerIcon(status: string, heading?: number | null, vehicleType: Vehicl
     car: [62, 42],
     boat: [46, 68],
     airplane: [72, 48],
-    bus: [46, 76]
+    bus: [110, 32]
   };
   const iconSize = sizeByType[vehicleType] ?? sizeByType.motorcycle;
   const iconAnchor: [number, number] = [iconSize[0] / 2, iconSize[1] / 2];
