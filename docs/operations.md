@@ -1,5 +1,11 @@
 # Operacao e deploy
 
+Para um passo a passo completo de build web, backend, Android, containers locais, instalacao no aparelho e commits, veja:
+
+```text
+docs/build-run-commit.md
+```
+
 ## Publicar imagens de producao
 
 Backend:
@@ -162,4 +168,3 @@ Limpar cadastro local:
 6. Confirmar um marcador de cada tipo no mapa.
 7. Gerar link publico para um veiculo.
 8. Confirmar que o link publico mostra apenas aquele veiculo.
-

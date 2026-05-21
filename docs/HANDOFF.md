@@ -12,6 +12,14 @@ Repositorio GitHub:
 https://github.com/mjjuniorr/3dh-trackflow-platform
 ```
 
+Guia operacional completo para executar sozinho:
+
+```text
+docs/build-run-commit.md
+```
+
+Esse guia cobre build web/backend, containers locais, Android, instalacao no aparelho, limpeza do app, teste Kafka e commits.
+
 Ambientes oficiais:
 
 - PC = homologacao local.
