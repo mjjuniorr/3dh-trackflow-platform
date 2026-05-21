@@ -15,11 +15,14 @@ function markerIcon(status: string, heading?: number | null, vehicleType: Vehicl
   const className = status === "sem sinal" ? "sem-sinal" : status;
   const rotation = Number.isFinite(heading) ? Number(heading) : 0;
   const src = VEHICLE_ICON[vehicleType] ?? VEHICLE_ICON.motorcycle;
+  const isWideVehicle = vehicleType !== "motorcycle";
+  const iconSize: [number, number] = isWideVehicle ? [68, 52] : [42, 58];
+  const iconAnchor: [number, number] = [iconSize[0] / 2, iconSize[1] / 2];
   return L.divIcon({
     className: "",
-    html: `<img class="courier-marker ${className}" src="${src}" alt="" style="transform: rotate(${rotation}deg)" />`,
-    iconSize: [42, 58],
-    iconAnchor: [21, 29]
+    html: `<img class="courier-marker ${className}" src="${src}" alt="" style="width:${iconSize[0]}px;height:${iconSize[1]}px;transform: rotate(${rotation}deg)" />`,
+    iconSize,
+    iconAnchor
   });
 }
 

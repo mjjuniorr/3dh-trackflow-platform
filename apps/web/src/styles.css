@@ -319,10 +319,8 @@ body {
 .courier-marker {
   display: block;
   filter: drop-shadow(0 8px 10px rgb(23 32 38 / 0.35));
-  height: 58px;
   object-fit: contain;
   transform-origin: center;
-  width: 42px;
 }
 
 .courier-marker.offline {

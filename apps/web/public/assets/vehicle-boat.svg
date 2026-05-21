@@ -1,14 +1,28 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 96">
-  <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-    <feGaussianBlur stdDeviation="4" result="blur"/>
-    <feColorMatrix in="blur" type="matrix" values="0 0 0 0 0.12 0 0 0 0 0.52 0 0 0 0 1 0 0 0 0.65 0"/>
-    <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
-  </filter>
-  <g filter="url(#glow)">
-    <path d="M32 8c13 14 20 33 19 58L32 88 13 66C12 41 19 22 32 8z" fill="#0f172a" stroke="#ffffff" stroke-width="4"/>
-    <path d="M21 37h22l-4 29H25z" fill="#f4672c"/>
-    <path d="M25 16h14l7 18H18z" fill="#38bdf8" opacity=".65"/>
-    <path d="M19 68h26l-13 14z" fill="#0284c7"/>
-    <path d="M31 10h2v74h-2z" fill="#ffffff" opacity=".55"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 96">
+  <defs>
+    <linearGradient id="hull" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#eef2f7"/>
+    </linearGradient>
+    <linearGradient id="deck" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#f8fafc"/>
+      <stop offset="1" stop-color="#d9dce0"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-35%" width="150%" height="170%">
+      <feDropShadow dx="0" dy="6" stdDeviation="5" flood-color="#172026" flood-opacity=".34"/>
+    </filter>
+  </defs>
+  <g filter="url(#shadow)">
+    <path d="M9 48c16-23 39-32 73-32h47c12 0 20 5 23 14v36c-3 9-11 14-23 14H82C48 80 25 71 9 48z" fill="url(#hull)"/>
+    <path d="M9 48c5-7 10-13 16-17l5 7c-6 3-11 7-16 10 5 3 10 7 16 10l-5 7C19 61 14 55 9 48zM147 24c3 2 5 5 6 9v6c-6-2-10-7-11-14zM147 72c3-2 5-5 6-9v-6c-6 2-10 7-11 14z" fill="#ff7667"/>
+    <path d="M23 48c14-14 34-21 61-21h42c8 0 13 4 15 12v18c-2 8-7 12-15 12H84c-27 0-47-7-61-21z" fill="none" stroke="#d9dde2" stroke-width="2"/>
+    <path d="M69 30h29c7 0 11 4 11 11v20c0 7-4 11-11 11H69c-6 0-10-4-10-11V41c0-7 4-11 10-11z" fill="#ffffff"/>
+    <path d="M72 34h16c-7 7-10 28 0 35H72c-10-9-10-26 0-35z" fill="#050505"/>
+    <path d="M92 38h15v21H92z" fill="url(#deck)"/>
+    <path d="M109 39h27c5 0 8 3 8 8v12c0 5-3 8-8 8h-27z" fill="url(#deck)"/>
+    <path d="M93 39h12v13H93zM93 56h12v12H93z" fill="#050505"/>
+    <path d="M107 39h29v3h-29zM107 48h29v2h-29zM107 57h29v2h-29zM107 65h29v2h-29z" fill="#ffffff" opacity=".8"/>
+    <path d="M44 47h9c2 0 3 1 3 3s-1 3-3 3h-9c-2 0-3-1-3-3s1-3 3-3zM117 24h9c2 0 3 1 3 3s-1 3-3 3h-9c-2 0-3-1-3-3s1-3 3-3zM117 66h9c2 0 3 1 3 3s-1 3-3 3h-9c-2 0-3-1-3-3s1-3 3-3z" fill="#050505"/>
+    <path d="M150 43h8c3 0 5 2 5 5s-2 5-5 5h-8z" fill="#050505"/>
   </g>
 </svg>
