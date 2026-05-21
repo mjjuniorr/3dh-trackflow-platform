@@ -48,9 +48,9 @@ Tamanhos atuais:
 ```ts
 const sizeByType: Record<VehicleType, [number, number]> = {
   motorcycle: [42, 58],
-  car: [82, 55],
+  car: [92, 62],
   boat: [82, 46],
-  airplane: [82, 55],
+  airplane: [92, 62],
   bus: [110, 32]
 };
 ```
@@ -167,7 +167,7 @@ Commit:
 Tamanho atual no mapa:
 
 ```ts
-car: [82, 55]
+car: [92, 62]
 ```
 
 ### Aviao
@@ -185,7 +185,7 @@ Importante: antes de commitar novo aviao, garantir que e PNG transparente real e
 Tamanho atual no mapa:
 
 ```ts
-airplane: [82, 55]
+airplane: [92, 62]
 ```
 
 ### Barco
