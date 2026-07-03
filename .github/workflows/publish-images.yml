@@ -25,6 +25,7 @@ jobs:
           DATABASE_URL: postgresql://tracking:validation@localhost:5432/tracking?schema=public
         run: |
           npm ci
+          npm run prisma:generate --workspace @3dh-trackflow/backend
           npm run typecheck
           npx prisma validate --schema services/backend/prisma/schema.prisma
 
