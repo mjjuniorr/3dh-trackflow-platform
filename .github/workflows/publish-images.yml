@@ -1,0 +1,64 @@
+name: Publicar imagens TrackFlow
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Validar TypeScript e Prisma
+        env:
+          DATABASE_URL: postgresql://tracking:validation@localhost:5432/tracking?schema=public
+        run: |
+          npm ci
+          npm run typecheck
+          npx prisma validate --schema services/backend/prisma/schema.prisma
+
+      - name: Validar stack de producao
+        env:
+          FRONTEND_IMAGE: ghcr.io/mjjuniorr/3dh-trackflow-web:${{ github.sha }}
+          BACKEND_IMAGE: ghcr.io/mjjuniorr/3dh-trackflow-backend:${{ github.sha }}
+          POSTGRES_PASSWORD: validation-only
+          JWT_SECRET: validation-only
+        run: docker compose -f docker-compose.producao-vps.yml config > /dev/null
+
+  images:
+    needs: validate
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - name: 3dh-trackflow-web
+            dockerfile: ./apps/web/Dockerfile
+          - name: 3dh-trackflow-backend
+            dockerfile: ./services/backend/Dockerfile
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ${{ matrix.dockerfile }}
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/${{ matrix.name }}:${{ github.sha }}
