@@ -6,6 +6,14 @@ Este arquivo existe para continuar o projeto em uma conversa nova sem depender d
 
 Projeto: `3dh-trackflow-platform`
 
+Autenticacao central:
+
+```text
+docs/authentication-oidc.md
+```
+
+O TrackFlow esta preparado para integrar ao Portal 3DH em modo `hybrid`, preservando temporariamente o login legado.
+
 Repositorio GitHub:
 
 ```text
@@ -26,7 +34,7 @@ Ambientes oficiais:
 - VPS Hostinger = producao.
 - Portainer + Docker Swarm + Traefik ja existem na VPS.
 - Rede externa Docker: `PortainerRede`.
-- Dominio publico: `https://track.3dhmanaus.shop`.
+- Dominio publico: `https://track.3dhmanaus.com.br`.
 - Kafka interno na VPS: `kafka:9092`.
 - Kafka externo para testes no PC: `72.60.245.62:19092`.
 - Topico Kafka: `rastreamento`.
@@ -55,7 +63,7 @@ Ja funciona:
 Usuario seed padrao:
 
 ```text
-Email: admin@3dhmanaus.shop
+Email: admin@3dhmanaus.com.br
 Senha: admin123
 ```
 

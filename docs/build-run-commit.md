@@ -54,7 +54,7 @@ Pelo Portainer:
 2. Entre no servico `frontend`.
 3. Use `Force update`, ou use `Pull and redeploy` na stack.
 4. Aguarde a replica ficar `1 / 1`.
-5. Abra `https://track.3dhmanaus.shop` em aba anonima ou use `Ctrl + F5`.
+5. Abra `https://track.3dhmanaus.com.br` em aba anonima ou use `Ctrl + F5`.
 
 ## Backend
 
@@ -136,7 +136,7 @@ O app Android usa:
 
 ```text
 applicationId = br.com.tresdhmanaus.trackflow
-TRACKFLOW_API_BASE_URL = https://track.3dhmanaus.shop
+TRACKFLOW_API_BASE_URL = https://track.3dhmanaus.com.br
 ```
 
 ### Conferir aparelho conectado
@@ -218,13 +218,13 @@ rastreamento
 Abra:
 
 ```text
-https://track.3dhmanaus.shop
+https://track.3dhmanaus.com.br
 ```
 
 Checklist:
 
 1. Use aba anonima ou `Ctrl + F5`.
-2. Login: `admin@3dhmanaus.shop`.
+2. Login: `admin@3dhmanaus.com.br`.
 3. Abra a engrenagem.
 4. Confira tipos: Moto, Carro, Barco, Aviao, Onibus.
 5. Rode `python scripts\send_vehicle_icon_test.py`.

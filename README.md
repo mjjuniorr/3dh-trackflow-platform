@@ -146,8 +146,8 @@ BACKEND_IMAGE=ghcr.io/mjjuniorr/3dh-trackflow-backend:producao
 FRONTEND_IMAGE=ghcr.io/mjjuniorr/3dh-trackflow-web:producao
 ```
 
-6. O dominio publico deve apontar para a VPS: `track.3dhmanaus.shop`.
-7. O Traefik ja existente publicara o frontend em `https://track.3dhmanaus.shop`.
+6. O dominio publico deve apontar para a VPS: `track.3dhmanaus.com.br`.
+7. O Traefik ja existente publicara o frontend em `https://track.3dhmanaus.com.br`.
 8. O frontend acessa a API por `/api` e Socket.IO por `/socket.io`, ambos roteados pelo Nginx do frontend para o backend.
 9. Kafka nao e exposto publicamente. O backend consome `kafka:9092` no topico `rastreamento`.
 10. Depois do primeiro deploy, execute o seed no container backend pelo console do Portainer:
@@ -169,7 +169,7 @@ KAFKA_BROKER=kafka:9092
 - Backend acessa PostgreSQL por `postgres:5432`.
 - Backend acessa Redis por `redis:6379`.
 - Backend acessa Kafka por `kafka:9092`, usando `KAFKA_BROKER=kafka:9092`.
-- `https://kafka.3dhmanaus.shop` e apenas Kafka UI. Nao use esse dominio no backend.
+- `https://kafka.3dhmanaus.com.br` e apenas Kafka UI. Nao use esse dominio no backend.
 - Nenhum servico da aplicacao usa `localhost` para conversar com outro container.
 - Testes externos no Windows devem usar `72.60.245.62:19092` depois da stack Kafka com listener externo.
 
@@ -240,7 +240,7 @@ npm run seed --workspace @3dh-trackflow/backend
 
 Usuario padrao configuravel por ambiente:
 
-- `SEED_ADMIN_EMAIL=admin@3dhmanaus.shop`
+- `SEED_ADMIN_EMAIL=admin@3dhmanaus.com.br`
 - `SEED_ADMIN_PASSWORD=admin123`
 
 ## Rotas

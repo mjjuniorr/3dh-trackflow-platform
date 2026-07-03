@@ -1,6 +1,7 @@
 import { LogOut, RefreshCcw, Send, Settings } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { clearToken, getToken, listDeliveryPeople } from "../api";
+import { getAuthType, hasPermission, logout } from "../auth";
 import { GenerateLinkModal } from "../components/GenerateLinkModal";
 import { SettingsModal } from "../components/SettingsModal";
 import { TrackingMap } from "../components/TrackingMap";
@@ -41,6 +42,9 @@ export function Dashboard() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [theme, setTheme] = useState<"classic" | "dark">(() => localStorage.getItem("tracking_theme") === "dark" ? "dark" : "classic");
   const selectedPerson = selected ?? people[0] ?? null;
+  const canManageFleet = hasPermission("trackflow:manage-delivery-people");
+  const canCreatePublicLinks = hasPermission("trackflow:create-public-links");
+  const canManageSettings = hasPermission("trackflow:manage-settings");
 
   async function refresh() {
     const response = await listDeliveryPeople();
@@ -88,10 +92,12 @@ export function Dashboard() {
             <RefreshCcw size={16} />
             Atualizar
           </button>
-          <button className="app-chrome-button inline-flex items-center gap-2 rounded-md border px-3 py-2 text-sm font-semibold" onClick={() => setSettingsOpen(true)} aria-label="Configuracoes">
-            <Settings size={16} />
-          </button>
-          <button className="inline-flex items-center gap-2 rounded-md bg-ink px-3 py-2 text-sm font-semibold text-white" onClick={() => { clearToken(); window.location.href = "/login"; }}>
+          {canManageFleet || canManageSettings ? (
+            <button className="app-chrome-button inline-flex items-center gap-2 rounded-md border px-3 py-2 text-sm font-semibold" onClick={() => setSettingsOpen(true)} aria-label="Configuracoes">
+              <Settings size={16} />
+            </button>
+          ) : null}
+          <button className="inline-flex items-center gap-2 rounded-md bg-ink px-3 py-2 text-sm font-semibold text-white" onClick={() => logout().catch(console.error)}>
             <LogOut size={16} />
             Sair
           </button>
@@ -167,20 +173,33 @@ export function Dashboard() {
               <p className="text-sm font-semibold">{selectedPerson?.name ?? "Selecione um entregador"}</p>
               <p className="text-xs text-muted">{selectedPerson?.device_id ?? "Nenhum device selecionado"}</p>
             </div>
-            <button
-              className="btn-primary inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-semibold disabled:opacity-50"
-              disabled={!selectedPerson}
-              onClick={() => selectedPerson && setModalPerson(selectedPerson)}
-            >
-              <Send size={16} />
-              Gerar link de rastreio
-            </button>
+            {canCreatePublicLinks ? (
+              <button
+                className="btn-primary inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-semibold disabled:opacity-50"
+                disabled={!selectedPerson}
+                onClick={() => selectedPerson && setModalPerson(selectedPerson)}
+              >
+                <Send size={16} />
+                Gerar link de rastreio
+              </button>
+            ) : null}
           </div>
         </section>
       </section>
 
       {modalPerson ? <GenerateLinkModal person={modalPerson} onClose={() => setModalPerson(null)} /> : null}
-      {settingsOpen ? <SettingsModal theme={theme} onThemeChange={setTheme} onClose={() => setSettingsOpen(false)} deliveryPeople={people} onDeliveryPeopleChange={refresh} /> : null}
+      {settingsOpen ? (
+        <SettingsModal
+          theme={theme}
+          onThemeChange={setTheme}
+          onClose={() => setSettingsOpen(false)}
+          deliveryPeople={people}
+          onDeliveryPeopleChange={refresh}
+          canManageFleet={canManageFleet}
+          canAdmin={canManageSettings}
+          legacyAdminPasswordRequired={getAuthType() === "legacy"}
+        />
+      ) : null}
     </main>
   );
 }

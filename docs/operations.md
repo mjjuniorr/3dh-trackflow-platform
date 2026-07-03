@@ -1,5 +1,11 @@
 # Operacao e deploy
 
+Para login central, roles e ordem de deploy do Portal/TrackFlow, veja:
+
+```text
+docs/authentication-oidc.md
+```
+
 Para um passo a passo completo de build web, backend, Android, containers locais, instalacao no aparelho e commits, veja:
 
 ```text
@@ -73,7 +79,7 @@ npm run seed
 Se precisar resetar senha admin rapidamente dentro do container:
 
 ```bash
-node -e "const bcrypt=require('bcryptjs'); const { PrismaClient }=require('@prisma/client'); const prisma=new PrismaClient(); bcrypt.hash('admin123',12).then(hash=>prisma.user.update({where:{email:'admin@3dhmanaus.shop'},data:{password_hash:hash,role:'admin'}})).then(()=>console.log('Senha atualizada: admin123')).finally(()=>prisma.$disconnect())"
+node -e "const bcrypt=require('bcryptjs'); const { PrismaClient }=require('@prisma/client'); const prisma=new PrismaClient(); bcrypt.hash('admin123',12).then(hash=>prisma.user.update({where:{email:'admin@3dhmanaus.com.br'},data:{password_hash:hash,role:'admin'}})).then(()=>console.log('Senha atualizada: admin123')).finally(()=>prisma.$disconnect())"
 ```
 
 ## Kafka
@@ -92,7 +98,7 @@ KAFKA_BROKER=72.60.245.62:19092
 KAFKA_TOPIC=rastreamento
 ```
 
-Nunca usar `kafka.3dhmanaus.shop` como broker da aplicacao. Esse dominio e apenas Kafka UI.
+Nunca usar `kafka.3dhmanaus.com.br` como broker da aplicacao. Esse dominio e apenas Kafka UI.
 
 ## Enviar teste rapido por Kafka
 
@@ -155,7 +161,7 @@ Limpar cadastro local:
 
 ## Checklist apos deploy
 
-1. Abrir `https://track.3dhmanaus.shop` em aba anonima.
+1. Abrir `https://track.3dhmanaus.com.br` em aba anonima.
 2. Login com admin.
 3. Abrir engrenagem.
 4. Confirmar tipos de veiculo:

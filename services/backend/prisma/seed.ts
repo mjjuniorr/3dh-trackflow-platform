@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 const names = ["Entregador 1", "Entregador 2", "Entregador 3", "Entregador 4", "Entregador 5"];
 
 async function main() {
-  const email = process.env.SEED_ADMIN_EMAIL ?? "admin@3dhmanaus.shop";
+  const email = process.env.SEED_ADMIN_EMAIL ?? "admin@3dhmanaus.com.br";
   const password = process.env.SEED_ADMIN_PASSWORD ?? "admin123";
 
   await prisma.user.upsert({

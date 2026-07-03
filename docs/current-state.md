@@ -131,14 +131,14 @@ PortainerRede
 Traefik publica:
 
 ```text
-https://track.3dhmanaus.shop
+https://track.3dhmanaus.com.br
 ```
 
 ## Observacoes de producao
 
-- Kafka UI publico: `https://kafka.3dhmanaus.shop`.
+- Kafka UI publico: `https://kafka.3dhmanaus.com.br`.
 - Esse dominio e somente Kafka UI.
-- Backend em producao deve usar `kafka:9092`, nunca `kafka.3dhmanaus.shop`.
+- Backend em producao deve usar `kafka:9092`, nunca `kafka.3dhmanaus.com.br`.
 - Testes externos no PC usam `72.60.245.62:19092`.
 
 ## Problemas conhecidos

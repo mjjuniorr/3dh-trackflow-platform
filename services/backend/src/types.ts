@@ -1,7 +1,11 @@
 export type AuthUser = {
   id: string;
+  sub?: string;
+  name: string;
   email: string;
-  role: string;
+  role?: string;
+  permissions: string[];
+  authType: "legacy" | "oidc";
 };
 
 declare global {

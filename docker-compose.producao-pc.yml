@@ -34,8 +34,15 @@ services:
       KAFKA_SASL_PASSWORD: ${KAFKA_SASL_PASSWORD:-}
       JWT_SECRET: ${JWT_SECRET:-local_dev_secret}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-8h}
+      AUTH_MODE: ${AUTH_MODE:-hybrid}
+      OIDC_ISSUER: ${OIDC_ISSUER:-https://auth.3dhmanaus.com.br/realms/3dh}
+      OIDC_CLIENT_ID: ${OIDC_CLIENT_ID:-trackflow-web}
+      OIDC_AUDIENCE: ${OIDC_AUDIENCE:-trackflow-web}
+      OIDC_JWKS_URL: ${OIDC_JWKS_URL:-}
+      OIDC_DEFAULT_COMPANY_ID: ${OIDC_DEFAULT_COMPANY_ID:-}
+      PORTAL_URL: ${PORTAL_URL:-https://portal.3dhmanaus.com.br}
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:8080}
-      SEED_ADMIN_EMAIL: ${SEED_ADMIN_EMAIL:-admin@3dhmanaus.shop}
+      SEED_ADMIN_EMAIL: ${SEED_ADMIN_EMAIL:-admin@3dhmanaus.com.br}
       SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-admin123}
     depends_on:
       - postgres

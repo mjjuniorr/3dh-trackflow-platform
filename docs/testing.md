@@ -3,7 +3,7 @@
 ## Credenciais locais padrao
 
 ```text
-Email: admin@3dhmanaus.shop
+Email: admin@3dhmanaus.com.br
 Senha: admin123
 ```
 

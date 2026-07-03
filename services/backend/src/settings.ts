@@ -11,9 +11,9 @@ import {
 import { verifyAdminPassword } from "./auth.js";
 
 const kafkaSettingsSchema = z.object({
-  admin_password: z.string().min(1),
-  broker: z.string().min(3).refine((value) => !value.includes("kafka.3dhmanaus.shop"), {
-    message: "Use kafka:9092 no backend. kafka.3dhmanaus.shop e apenas Kafka UI."
+  admin_password: z.string().optional(),
+  broker: z.string().min(3).refine((value) => !value.includes("kafka.3dhmanaus.com.br"), {
+    message: "Use kafka:9092 no backend. kafka.3dhmanaus.com.br e apenas Kafka UI."
   }),
   topic: z.string().min(1),
   clientId: z.string().min(1),
@@ -46,6 +46,9 @@ function redact(settings: KafkaRuntimeSettings) {
 
 async function assertAdminPassword(req: Request, password: string) {
   if (!req.user) return false;
+  if (req.user.authType === "oidc") {
+    return req.user.permissions.includes("trackflow:manage-settings");
+  }
   return verifyAdminPassword(req.user.id, password);
 }
 
@@ -61,7 +64,7 @@ export function createSettingsHandlers(io: Server) {
       if (!parsed.success) {
         return res.status(400).json({ message: "Dados invalidos." });
       }
-      if (!(await assertAdminPassword(req, parsed.data.admin_password))) {
+      if (!(await assertAdminPassword(req, parsed.data.admin_password ?? ""))) {
         return res.status(403).json({ message: "Credenciais administrativas invalidas." });
       }
 
@@ -76,7 +79,7 @@ export function createSettingsHandlers(io: Server) {
       if (!parsed.success) {
         return res.status(400).json({ message: "Dados invalidos." });
       }
-      if (!(await assertAdminPassword(req, parsed.data.admin_password))) {
+      if (!(await assertAdminPassword(req, parsed.data.admin_password ?? ""))) {
         return res.status(403).json({ message: "Credenciais administrativas invalidas." });
       }
 

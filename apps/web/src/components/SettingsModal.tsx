@@ -30,13 +30,19 @@ export function SettingsModal({
   onThemeChange,
   onClose,
   deliveryPeople,
-  onDeliveryPeopleChange
+  onDeliveryPeopleChange,
+  canManageFleet,
+  canAdmin,
+  legacyAdminPasswordRequired
 }: {
   theme: "classic" | "dark";
   onThemeChange: (theme: "classic" | "dark") => void;
   onClose: () => void;
   deliveryPeople: DeliveryPerson[];
   onDeliveryPeopleChange: () => Promise<void>;
+  canManageFleet: boolean;
+  canAdmin: boolean;
+  legacyAdminPasswordRequired: boolean;
 }) {
   const [settings, setSettings] = useState<KafkaSettings>(emptySettings);
   const [adminPassword, setAdminPassword] = useState("");
@@ -47,10 +53,11 @@ export function SettingsModal({
   const [deliveryMessage, setDeliveryMessage] = useState("");
 
   useEffect(() => {
+    if (!canAdmin) return;
     getKafkaSettings()
       .then((response) => setSettings({ ...emptySettings, ...response.settings, saslPassword: "" }))
       .catch((error) => setMessage(error instanceof Error ? error.message : "Nao foi possivel carregar configuracoes."));
-  }, []);
+  }, [canAdmin]);
 
   function update<K extends keyof KafkaSettings>(key: K, value: KafkaSettings[K]) {
     setSettings((current) => ({ ...current, [key]: value }));
@@ -167,7 +174,7 @@ export function SettingsModal({
         <div className="flex items-center justify-between border-b border-line px-5 py-4">
           <div>
             <h2 className="text-lg font-semibold">Configuracoes administrativas</h2>
-            <p className="text-sm text-muted">Tema e conexao Kafka do backend</p>
+            <p className="text-sm text-muted">Aparencia, frota e integracoes tecnicas conforme suas permissoes</p>
           </div>
           <button className="rounded-md p-2 hover:bg-panel" onClick={onClose} aria-label="Fechar">
             <X size={20} />
@@ -187,7 +194,7 @@ export function SettingsModal({
             </div>
           </section>
 
-          <section>
+          {canManageFleet ? <section>
             <div className="mb-3 flex items-center justify-between gap-3">
               <div>
                 <h3 className="text-sm font-semibold">Entregadores</h3>
@@ -235,8 +242,9 @@ export function SettingsModal({
               )}
             </div>
             {deliveryMessage ? <p className="mt-2 text-sm text-muted">{deliveryMessage}</p> : null}
-          </section>
+          </section> : null}
 
+          {canAdmin ? <>
           <section className="grid gap-3 sm:grid-cols-2">
             <label className="text-sm font-medium">
               Kafka broker
@@ -279,27 +287,28 @@ export function SettingsModal({
 
           <div className="rounded-md border border-line bg-panel p-3 text-sm text-muted">
             <div className="mb-2 font-semibold text-ink">Broker correto para producao</div>
-            <p>Backend na VPS: <strong>kafka:9092</strong>. Teste externo Windows: <strong>72.60.245.62:19092</strong>. Kafka UI: <strong>kafka.3dhmanaus.shop</strong> nao deve ser usado como broker.</p>
+            <p>Backend na VPS: <strong>kafka:9092</strong>. Teste externo Windows: <strong>72.60.245.62:19092</strong>. Kafka UI: <strong>kafka.3dhmanaus.com.br</strong> nao deve ser usado como broker.</p>
             <button className="mt-3 rounded-md border border-line bg-surface px-3 py-2 text-sm font-semibold text-ink" onClick={applyProductionPreset}>
               Usar preset producao
             </button>
           </div>
 
-          <label className="block text-sm font-medium">
+          {legacyAdminPasswordRequired ? <label className="block text-sm font-medium">
             Credenciais adm
             <div className="mt-2 flex items-center rounded-md border border-line bg-surface px-3 focus-within:border-accent">
               <ShieldCheck size={16} className="text-muted" />
               <input className="w-full bg-transparent px-3 py-2 outline-none" type="password" value={adminPassword} onChange={(event) => setAdminPassword(event.target.value)} placeholder="Senha do administrador" />
             </div>
-          </label>
+          </label> : null}
 
           <div className="flex items-center gap-2 text-sm">
             {status === "ok" ? <CheckCircle2 className="text-emerald-500" size={18} /> : status === "fail" ? <XCircle className="text-red-500" size={18} /> : <span className="h-[18px] w-[18px] rounded-full border border-line" />}
             <span>{message || "Conexao ainda nao testada."}</span>
           </div>
+          </> : null}
         </div>
 
-        <div className="flex flex-wrap justify-end gap-2 border-t border-line px-5 py-4">
+        {canAdmin ? <div className="flex flex-wrap justify-end gap-2 border-t border-line px-5 py-4">
           <button className="inline-flex items-center gap-2 rounded-md border border-line px-4 py-2 text-sm font-semibold" onClick={testConnection} disabled={loading}>
             <TestTube2 size={16} />
             Testar conexao
@@ -308,7 +317,7 @@ export function SettingsModal({
             <Save size={16} />
             Salvar configuracao
           </button>
-        </div>
+        </div> : null}
       </div>
     </div>
   );

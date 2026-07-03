@@ -88,7 +88,7 @@ Regra recomendada:
 
 O app usa `BuildConfig` para:
 
-- `TRACKFLOW_API_BASE_URL`: `https://track.3dhmanaus.shop`;
+- `TRACKFLOW_API_BASE_URL`: `https://track.3dhmanaus.com.br`;
 - `MOBILE_REGISTRATION_SECRET`: token configurado tambem no backend.
 
 Para desenvolvimento, abra a pasta `apps/android` no Android Studio e sincronize o Gradle. O projeto foi criado em Kotlin nativo com Jetpack Compose.

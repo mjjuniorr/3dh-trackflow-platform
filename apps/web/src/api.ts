@@ -1,17 +1,18 @@
 import type { DeliveryPerson, PublicTrackingPayload, VehicleType } from "./types";
+import { clearAuthentication, getAccessToken, setLegacyToken } from "./auth";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
 
 export function getToken() {
-  return localStorage.getItem("tracking_token");
+  return getAccessToken();
 }
 
 export function setToken(token: string) {
-  localStorage.setItem("tracking_token", token);
+  setLegacyToken(token);
 }
 
 export function clearToken() {
-  localStorage.removeItem("tracking_token");
+  clearAuthentication();
 }
 
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
@@ -33,7 +34,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
 }
 
 export async function login(email: string, password: string) {
-  return request<{ token: string; user: { name: string; email: string; role: string } }>("/api/auth/login", {
+  return request<{ token: string; user: { name: string; email: string; role?: string; permissions: string[] } }>("/api/auth/login", {
     method: "POST",
     body: JSON.stringify({ email, password })
   });
@@ -96,13 +97,13 @@ export async function getKafkaSettings() {
 export async function saveKafkaSettings(settings: KafkaSettings, adminPassword: string) {
   return request<{ settings: KafkaSettings; message: string }>("/api/settings/kafka", {
     method: "POST",
-    body: JSON.stringify({ ...settings, admin_password: adminPassword })
+    body: JSON.stringify({ ...settings, ...(adminPassword ? { admin_password: adminPassword } : {}) })
   });
 }
 
 export async function testKafkaSettings(settings: KafkaSettings, adminPassword: string) {
   return request<{ ok: boolean; topics?: string[]; topic_exists?: boolean; message?: string }>("/api/settings/kafka/test", {
     method: "POST",
-    body: JSON.stringify({ ...settings, admin_password: adminPassword })
+    body: JSON.stringify({ ...settings, ...(adminPassword ? { admin_password: adminPassword } : {}) })
   });
 }

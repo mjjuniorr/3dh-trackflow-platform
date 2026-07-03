@@ -8,7 +8,7 @@ Ambiente alvo:
 - Traefik ja configurado;
 - rede externa `PortainerRede`;
 - Kafka interno em `kafka:9092`;
-- dominio publico `track.3dhmanaus.shop`.
+- dominio publico `track.3dhmanaus.com.br`.
 
 Arquivos recomendados da stack:
 

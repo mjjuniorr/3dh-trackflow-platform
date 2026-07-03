@@ -1,5 +1,5 @@
 import type { Server } from "socket.io";
-import { config } from "./config.js";
+import { authenticateToken } from "./auth.js";
 import { listDeliveryPeopleWithLocations } from "./location-store.js";
 import { prisma } from "./prisma.js";
 
@@ -8,12 +8,15 @@ export function registerSocketHandlers(io: Server) {
     socket.on("dashboard:join", async (payload: { token?: string }) => {
       if (!payload?.token) return socket.emit("auth:error", { message: "Token obrigatorio." });
       try {
-        const jwt = await import("jsonwebtoken");
-        jwt.default.verify(payload.token, config.jwtSecret);
+        const user = await authenticateToken(payload.token);
+        if (!user.permissions.includes("trackflow:view")) {
+          return socket.emit("auth:error", { message: "Acesso ao painel nao autorizado." });
+        }
         await socket.join("dashboard");
         socket.emit("location:update", { delivery_people: await listDeliveryPeopleWithLocations() });
       } catch {
-        socket.emit("auth:error", { message: "Token invalido." });
+        socket.emit("auth:error", { message: "Token invalido ou expirado." });
+        socket.disconnect(true);
       }
     });
 

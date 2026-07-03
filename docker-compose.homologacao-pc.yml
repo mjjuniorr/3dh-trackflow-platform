@@ -5,7 +5,7 @@ services:
       context: .
       dockerfile: apps/web/Dockerfile
     ports:
-      - "${FRONTEND_PORT:-8080}:80"
+      - "${FRONTEND_PORT:-4181}:80"
     depends_on:
       - backend
     restart: unless-stopped
@@ -20,7 +20,7 @@ services:
     environment:
       NODE_ENV: production
       PORT: 4000
-      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost:8080}
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost:4181}
       DATABASE_URL: postgresql://${POSTGRES_USER:-tracking}:${POSTGRES_PASSWORD:-tracking}@postgres:5432/${POSTGRES_DB:-tracking}?schema=public
       REDIS_URL: redis://redis:6379
       KAFKA_BROKER: ${KAFKA_BROKER:-72.60.245.62:19092}
@@ -34,8 +34,15 @@ services:
       KAFKA_SASL_PASSWORD: ${KAFKA_SASL_PASSWORD:-}
       JWT_SECRET: ${JWT_SECRET:-local_dev_secret}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-8h}
-      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:8080}
-      SEED_ADMIN_EMAIL: ${SEED_ADMIN_EMAIL:-admin@3dhmanaus.shop}
+      AUTH_MODE: ${AUTH_MODE:-hybrid}
+      OIDC_ISSUER: ${OIDC_ISSUER:-http://localhost:8080/realms/3dh}
+      OIDC_CLIENT_ID: ${OIDC_CLIENT_ID:-trackflow-web}
+      OIDC_AUDIENCE: ${OIDC_AUDIENCE:-trackflow-web}
+      OIDC_JWKS_URL: ${OIDC_JWKS_URL:-http://host.docker.internal:8080/realms/3dh/protocol/openid-connect/certs}
+      OIDC_DEFAULT_COMPANY_ID: ${OIDC_DEFAULT_COMPANY_ID:-}
+      PORTAL_URL: ${PORTAL_URL:-http://localhost:4180}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:4181}
+      SEED_ADMIN_EMAIL: ${SEED_ADMIN_EMAIL:-admin@3dhmanaus.com.br}
       SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-admin123}
       MOBILE_REGISTRATION_SECRET: ${MOBILE_REGISTRATION_SECRET:-}
     depends_on:

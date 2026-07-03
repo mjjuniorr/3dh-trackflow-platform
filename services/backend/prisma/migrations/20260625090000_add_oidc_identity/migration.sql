@@ -1,0 +1,5 @@
+ALTER TABLE "users"
+  ALTER COLUMN "password_hash" DROP NOT NULL,
+  ADD COLUMN "oidc_sub" TEXT;
+
+CREATE UNIQUE INDEX "users_oidc_sub_key" ON "users"("oidc_sub");

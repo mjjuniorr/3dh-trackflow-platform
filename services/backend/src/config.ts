@@ -1,6 +1,15 @@
 import "dotenv/config";
 
 const nodeEnv = process.env.NODE_ENV ?? "development";
+const authMode = process.env.AUTH_MODE ?? "legacy";
+const oidcIssuer = (process.env.OIDC_ISSUER ?? "").replace(/\/$/, "");
+
+if (!["legacy", "hybrid", "oidc"].includes(authMode)) {
+  throw new Error("AUTH_MODE deve ser legacy, hybrid ou oidc.");
+}
+if (authMode !== "legacy" && !oidcIssuer) {
+  throw new Error("OIDC_ISSUER e obrigatorio quando AUTH_MODE nao e legacy.");
+}
 
 function required(name: string, fallback: string): string {
   const value = process.env[name] ?? fallback;
@@ -13,10 +22,17 @@ function required(name: string, fallback: string): string {
 export const config = {
   nodeEnv,
   port: Number(process.env.PORT ?? 4000),
-  publicBaseUrl: process.env.PUBLIC_BASE_URL ?? "https://track.3dhmanaus.shop",
+  publicBaseUrl: process.env.PUBLIC_BASE_URL ?? "https://track.3dhmanaus.com.br",
   jwtSecret: required("JWT_SECRET", "change-me"),
   jwtExpiresIn: process.env.JWT_EXPIRES_IN ?? "8h",
-  corsOrigin: process.env.CORS_ORIGIN ?? "https://track.3dhmanaus.shop",
+  authMode: authMode as "legacy" | "hybrid" | "oidc",
+  oidcIssuer,
+  oidcClientId: process.env.OIDC_CLIENT_ID ?? "trackflow-web",
+  oidcAudience: process.env.OIDC_AUDIENCE ?? process.env.OIDC_CLIENT_ID ?? "trackflow-web",
+  oidcJwksUrl: process.env.OIDC_JWKS_URL,
+  oidcDefaultCompanyId: process.env.OIDC_DEFAULT_COMPANY_ID,
+  portalUrl: process.env.PORTAL_URL ?? "https://portal.3dhmanaus.com.br",
+  corsOrigin: process.env.CORS_ORIGIN ?? "https://track.3dhmanaus.com.br",
   redisUrl: process.env.REDIS_URL ?? "redis://redis:6379",
   kafkaEnabled: process.env.KAFKA_ENABLED !== "false",
   kafkaBrokers: (process.env.KAFKA_BROKER ?? process.env.KAFKA_BROKERS ?? "kafka:9092")
