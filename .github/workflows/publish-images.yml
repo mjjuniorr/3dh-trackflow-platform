@@ -35,6 +35,7 @@ jobs:
           BACKEND_IMAGE: ghcr.io/mjjuniorr/3dh-trackflow-backend:${{ github.sha }}
           POSTGRES_PASSWORD: validation-only
           JWT_SECRET: validation-only
+          MOBILE_REGISTRATION_SECRET: validation-only
         run: docker compose -f docker-compose.producao-vps.yml config > /dev/null
 
   images:
