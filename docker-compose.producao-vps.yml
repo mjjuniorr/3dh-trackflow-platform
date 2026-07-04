@@ -47,7 +47,7 @@ services:
       CORS_ORIGIN: https://rastreio.3dhmanaus.com.br
       SEED_ADMIN_EMAIL: ${SEED_ADMIN_EMAIL:-admin@3dhmanaus.com.br}
       SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-admin123}
-      MOBILE_REGISTRATION_SECRET: ${MOBILE_REGISTRATION_SECRET:?configure MOBILE_REGISTRATION_SECRET}
+      MOBILE_REGISTRATION_SECRET: ${MOBILE_REGISTRATION_SECRET:-dev_mobile_secret}
     networks:
       - PortainerRede
     depends_on:
