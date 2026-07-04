@@ -54,7 +54,7 @@ Pelo Portainer:
 2. Entre no servico `frontend`.
 3. Use `Force update`, ou use `Pull and redeploy` na stack.
 4. Aguarde a replica ficar `1 / 1`.
-5. Abra `https://track.3dhmanaus.com.br` em aba anonima ou use `Ctrl + F5`.
+5. Abra `https://rastreio.3dhmanaus.com.br` em aba anonima ou use `Ctrl + F5`.
 
 ## Backend
 
@@ -136,7 +136,7 @@ O app Android usa:
 
 ```text
 applicationId = br.com.tresdhmanaus.trackflow
-TRACKFLOW_API_BASE_URL = https://track.3dhmanaus.com.br
+TRACKFLOW_API_BASE_URL = https://rastreio.3dhmanaus.com.br
 ```
 
 ### Conferir aparelho conectado
@@ -218,7 +218,7 @@ rastreamento
 Abra:
 
 ```text
-https://track.3dhmanaus.com.br
+https://rastreio.3dhmanaus.com.br
 ```
 
 Checklist:

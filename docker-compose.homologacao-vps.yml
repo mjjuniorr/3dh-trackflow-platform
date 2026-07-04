@@ -12,7 +12,7 @@ services:
       labels:
         - traefik.enable=true
         - traefik.docker.network=PortainerRede
-        - traefik.http.routers.trackflow-hml.rule=Host(`${APP_HOST:-track.3dhmanaus.com.br}`)
+        - traefik.http.routers.trackflow-hml.rule=Host(`${APP_HOST:-rastreio.3dhmanaus.com.br}`)
         - traefik.http.routers.trackflow-hml.entrypoints=${TRAEFIK_ENTRYPOINTS:-websecure}
         - traefik.http.routers.trackflow-hml.tls=true
         - traefik.http.routers.trackflow-hml.tls.certresolver=${TRAEFIK_CERTRESOLVER:-letsencrypt}
@@ -23,7 +23,7 @@ services:
     environment:
       NODE_ENV: production
       PORT: 4000
-      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-https://track.3dhmanaus.com.br}
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-https://rastreio.3dhmanaus.com.br}
       DATABASE_URL: postgresql://${POSTGRES_USER:-tracking}:${POSTGRES_PASSWORD:?configure POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-tracking}?schema=public
       REDIS_URL: redis://redis:6379
       KAFKA_BROKER: ${KAFKA_BROKER:-kafka:9092}
@@ -44,7 +44,7 @@ services:
       OIDC_JWKS_URL: ${OIDC_JWKS_URL:-}
       OIDC_DEFAULT_COMPANY_ID: ${OIDC_DEFAULT_COMPANY_ID:-}
       PORTAL_URL: ${PORTAL_URL:-https://portal.3dhmanaus.com.br}
-      CORS_ORIGIN: ${CORS_ORIGIN:-https://track.3dhmanaus.com.br}
+      CORS_ORIGIN: ${CORS_ORIGIN:-https://rastreio.3dhmanaus.com.br}
       SEED_ADMIN_EMAIL: ${SEED_ADMIN_EMAIL:-admin@3dhmanaus.com.br}
       SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-admin123}
     networks:

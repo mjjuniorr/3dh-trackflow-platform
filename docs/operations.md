@@ -161,7 +161,7 @@ Limpar cadastro local:
 
 ## Checklist apos deploy
 
-1. Abrir `https://track.3dhmanaus.com.br` em aba anonima.
+1. Abrir `https://rastreio.3dhmanaus.com.br` em aba anonima.
 2. Login com admin.
 3. Abrir engrenagem.
 4. Confirmar tipos de veiculo:

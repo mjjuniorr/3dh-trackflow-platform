@@ -146,8 +146,8 @@ BACKEND_IMAGE=ghcr.io/mjjuniorr/3dh-trackflow-backend:producao
 FRONTEND_IMAGE=ghcr.io/mjjuniorr/3dh-trackflow-web:producao
 ```
 
-6. O dominio publico deve apontar para a VPS: `track.3dhmanaus.com.br`.
-7. O Traefik ja existente publicara o frontend em `https://track.3dhmanaus.com.br`.
+6. O dominio publico deve apontar para a VPS: `rastreio.3dhmanaus.com.br`.
+7. O Traefik ja existente publicara o frontend em `https://rastreio.3dhmanaus.com.br`.
 8. O frontend acessa a API por `/api` e Socket.IO por `/socket.io`, ambos roteados pelo Nginx do frontend para o backend.
 9. Kafka nao e exposto publicamente. O backend consome `kafka:9092` no topico `rastreamento`.
 10. Depois do primeiro deploy, execute o seed no container backend pelo console do Portainer:

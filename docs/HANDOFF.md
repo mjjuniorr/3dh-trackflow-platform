@@ -34,7 +34,7 @@ Ambientes oficiais:
 - VPS Hostinger = producao.
 - Portainer + Docker Swarm + Traefik ja existem na VPS.
 - Rede externa Docker: `PortainerRede`.
-- Dominio publico: `https://track.3dhmanaus.com.br`.
+- Dominio publico: `https://rastreio.3dhmanaus.com.br`.
 - Kafka interno na VPS: `kafka:9092`.
 - Kafka externo para testes no PC: `72.60.245.62:19092`.
 - Topico Kafka: `rastreamento`.

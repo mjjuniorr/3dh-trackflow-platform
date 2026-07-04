@@ -22,7 +22,7 @@ function required(name: string, fallback: string): string {
 export const config = {
   nodeEnv,
   port: Number(process.env.PORT ?? 4000),
-  publicBaseUrl: process.env.PUBLIC_BASE_URL ?? "https://track.3dhmanaus.com.br",
+  publicBaseUrl: process.env.PUBLIC_BASE_URL ?? "https://rastreio.3dhmanaus.com.br",
   jwtSecret: required("JWT_SECRET", "change-me"),
   jwtExpiresIn: process.env.JWT_EXPIRES_IN ?? "8h",
   authMode: authMode as "legacy" | "hybrid" | "oidc",
@@ -32,7 +32,7 @@ export const config = {
   oidcJwksUrl: process.env.OIDC_JWKS_URL,
   oidcDefaultCompanyId: process.env.OIDC_DEFAULT_COMPANY_ID,
   portalUrl: process.env.PORTAL_URL ?? "https://portal.3dhmanaus.com.br",
-  corsOrigin: process.env.CORS_ORIGIN ?? "https://track.3dhmanaus.com.br",
+  corsOrigin: process.env.CORS_ORIGIN ?? "https://rastreio.3dhmanaus.com.br",
   redisUrl: process.env.REDIS_URL ?? "redis://redis:6379",
   kafkaEnabled: process.env.KAFKA_ENABLED !== "false",
   kafkaBrokers: (process.env.KAFKA_BROKER ?? process.env.KAFKA_BROKERS ?? "kafka:9092")

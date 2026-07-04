@@ -49,7 +49,7 @@ export function Login() {
           <div>
             <p className="brand-kicker">TrackFlow</p>
             <h1 className="text-xl font-semibold">Painel interno</h1>
-            <p className="text-sm text-muted">track.3dhmanaus.com.br</p>
+            <p className="text-sm text-muted">rastreio.3dhmanaus.com.br</p>
           </div>
         </div>
         <div className="mb-5 flex items-center gap-2 rounded-md border border-line bg-panel px-3 py-2 text-sm text-muted">

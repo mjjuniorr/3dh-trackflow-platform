@@ -79,7 +79,7 @@ O frontend monta a URL usando `window.location.origin`. Isso evita expor IP, por
 Exemplo final para o cliente:
 
 ```text
-https://track.3dhmanaus.com.br/t/abc123
+https://rastreio.3dhmanaus.com.br/t/abc123
 ```
 
 ## Rotacao do marcador

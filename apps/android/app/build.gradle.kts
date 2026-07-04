@@ -16,7 +16,7 @@ android {
         versionCode = 1
         versionName = "1.0.0"
 
-        buildConfigField("String", "TRACKFLOW_API_BASE_URL", "\"https://track.3dhmanaus.com.br\"")
+        buildConfigField("String", "TRACKFLOW_API_BASE_URL", "\"https://rastreio.3dhmanaus.com.br\"")
         buildConfigField("String", "MOBILE_REGISTRATION_SECRET", "\"dev_mobile_secret\"")
     }
 
