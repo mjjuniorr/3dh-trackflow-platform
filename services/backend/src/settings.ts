@@ -9,6 +9,8 @@ import {
   type KafkaRuntimeSettings
 } from "./kafka.js";
 import { verifyAdminPassword } from "./auth.js";
+import { config } from "./config.js";
+import { redis } from "./location-store.js";
 
 const kafkaSettingsSchema = z.object({
   admin_password: z.string().optional(),
@@ -23,6 +25,32 @@ const kafkaSettingsSchema = z.object({
   saslUsername: z.string().optional(),
   saslPassword: z.string().optional()
 });
+
+export type ServiceDomainSettings = {
+  publicBaseUrl: string;
+  mobileApiBaseUrl: string;
+  kafkaUiUrl: string;
+  portalUrl: string;
+  authUrl: string;
+};
+
+const SERVICE_DOMAINS_KEY = "settings:service-domains";
+
+const serviceDomainsSchema = z.object({
+  publicBaseUrl: z.string().url(),
+  mobileApiBaseUrl: z.string().url(),
+  kafkaUiUrl: z.string().url(),
+  portalUrl: z.string().url(),
+  authUrl: z.string().url()
+});
+
+const defaultServiceDomains: ServiceDomainSettings = {
+  publicBaseUrl: config.publicBaseUrl,
+  mobileApiBaseUrl: config.publicBaseUrl,
+  kafkaUiUrl: "https://kafka.3dhmanaus.com.br",
+  portalUrl: config.portalUrl,
+  authUrl: config.oidcIssuer || "https://auth.3dhmanaus.com.br/realms/3dh"
+};
 
 function toSettings(data: z.infer<typeof kafkaSettingsSchema>): KafkaRuntimeSettings {
   return {
@@ -44,6 +72,20 @@ function redact(settings: KafkaRuntimeSettings) {
   };
 }
 
+function normalizeUrl(value: string) {
+  return value.replace(/\/+$/, "");
+}
+
+export async function getServiceDomains(): Promise<ServiceDomainSettings> {
+  const saved = await redis.get(SERVICE_DOMAINS_KEY);
+  if (!saved) return defaultServiceDomains;
+  return { ...defaultServiceDomains, ...JSON.parse(saved) };
+}
+
+async function saveServiceDomains(settings: ServiceDomainSettings) {
+  await redis.set(SERVICE_DOMAINS_KEY, JSON.stringify(settings));
+}
+
 async function assertAdminPassword(req: Request, password: string) {
   if (!req.user) return false;
   if (req.user.authType === "oidc") {
@@ -57,6 +99,31 @@ export function createSettingsHandlers(io: Server) {
     getKafkaSettings: async (_req: Request, res: Response) => {
       const settings = await getKafkaSettings();
       return res.json({ settings: redact(settings) });
+    },
+
+    getServiceDomains: async (_req: Request, res: Response) => {
+      const settings = await getServiceDomains();
+      return res.json({ settings });
+    },
+
+    saveServiceDomains: async (req: Request, res: Response) => {
+      const parsed = serviceDomainsSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ message: "Dominios invalidos." });
+      }
+      if (!(await assertAdminPassword(req, req.body.admin_password ?? ""))) {
+        return res.status(403).json({ message: "Credenciais administrativas invalidas." });
+      }
+
+      const settings = {
+        publicBaseUrl: normalizeUrl(parsed.data.publicBaseUrl),
+        mobileApiBaseUrl: normalizeUrl(parsed.data.mobileApiBaseUrl),
+        kafkaUiUrl: normalizeUrl(parsed.data.kafkaUiUrl),
+        portalUrl: normalizeUrl(parsed.data.portalUrl),
+        authUrl: normalizeUrl(parsed.data.authUrl)
+      };
+      await saveServiceDomains(settings);
+      return res.json({ settings, message: "Dominios dos servicos salvos." });
     },
 
     saveKafkaSettings: async (req: Request, res: Response) => {

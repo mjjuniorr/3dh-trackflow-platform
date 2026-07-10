@@ -28,6 +28,8 @@ export function createRouter(io: Server) {
   router.get("/settings/kafka", requireAuth, requirePermission("trackflow:manage-settings"), settings.getKafkaSettings);
   router.post("/settings/kafka", requireAuth, requirePermission("trackflow:manage-settings"), settings.saveKafkaSettings);
   router.post("/settings/kafka/test", requireAuth, requirePermission("trackflow:manage-settings"), settings.testKafkaSettings);
+  router.get("/settings/services", requireAuth, requirePermission("trackflow:manage-settings"), settings.getServiceDomains);
+  router.post("/settings/services", requireAuth, requirePermission("trackflow:manage-settings"), settings.saveServiceDomains);
 
   router.post("/tracking-sessions", requireAuth, requirePermission("trackflow:create-public-links"), createTrackingSession);
   router.post("/tracking-sessions/:id/revoke", requireAuth, requirePermission("trackflow:revoke-public-links"), revokeTrackingSession);

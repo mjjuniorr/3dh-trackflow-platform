@@ -25,11 +25,14 @@ export function GenerateLinkModal({ person, onClose }: { person: DeliveryPerson;
     try {
       const value = custom ? Number(custom) : minutes;
       const response = await createTrackingSession(person.id, value, `Rastreio ${person.name}`);
-      const path = response.public_path ?? (response.public_url ? new URL(response.public_url).pathname : "");
-      if (!path) {
+      if (response.public_url) {
+        setPublicUrl(response.public_url);
+        return;
+      }
+      if (!response.public_path) {
         throw new Error("O backend nao retornou o caminho publico do rastreio.");
       }
-      setPublicUrl(`${window.location.origin}${path}`);
+      setPublicUrl(`${window.location.origin}${response.public_path}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Nao foi possivel gerar o link.");
     } finally {

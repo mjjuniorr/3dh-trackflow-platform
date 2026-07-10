@@ -1,6 +1,17 @@
 import { CheckCircle2, Plus, Save, ShieldCheck, TestTube2, Trash2, X, XCircle } from "lucide-react";
 import { useEffect, useState } from "react";
-import { createDeliveryPerson, deactivateDeliveryPerson, getKafkaSettings, saveKafkaSettings, testKafkaSettings, updateDeliveryPerson, type KafkaSettings } from "../api";
+import {
+  createDeliveryPerson,
+  deactivateDeliveryPerson,
+  getKafkaSettings,
+  getServiceDomainSettings,
+  saveKafkaSettings,
+  saveServiceDomainSettings,
+  testKafkaSettings,
+  updateDeliveryPerson,
+  type KafkaSettings,
+  type ServiceDomainSettings
+} from "../api";
 import type { DeliveryPerson, VehicleType } from "../types";
 
 const emptySettings: KafkaSettings = {
@@ -12,6 +23,14 @@ const emptySettings: KafkaSettings = {
   saslMechanism: "",
   saslUsername: "",
   saslPassword: ""
+};
+
+const emptyServiceDomains: ServiceDomainSettings = {
+  publicBaseUrl: "https://rastreio.3dhmanaus.com.br",
+  mobileApiBaseUrl: "https://rastreio.3dhmanaus.com.br",
+  kafkaUiUrl: "https://kafka.3dhmanaus.com.br",
+  portalUrl: "https://portal.3dhmanaus.com.br",
+  authUrl: "https://auth.3dhmanaus.com.br/realms/3dh"
 };
 
 const productionBroker = "kafka:9092";
@@ -45,9 +64,11 @@ export function SettingsModal({
   legacyAdminPasswordRequired: boolean;
 }) {
   const [settings, setSettings] = useState<KafkaSettings>(emptySettings);
+  const [serviceDomains, setServiceDomains] = useState<ServiceDomainSettings>(emptyServiceDomains);
   const [adminPassword, setAdminPassword] = useState("");
   const [status, setStatus] = useState<ConnectionState>("idle");
   const [message, setMessage] = useState("");
+  const [domainsMessage, setDomainsMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [deliveryForm, setDeliveryForm] = useState<{ id: string; name: string; device_id: string; phone: string; vehicle_type: VehicleType }>({ id: "", name: "", device_id: "", phone: "", vehicle_type: "motorcycle" });
   const [deliveryMessage, setDeliveryMessage] = useState("");
@@ -57,11 +78,19 @@ export function SettingsModal({
     getKafkaSettings()
       .then((response) => setSettings({ ...emptySettings, ...response.settings, saslPassword: "" }))
       .catch((error) => setMessage(error instanceof Error ? error.message : "Nao foi possivel carregar configuracoes."));
+    getServiceDomainSettings()
+      .then((response) => setServiceDomains({ ...emptyServiceDomains, ...response.settings }))
+      .catch((error) => setDomainsMessage(error instanceof Error ? error.message : "Nao foi possivel carregar dominios."));
   }, [canAdmin]);
 
   function update<K extends keyof KafkaSettings>(key: K, value: KafkaSettings[K]) {
     setSettings((current) => ({ ...current, [key]: value }));
     setStatus("idle");
+  }
+
+  function updateServiceDomain<K extends keyof ServiceDomainSettings>(key: K, value: ServiceDomainSettings[K]) {
+    setServiceDomains((current) => ({ ...current, [key]: value }));
+    setDomainsMessage("");
   }
 
   function applyProductionPreset() {
@@ -106,6 +135,20 @@ export function SettingsModal({
     } catch (error) {
       setStatus("fail");
       setMessage(error instanceof Error ? error.message : "Nao foi possivel salvar.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function saveDomains() {
+    setLoading(true);
+    setDomainsMessage("");
+    try {
+      const response = await saveServiceDomainSettings(serviceDomains, adminPassword);
+      setServiceDomains({ ...emptyServiceDomains, ...response.settings });
+      setDomainsMessage(response.message);
+    } catch (error) {
+      setDomainsMessage(error instanceof Error ? error.message : "Nao foi possivel salvar os dominios.");
     } finally {
       setLoading(false);
     }
@@ -245,6 +288,42 @@ export function SettingsModal({
           </section> : null}
 
           {canAdmin ? <>
+          <section>
+            <div className="mb-3">
+              <h3 className="text-sm font-semibold">Dominios dos servicos</h3>
+              <p className="text-xs text-muted">Enderecos operacionais usados pela web, links publicos, app mobile e consoles tecnicos</p>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <label className="text-sm font-medium">
+                TrackFlow publico
+                <input className="mt-2 w-full rounded-md border border-line bg-surface px-3 py-2 outline-none focus:border-accent" value={serviceDomains.publicBaseUrl} onChange={(event) => updateServiceDomain("publicBaseUrl", event.target.value)} />
+              </label>
+              <label className="text-sm font-medium">
+                API mobile
+                <input className="mt-2 w-full rounded-md border border-line bg-surface px-3 py-2 outline-none focus:border-accent" value={serviceDomains.mobileApiBaseUrl} onChange={(event) => updateServiceDomain("mobileApiBaseUrl", event.target.value)} />
+              </label>
+              <label className="text-sm font-medium">
+                Kafka UI
+                <input className="mt-2 w-full rounded-md border border-line bg-surface px-3 py-2 outline-none focus:border-accent" value={serviceDomains.kafkaUiUrl} onChange={(event) => updateServiceDomain("kafkaUiUrl", event.target.value)} />
+              </label>
+              <label className="text-sm font-medium">
+                Portal 3DH
+                <input className="mt-2 w-full rounded-md border border-line bg-surface px-3 py-2 outline-none focus:border-accent" value={serviceDomains.portalUrl} onChange={(event) => updateServiceDomain("portalUrl", event.target.value)} />
+              </label>
+              <label className="text-sm font-medium sm:col-span-2">
+                Keycloak issuer
+                <input className="mt-2 w-full rounded-md border border-line bg-surface px-3 py-2 outline-none focus:border-accent" value={serviceDomains.authUrl} onChange={(event) => updateServiceDomain("authUrl", event.target.value)} />
+              </label>
+            </div>
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-md border border-line bg-panel p-3 text-sm text-muted">
+              <span>{domainsMessage || "Esses dominios nao substituem DNS, Traefik ou variaveis de seguranca; eles centralizam os enderecos que o sistema deve divulgar e usar."}</span>
+              <button className="inline-flex items-center gap-2 rounded-md bg-accent px-3 py-2 text-sm font-semibold text-white disabled:opacity-60" onClick={saveDomains} disabled={loading}>
+                <Save size={16} />
+                Salvar dominios
+              </button>
+            </div>
+          </section>
+
           <section className="grid gap-3 sm:grid-cols-2">
             <label className="text-sm font-medium">
               Kafka broker

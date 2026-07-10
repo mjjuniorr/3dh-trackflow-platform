@@ -3,6 +3,7 @@ import { customAlphabet } from "nanoid";
 import { z } from "zod";
 import { computeStatus, getLastLocation } from "./location-store.js";
 import { prisma } from "./prisma.js";
+import { getServiceDomains } from "./settings.js";
 
 const token = customAlphabet("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", 12);
 
@@ -39,10 +40,13 @@ export async function createTrackingSession(req: Request, res: Response) {
       expires_at: expiresAt
     }
   });
+  const domains = await getServiceDomains();
+  const publicPath = `/t/${publicToken}`;
 
   return res.status(201).json({
     session,
-    public_path: `/t/${publicToken}`
+    public_path: publicPath,
+    public_url: `${domains.publicBaseUrl}${publicPath}`
   });
 }
 

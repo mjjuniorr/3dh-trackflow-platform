@@ -90,6 +90,14 @@ export type KafkaSettings = {
   saslPassword?: string;
 };
 
+export type ServiceDomainSettings = {
+  publicBaseUrl: string;
+  mobileApiBaseUrl: string;
+  kafkaUiUrl: string;
+  portalUrl: string;
+  authUrl: string;
+};
+
 export async function getKafkaSettings() {
   return request<{ settings: KafkaSettings }>("/api/settings/kafka");
 }
@@ -103,6 +111,17 @@ export async function saveKafkaSettings(settings: KafkaSettings, adminPassword: 
 
 export async function testKafkaSettings(settings: KafkaSettings, adminPassword: string) {
   return request<{ ok: boolean; topics?: string[]; topic_exists?: boolean; message?: string }>("/api/settings/kafka/test", {
+    method: "POST",
+    body: JSON.stringify({ ...settings, ...(adminPassword ? { admin_password: adminPassword } : {}) })
+  });
+}
+
+export async function getServiceDomainSettings() {
+  return request<{ settings: ServiceDomainSettings }>("/api/settings/services");
+}
+
+export async function saveServiceDomainSettings(settings: ServiceDomainSettings, adminPassword: string) {
+  return request<{ settings: ServiceDomainSettings; message: string }>("/api/settings/services", {
     method: "POST",
     body: JSON.stringify({ ...settings, ...(adminPassword ? { admin_password: adminPassword } : {}) })
   });
