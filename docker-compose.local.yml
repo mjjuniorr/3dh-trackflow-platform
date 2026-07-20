@@ -11,8 +11,8 @@ services:
       CORS_ORIGIN: http://localhost:8080
       JWT_SECRET: local_dev_secret
       DATABASE_URL: postgresql://tracking:tracking@postgres:5432/tracking?schema=public
-      KAFKA_ENABLED: "true"
-      KAFKA_BROKER: ${KAFKA_BROKER:-72.60.245.62:19092}
+      KAFKA_ENABLED: ${KAFKA_ENABLED:-false}
+      KAFKA_BROKER: ${KAFKA_BROKER:-kafka:9092}
       KAFKA_TOPIC: ${KAFKA_TOPIC:-rastreamento}
       KAFKA_CLIENT_ID: ${KAFKA_CLIENT_ID:-trackflow-backend}
       KAFKA_GROUP_ID: ${KAFKA_GROUP_ID:-trackflow-consumer-group}

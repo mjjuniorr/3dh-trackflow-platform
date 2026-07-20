@@ -23,11 +23,11 @@ services:
       PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost:4181}
       DATABASE_URL: postgresql://${POSTGRES_USER:-tracking}:${POSTGRES_PASSWORD:-tracking}@postgres:5432/${POSTGRES_DB:-tracking}?schema=public
       REDIS_URL: redis://redis:6379
-      KAFKA_BROKER: ${KAFKA_BROKER:-72.60.245.62:19092}
+      KAFKA_BROKER: ${KAFKA_BROKER:-kafka:9092}
       KAFKA_TOPIC: ${KAFKA_TOPIC:-rastreamento}
       KAFKA_CLIENT_ID: ${KAFKA_CLIENT_ID:-trackflow-backend}
       KAFKA_GROUP_ID: ${KAFKA_GROUP_ID:-trackflow-consumer-group-pc}
-      KAFKA_ENABLED: ${KAFKA_ENABLED:-true}
+      KAFKA_ENABLED: ${KAFKA_ENABLED:-false}
       KAFKA_SSL: ${KAFKA_SSL:-false}
       KAFKA_SASL_MECHANISM: ${KAFKA_SASL_MECHANISM:-}
       KAFKA_SASL_USERNAME: ${KAFKA_SASL_USERNAME:-}

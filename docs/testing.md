@@ -27,6 +27,8 @@ docker compose --env-file .env.homologacao-pc.example -f docker-compose.homologa
 
 ## Simular uma localizacao
 
+No PC, Kafka fica desativado por padrao. Para testar Kafka, informe um broker protegido por VPN, tunel SSH ou rede interna:
+
 ```bash
 docker compose --env-file .env.homologacao-pc.example -f docker-compose.homologacao-pc.yml exec backend npm run kafka:test:produce
 ```
@@ -40,20 +42,20 @@ docker compose --env-file .env.homologacao-pc.example -f docker-compose.homologa
 ## Simular rota de entrega por 30 minutos
 
 ```bash
-python scripts/simulate_delivery_route.py --duration-minutes 30 --interval-seconds 5 --device-id entregador_001
+python scripts/simulate_delivery_route.py --broker <broker_protegido> --duration-minutes 30 --interval-seconds 5 --device-id entregador_001
 ```
 
 Padroes:
 
-- broker: `72.60.245.62:19092`
-- topico: `rastreamento`
-- intervalo: 5 segundos
+- broker: informe `--broker` ou `KAFKA_BROKER` apontando para um broker protegido;
+- topico: `rastreamento`;
+- intervalo: 5 segundos;
 - payload inclui `lat`, `lng`, `speed`, `heading`, `battery`, `accuracy` e `timestamp`.
 
 ## Simular todos os entregadores ao mesmo tempo
 
 ```bash
-python scripts/simulate_multi_delivery_routes.py --duration-minutes 30 --interval-seconds 5
+python scripts/simulate_multi_delivery_routes.py --broker <broker_protegido> --duration-minutes 30 --interval-seconds 5
 ```
 
 Esse teste publica rotas simultaneas para:
@@ -69,7 +71,7 @@ Use para validar dashboard, memoria, WebSocket, Kafka e renderizacao de multiplo
 ## Testar todos os tipos de veiculo
 
 ```bash
-python scripts/send_vehicle_icon_test.py
+python scripts/send_vehicle_icon_test.py --broker <broker_protegido>
 ```
 
 Esse teste envia:
@@ -93,7 +95,7 @@ Se algum veiculo nao aparecer:
 1. Abrir `http://localhost:8080/login`.
 2. Entrar com as credenciais locais.
 3. Confirmar que a lista mostra 5 entregadores.
-4. Rodar uma simulacao Kafka.
+4. Rodar uma simulacao Kafka usando broker protegido ou executar o script dentro do backend na VPS.
 5. Confirmar que o entregador fica online e colorido.
 6. Confirmar que a moto aparece no mapa com PNG transparente.
 7. Gerar link de rastreio para o entregador.

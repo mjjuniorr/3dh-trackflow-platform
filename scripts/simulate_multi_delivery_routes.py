@@ -144,7 +144,7 @@ def main() -> int:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Simula varias rotas de entrega publicando no Kafka.")
-    parser.add_argument("--broker", default=os.getenv("KAFKA_BROKER", "72.60.245.62:19092"))
+    parser.add_argument("--broker", default=os.getenv("KAFKA_BROKER"))
     parser.add_argument("--topic", default=os.getenv("KAFKA_TOPIC", "rastreamento"))
     parser.add_argument(
         "--devices",
@@ -162,8 +162,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--end-battery", type=int, default=int(os.getenv("SIM_END_BATTERY", "84")))
     parser.add_argument("--route-offset", type=float, default=float(os.getenv("SIM_ROUTE_OFFSET", "0.11")))
     parser.add_argument("--seed", type=int, default=int(os.getenv("SIM_SEED", "3")))
-    return parser.parse_args()
-
+    args = parser.parse_args()
+    if not args.broker:
+        parser.error("Informe --broker ou KAFKA_BROKER. Nao use broker Kafka publico sem VPN, tunel ou firewall restrito.")
+    return args
 
 def interpolate_route(route: list[Point], progress: float) -> Point:
     progress = min(max(progress, 0.0), 1.0)

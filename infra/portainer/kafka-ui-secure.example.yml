@@ -1,0 +1,32 @@
+services:
+  kafka-ui:
+    image: provectuslabs/kafka-ui:v0.7.2
+    environment:
+      KAFKA_CLUSTERS_0_NAME: ${KAFKA_UI_CLUSTER_NAME:-3DHKafka}
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: ${KAFKA_UI_BOOTSTRAP_SERVERS:-kafka:9092}
+      KAFKA_CLUSTERS_0_READONLY: "true"
+      AUTH_TYPE: OAUTH2
+      SERVER_FORWARDHEADERSSTRATEGY: native
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAK_CLIENTID: ${KAFKA_UI_OIDC_CLIENT_ID:-kafka-ui}
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAK_CLIENTSECRET: ${KAFKA_UI_OIDC_CLIENT_SECRET:?configure KAFKA_UI_OIDC_CLIENT_SECRET}
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAK_SCOPE: openid,profile,email
+      SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUER_URI: ${KAFKA_UI_OIDC_ISSUER:-https://auth.3dhmanaus.com.br/realms/3dh}
+    networks:
+      - PortainerRede
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      labels:
+        - traefik.enable=true
+        - traefik.docker.network=PortainerRede
+        - traefik.http.routers.kafka-ui.rule=Host(`${KAFKA_UI_HOST:-kafka.3dhmanaus.com.br}`)
+        - traefik.http.routers.kafka-ui.entrypoints=${TRAEFIK_ENTRYPOINTS:-websecure}
+        - traefik.http.routers.kafka-ui.tls=true
+        - traefik.http.routers.kafka-ui.tls.certresolver=${TRAEFIK_CERTRESOLVER:-letsencryptresolver}
+        - traefik.http.services.kafka-ui.loadbalancer.server.port=8080
+
+networks:
+  PortainerRede:
+    external: true
+    name: PortainerRede

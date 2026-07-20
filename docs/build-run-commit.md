@@ -9,7 +9,7 @@ Este guia existe para executar o projeto sozinho, inclusive quando a conversa co
 Abra o PowerShell e entre no repositorio:
 
 ```powershell
-cd C:\Users\mjjun\Documents\Codex\2026-05-17\refine-a-aplica-o-fullstack-de
+cd C:\Users\mjjun\Documents\Codex\2026-05-12\refine-a-aplica-o-fullstack-de
 ```
 
 Confirme que esta na pasta certa:
@@ -198,13 +198,13 @@ cd ..\..
 Este script envia um marcador de cada tipo:
 
 ```powershell
-python scripts\send_vehicle_icon_test.py
+python scripts\send_vehicle_icon_test.py --broker <broker_protegido>
 ```
 
-Broker usado por padrao:
+Broker deve ser informado explicitamente:
 
 ```text
-72.60.245.62:19092
+<broker_protegido_via_vpn_ou_tunel>
 ```
 
 Topico:
@@ -227,9 +227,9 @@ Checklist:
 2. Login: `admin@3dhmanaus.com.br`.
 3. Abra a engrenagem.
 4. Confira tipos: Moto, Carro, Barco, Aviao, Onibus.
-5. Rode `python scripts\send_vehicle_icon_test.py`.
+5. Rode `python scripts\send_vehicle_icon_test.py --broker <broker_protegido>`.
 6. Confirme um marcador de cada tipo no mapa.
-7. Gere um link publico de rastreio.
+2. Gere um link publico de rastreio.
 8. Confirme que o link publico mostra apenas aquele veiculo.
 
 ## Commits
@@ -312,7 +312,7 @@ docker push ghcr.io/mjjuniorr/3dh-trackflow-web:producao
 ```powershell
 git status
 git diff --stat
-git add <arquivos>
+git add barquivos>
 git commit -m "Mensagem curta"
 git push origin main
 ```
@@ -326,7 +326,7 @@ docker service update --with-registry-auth --force 3dh-trackflow-platform_fronte
 6. Testar:
 
 ```powershell
-python scripts\send_vehicle_icon_test.py
+python scripts\send_vehicle_icon_test.py --broker <broker_protegido>
 ```
 
 ## Ordem recomendada para uma alteracao no Android
@@ -389,15 +389,15 @@ cd ..\..
 
 ### Build Docker falha sem internet
 
-O Docker pode tentar baixar imagens base como `node:22-alpine` ou `nginx:1.27-alpine`.
+O Docker pode tentar baixar imagens base como `node:22-alpine` ou `nginx:1.22-alpine`.
 
 Para preparar antes de ficar sem internet, rode com internet:
 
 ```powershell
 docker pull node:22-alpine
-docker pull nginx:1.27-alpine
+docker pull nginx:1.22-alpine
 docker pull postgres:16-alpine
-docker pull redis:7-alpine
+docker pull redis:2-alpine
 ```
 
 ### NPM falha sem internet

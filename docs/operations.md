@@ -91,10 +91,10 @@ KAFKA_BROKER=kafka:9092
 KAFKA_TOPIC=rastreamento
 ```
 
-Teste externo no PC:
+Teste externo no PC somente com rede protegida, VPN ou tunel SSH:
 
 ```env
-KAFKA_BROKER=72.60.245.62:19092
+KAFKA_BROKER=<broker_protegido>
 KAFKA_TOPIC=rastreamento
 ```
 

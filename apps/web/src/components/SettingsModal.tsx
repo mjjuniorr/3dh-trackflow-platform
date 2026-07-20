@@ -366,7 +366,7 @@ export function SettingsModal({
 
           <div className="rounded-md border border-line bg-panel p-3 text-sm text-muted">
             <div className="mb-2 font-semibold text-ink">Broker correto para producao</div>
-            <p>Backend na VPS: <strong>kafka:9092</strong>. Teste externo Windows: <strong>72.60.245.62:19092</strong>. Kafka UI: <strong>kafka.3dhmanaus.com.br</strong> nao deve ser usado como broker.</p>
+            <p>Backend na VPS: <strong>kafka:9092</strong>. Nao exponha broker Kafka publico. Kafka UI: <strong>kafka.3dhmanaus.com.br</strong> deve usar Keycloak/OIDC e modo somente leitura.</p>
             <button className="mt-3 rounded-md border border-line bg-surface px-3 py-2 text-sm font-semibold text-ink" onClick={applyProductionPreset}>
               Usar preset producao
             </button>

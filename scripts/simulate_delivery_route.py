@@ -98,7 +98,7 @@ def main() -> int:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Simula uma rota de entrega publicando localizacoes no Kafka.")
-    parser.add_argument("--broker", default=os.getenv("KAFKA_BROKER", "72.60.245.62:19092"))
+    parser.add_argument("--broker", default=os.getenv("KAFKA_BROKER"))
     parser.add_argument("--topic", default=os.getenv("KAFKA_TOPIC", "rastreamento"))
     parser.add_argument("--device-id", default=os.getenv("TEST_DEVICE_ID", "entregador_001"))
     parser.add_argument("--duration-minutes", type=float, default=float(os.getenv("SIM_DURATION_MINUTES", "30")))
@@ -112,8 +112,10 @@ def parse_args() -> argparse.Namespace:
         help='JSON com lista de pontos: [{"lat": -3.094, "lng": -60.021}, ...]',
         default=os.getenv("SIM_ROUTE_JSON"),
     )
-    return parser.parse_args()
-
+    args = parser.parse_args()
+    if not args.broker:
+        parser.error("Informe --broker ou KAFKA_BROKER. Nao use broker Kafka publico sem VPN, tunel ou firewall restrito.")
+    return args
 
 def load_route(raw_json: str) -> list[Point]:
     data = json.loads(raw_json)

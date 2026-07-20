@@ -31,7 +31,7 @@ Plataforma 3DH para rastreamento em tempo real, operacao de entregadores, links 
 
 | Ambiente | Arquivo | Onde roda | Kafka |
 | --- | --- | --- | --- |
-| Homologacao PC | `docker-compose.homologacao-pc.yml` | Docker local no Windows | `72.60.245.62:19092` |
+| Homologacao PC | `docker-compose.homologacao-pc.yml` | Docker local no Windows | Kafka desativado por padrao; informe broker protegido quando necessario |
 | Producao VPS | `docker-compose.producao-vps.yml` | Portainer / Docker Swarm / VPS Hostinger | `kafka:9092` |
 
 `docker-compose.producao-pc.yml` e `docker-compose.homologacao-vps.yml` existem como legado do desenvolvimento inicial, mas a nomenclatura oficial do projeto agora e: PC = Homologacao, VPS = Producao.
@@ -103,10 +103,11 @@ docker compose --env-file .env -f docker-compose.homologacao-pc.yml up -d --buil
 - Backend: `http://localhost:4000`
 - Healthcheck: `http://localhost:4000/health`
 
-4. O backend do PC usa o broker externo de validacao:
+4. O backend do PC sobe com Kafka desativado por padrao. Para testar Kafka, use um broker protegido via rede interna, VPN ou tunel SSH:
 
 ```env
-KAFKA_BROKER=72.60.245.62:19092
+KAFKA_ENABLED=true
+KAFKA_BROKER=<broker_protegido>
 KAFKA_TOPIC=rastreamento
 ```
 
@@ -171,7 +172,7 @@ KAFKA_BROKER=kafka:9092
 - Backend acessa Kafka por `kafka:9092`, usando `KAFKA_BROKER=kafka:9092`.
 - `https://kafka.3dhmanaus.com.br` e apenas Kafka UI. Nao use esse dominio no backend.
 - Nenhum servico da aplicacao usa `localhost` para conversar com outro container.
-- Testes externos no Windows devem usar `72.60.245.62:19092` depois da stack Kafka com listener externo.
+- Testes externos no Windows nao devem usar broker publico. Use container backend na VPS, VPN ou tunel SSH temporario.
 
 ### Kafka de producao
 
@@ -179,7 +180,7 @@ Variaveis esperadas:
 
 ```env
 KAFKA_BROKER=kafka:9092
-KAFKA_EXTERNAL_BROKER=72.60.245.62:19092
+KAFKA_EXTERNAL_BROKER=<somente_com_vpn_tunel_ou_firewall_restrito>
 KAFKA_TOPIC=rastreamento
 KAFKA_CLIENT_ID=trackflow-backend
 KAFKA_GROUP_ID=trackflow-consumer-group
@@ -219,7 +220,7 @@ Para simular uma rota de entrega de 30 minutos a partir do PC:
 python scripts/simulate_delivery_route.py --duration-minutes 30 --interval-seconds 5 --device-id entregador_001
 ```
 
-Esse script publica no broker definido por `KAFKA_BROKER` ou, por padrao, em `72.60.245.62:19092`.
+Esse script publica no broker definido por `KAFKA_BROKER` ou `--broker`; ele nao possui mais broker publico padrao.
 
 ## Desenvolvimento local
 

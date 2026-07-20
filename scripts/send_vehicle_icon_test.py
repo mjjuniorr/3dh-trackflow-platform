@@ -72,9 +72,11 @@ def build_payload(vehicle: dict) -> dict:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Publica um teste com um marcador de cada tipo de veiculo.")
-    parser.add_argument("--broker", default=os.getenv("KAFKA_BROKER", "72.60.245.62:19092"))
+    parser.add_argument("--broker", default=os.getenv("KAFKA_BROKER"))
     parser.add_argument("--topic", default=os.getenv("KAFKA_TOPIC", "rastreamento"))
     args = parser.parse_args()
+    if not args.broker:
+        parser.error("Informe --broker ou KAFKA_BROKER. Nao use broker Kafka publico sem VPN, tunel ou firewall restrito.")
 
     producer = KafkaProducer(
         bootstrap_servers=args.broker,

@@ -36,7 +36,8 @@ Ambientes oficiais:
 - Rede externa Docker: `PortainerRede`.
 - Dominio publico: `https://rastreio.3dhmanaus.com.br`.
 - Kafka interno na VPS: `kafka:9092`.
-- Kafka externo para testes no PC: `72.60.245.62:19092`.
+- Kafka externo para testes no PC: nao usar porta publica; usar container backend na VPS, VPN ou tunel SSH temporario.
+- Kafka UI: `https://kafka.3dhmanaus.com.br` deve usar Keycloak/OIDC e modo somente leitura.
 - Topico Kafka: `rastreamento`.
 
 ## Estado funcional atual
@@ -50,13 +51,22 @@ Ja funciona:
 - cadastro manual de entregadores pela engrenagem;
 - cadastro automatico pelo Android;
 - telemetria Android via backend HTTPS;
-- Kafka consumindo eventos no topico `rastreamento`;
+- Kafka consumindo eventos no topico `rastreamento` pela rede interna;
 - selecao de tipo de veiculo:
   - `motorcycle`;
   - `car`;
   - `boat`;
   - `airplane`;
   - `bus`.
+
+## Seguranca Kafka
+
+- Nao expor broker Kafka diretamente na internet.
+- Backend de producao deve usar `KAFKA_BROKER=kafka:9092`.
+- A Kafka UI deve ser protegida por Keycloak/OIDC.
+- A Kafka UI deve usar modo somente leitura.
+- Scripts de simulacao devem receber `--broker <broker_protegido>` ou `KAFKA_BROKER` explicitamente.
+- Ver detalhes em `docs/kafka-security.md`.
 
 ## Credenciais conhecidas
 
@@ -119,6 +129,7 @@ docker-compose.producao-vps.yml
 docker-compose.homologacao-pc.yml
 .env.producao-vps.example
 .env.homologacao-pc.example
+infra/portainer/kafka-ui-secure.example.yml
 ```
 
 ## Estado dos icones no fim da conversa
@@ -165,17 +176,6 @@ apps/web/public/assets/vehicle-boat.png
 
 Foi substituido por PNG transparente real fornecido pelo usuario, sem processamento automatico. O mapa usa tamanho proporcional ao asset.
 
-## Ultimo ponto da conversa
-
-O usuario pediu documentacao porque a conversa ficou pesada e a qualidade caiu.
-
-O foco imediato para a proxima conversa provavelmente sera:
-
-1. Terminar substituicao dos icones por PNGs transparentes prontos.
-2. Publicar frontend.
-3. Reenviar um teste Kafka de cada veiculo.
-4. Validar visual no mapa.
-
 ## Comandos de validacao
 
 Frontend:
@@ -218,7 +218,7 @@ Limpar cadastro local do app:
 Script:
 
 ```bash
-python scripts/send_vehicle_icon_test.py
+python scripts/send_vehicle_icon_test.py --broker <broker_protegido>
 ```
 
 Observacao: esse script pode ser atualizado com coordenadas finais quando os icones forem aprovados.
