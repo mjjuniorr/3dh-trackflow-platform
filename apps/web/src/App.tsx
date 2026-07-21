@@ -8,16 +8,22 @@ import { useEffect, useState } from "react";
 export function App() {
   const path = window.location.pathname;
   const publicTracking = path.startsWith("/t/");
+  const loginPage = path === "/login";
+  const loginCallback = window.location.search.includes("code=") || window.location.search.includes("error=");
   const [authReady, setAuthReady] = useState(publicTracking);
   const [authError, setAuthError] = useState("");
 
   useEffect(() => {
     document.documentElement.dataset.theme = localStorage.getItem("tracking_theme") === "dark" ? "dark" : "classic";
     if (publicTracking) return;
+    if (loginPage && !loginCallback) {
+      setAuthReady(true);
+      return;
+    }
     restoreAuthentication()
       .catch((error) => setAuthError(error instanceof Error ? error.message : "Falha ao restaurar sessao."))
       .finally(() => setAuthReady(true));
-  }, [publicTracking]);
+  }, [loginCallback, loginPage, publicTracking]);
 
   if (publicTracking) {
     return <PublicTracking publicToken={path.split("/").filter(Boolean)[1]} />;
