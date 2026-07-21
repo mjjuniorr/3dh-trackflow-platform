@@ -59,10 +59,11 @@ export function App() {
     return <Login />;
   }
 
-  if (path === "/dashboard" && getToken()) {
+  if ((path === "/dashboard" || path === "/dashboard/deliveries") && getToken()) {
     return <Dashboard />;
   }
 
   window.history.replaceState(null, "", getToken() ? "/dashboard" : "/login");
   return getToken() ? <Dashboard /> : <Login />;
 }
+

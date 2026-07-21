@@ -4,7 +4,9 @@ import { login, setToken } from "../api";
 import { getAuthConfig, loginWithPortal, type AuthConfig } from "../auth";
 
 export function Login() {
-  const legacyRequested = new URLSearchParams(window.location.search).get("legacy") === "1";
+  const params = new URLSearchParams(window.location.search);
+  const legacyRequested = params.get("legacy") === "1";
+  const nextPath = params.get("next")?.startsWith("/dashboard") ? params.get("next")! : (legacyRequested ? "/dashboard/deliveries" : "/dashboard");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -29,7 +31,7 @@ export function Login() {
     try {
       const response = await login(email, password);
       setToken(response.token);
-      window.location.href = "/dashboard";
+      window.location.href = nextPath;
     } catch (err) {
       setError(err instanceof Error ? err.message : "Nao foi possivel entrar.");
     } finally {
@@ -91,3 +93,5 @@ export function Login() {
     </main>
   );
 }
+
+
