@@ -52,6 +52,7 @@ Ja funciona:
 - cadastro automatico pelo Android;
 - telemetria Android via backend HTTPS;
 - Kafka consumindo eventos no topico `rastreamento` pela rede interna;
+- registro administrativo de entregas por nota fiscal unica, em homologacao;
 - selecao de tipo de veiculo:
   - `motorcycle`;
   - `car`;
@@ -222,3 +223,5 @@ python scripts/send_vehicle_icon_test.py --broker <broker_protegido>
 ```
 
 Observacao: esse script pode ser atualizado com coordenadas finais quando os icones forem aprovados.
+
+

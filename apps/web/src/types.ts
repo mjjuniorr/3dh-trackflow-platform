@@ -37,3 +37,32 @@ export type PublicTrackingPayload = {
   };
   last_location: LocationEvent | null;
 };
+
+export type DeliveryRecordUser = {
+  id: string;
+  name: string;
+  email: string;
+};
+
+export type DeliveryRecord = {
+  id: string;
+  invoice_number: string;
+  delivery_person_id: string;
+  created_by_user_id: string;
+  notes?: string | null;
+  created_at: string;
+  cancelled_at?: string | null;
+  cancelled_by_user_id?: string | null;
+  delivery_person: Pick<DeliveryPerson, "id" | "name" | "device_id" | "vehicle_type">;
+  created_by_user: DeliveryRecordUser;
+  cancelled_by_user?: DeliveryRecordUser | null;
+};
+
+export type DeliveryRecordSummary = {
+  total: number;
+  by_delivery_person: Array<{
+    delivery_person_id: string;
+    name: string;
+    total: number;
+  }>;
+};

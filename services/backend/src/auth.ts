@@ -16,6 +16,7 @@ const loginSchema = z.object({
 const allLegacyAdminPermissions = [
   "trackflow:view",
   "trackflow:manage-delivery-people",
+  "trackflow:manage-deliveries",
   "trackflow:create-public-links",
   "trackflow:revoke-public-links",
   "trackflow:manage-settings",
@@ -259,3 +260,4 @@ export async function verifyAdminPassword(userId: string, password: string) {
   if (!user?.password_hash || !legacyAdminRoles.has(user.role)) return false;
   return bcrypt.compare(password, user.password_hash);
 }
+

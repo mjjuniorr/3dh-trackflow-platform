@@ -124,10 +124,11 @@ export function getPermissions() {
   if (oidcRoles.length) return oidcRoles;
 
   return payload.role === "admin" || payload.role === "platform_owner"
-    ? ["trackflow:view", "trackflow:manage-delivery-people", "trackflow:create-public-links", "trackflow:revoke-public-links", "trackflow:manage-settings", "trackflow:admin"]
+    ? ["trackflow:view", "trackflow:manage-delivery-people", "trackflow:create-public-links", "trackflow:revoke-public-links", "trackflow:manage-settings", "trackflow:manage-deliveries", "trackflow:admin"]
     : ["trackflow:view", "trackflow:create-public-links"];
 }
 
 export function hasPermission(permission: string) {
   return getPermissions().includes(permission);
 }
+

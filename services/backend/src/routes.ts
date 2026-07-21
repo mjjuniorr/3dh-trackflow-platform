@@ -2,6 +2,7 @@ import { Router } from "express";
 import type { Server } from "socket.io";
 import { authConfig, currentUser, login, requireAdmin, requireAuth, requirePermission } from "./auth.js";
 import { createDeliveryPerson, deactivateDeliveryPerson, registerMobileDeliveryPerson, updateDeliveryPerson } from "./delivery-people.js";
+import { cancelDeliveryRecord, createDeliveryRecord, listDeliveryRecords } from "./delivery-records.js";
 import { listDeliveryPeopleWithLocations } from "./location-store.js";
 import { createMobileHandlers } from "./mobile.js";
 import { createTrackingSession, getPublicTrackingSession, revokeTrackingSession } from "./tracking-sessions.js";
@@ -25,6 +26,10 @@ export function createRouter(io: Server) {
   router.patch("/delivery-people/:id", requireAuth, requirePermission("trackflow:manage-delivery-people"), updateDeliveryPerson);
   router.delete("/delivery-people/:id", requireAuth, requirePermission("trackflow:manage-delivery-people"), deactivateDeliveryPerson);
 
+  router.get("/delivery-records", requireAuth, requirePermission("trackflow:view"), listDeliveryRecords);
+  router.post("/delivery-records", requireAuth, requirePermission("trackflow:manage-deliveries"), createDeliveryRecord);
+  router.post("/delivery-records/:id/cancel", requireAuth, requirePermission("trackflow:manage-deliveries"), cancelDeliveryRecord);
+
   router.get("/settings/kafka", requireAuth, requirePermission("trackflow:manage-settings"), settings.getKafkaSettings);
   router.post("/settings/kafka", requireAuth, requirePermission("trackflow:manage-settings"), settings.saveKafkaSettings);
   router.post("/settings/kafka/test", requireAuth, requirePermission("trackflow:manage-settings"), settings.testKafkaSettings);
@@ -37,3 +42,4 @@ export function createRouter(io: Server) {
 
   return router;
 }
+

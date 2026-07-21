@@ -16,6 +16,8 @@ model User {
   role          String            @default("employee")
   created_at    DateTime          @default(now())
   sessions      TrackingSession[] @relation("TrackingSessionCreator")
+  delivery_records_created DeliveryRecord[] @relation("DeliveryRecordCreator")
+  delivery_records_cancelled DeliveryRecord[] @relation("DeliveryRecordCanceller")
 
   @@map("users")
 }
@@ -31,6 +33,7 @@ model DeliveryPerson {
   created_at DateTime          @default(now())
   updated_at DateTime          @updatedAt
   sessions   TrackingSession[]
+  delivery_records DeliveryRecord[]
 
   @@map("delivery_people")
 }
@@ -68,3 +71,22 @@ model TrackingSession {
   @@index([delivery_person_id, status])
   @@map("tracking_sessions")
 }
+
+model DeliveryRecord {
+  id                   String         @id @default(cuid())
+  invoice_number       String         @unique
+  delivery_person_id   String
+  created_by_user_id   String
+  notes                String?
+  created_at           DateTime       @default(now())
+  cancelled_at         DateTime?
+  cancelled_by_user_id String?
+  delivery_person      DeliveryPerson @relation(fields: [delivery_person_id], references: [id], onDelete: Restrict)
+  created_by_user      User           @relation("DeliveryRecordCreator", fields: [created_by_user_id], references: [id], onDelete: Restrict)
+  cancelled_by_user    User?          @relation("DeliveryRecordCanceller", fields: [cancelled_by_user_id], references: [id], onDelete: Restrict)
+
+  @@index([created_at])
+  @@index([delivery_person_id, created_at])
+  @@map("delivery_records")
+}
+

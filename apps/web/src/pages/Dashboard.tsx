@@ -2,6 +2,7 @@ import { LogOut, RefreshCcw, Send, Settings } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { clearToken, getToken, listDeliveryPeople } from "../api";
 import { getAuthType, hasPermission, logout } from "../auth";
+import { DeliveryRecordsPanel } from "../components/DeliveryRecordsPanel";
 import { GenerateLinkModal } from "../components/GenerateLinkModal";
 import { SettingsModal } from "../components/SettingsModal";
 import { TrackingMap } from "../components/TrackingMap";
@@ -41,10 +42,12 @@ export function Dashboard() {
   const [modalPerson, setModalPerson] = useState<DeliveryPerson | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [theme, setTheme] = useState<"classic" | "dark">(() => localStorage.getItem("tracking_theme") === "dark" ? "dark" : "classic");
+  const [sidebarTab, setSidebarTab] = useState<"fleet" | "deliveries">("fleet");
   const selectedPerson = selected ?? people[0] ?? null;
   const canManageFleet = hasPermission("trackflow:manage-delivery-people");
   const canCreatePublicLinks = hasPermission("trackflow:create-public-links");
   const canManageSettings = hasPermission("trackflow:manage-settings");
+  const canManageDeliveries = hasPermission("trackflow:manage-deliveries");
 
   async function refresh() {
     const response = await listDeliveryPeople();
@@ -114,56 +117,69 @@ export function Dashboard() {
               </div>
               <span className="rounded-md border border-white/10 bg-white/10 px-2 py-1 text-xs font-semibold">{people.length} ativos</span>
             </div>
-            <div className="grid grid-cols-3 gap-2 text-center text-xs">
-              <div className="fleet-stat"><strong>{counts.online}</strong><span>online</span></div>
-              <div className="fleet-stat"><strong>{counts.signal}</strong><span>sem sinal</span></div>
-              <div className="fleet-stat"><strong>{counts.offline}</strong><span>offline</span></div>
+            <div className="mb-3 grid grid-cols-2 gap-2 text-xs">
+              <button className={`rounded-md border px-3 py-2 font-semibold ${sidebarTab === "fleet" ? "bg-white text-ink" : "border-white/10 bg-white/10 text-white"}`} onClick={() => setSidebarTab("fleet")}>Frota</button>
+              <button className={`rounded-md border px-3 py-2 font-semibold ${sidebarTab === "deliveries" ? "bg-white text-ink" : "border-white/10 bg-white/10 text-white"}`} onClick={() => setSidebarTab("deliveries")}>Entregas</button>
             </div>
+            {sidebarTab === "fleet" ? (
+              <div className="grid grid-cols-3 gap-2 text-center text-xs">
+                <div className="fleet-stat"><strong>{counts.online}</strong><span>online</span></div>
+                <div className="fleet-stat"><strong>{counts.signal}</strong><span>sem sinal</span></div>
+                <div className="fleet-stat"><strong>{counts.offline}</strong><span>offline</span></div>
+              </div>
+            ) : null}
           </div>
-          <div className="max-h-[calc(100vh-150px)] overflow-auto">
-            {people.map((person) => (
-              <button
-                key={person.id}
-                className={`fleet-card w-full border-b border-line px-4 py-4 text-left ${selectedPerson?.id === person.id ? "selected" : ""}`}
-                onClick={() => setSelected(person)}
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <div className="min-w-0">
-                    <h2 className="truncate font-semibold">{person.name}</h2>
-                    <p className="text-xs text-muted">{person.device_id}</p>
-                  </div>
-                  <span className={`status-pill ${statusClass(person.computed_status)}`}>
-                    <span />
-                    {statusLabel(person.computed_status)}
-                  </span>
-                </div>
-                <div className="mt-4 grid grid-cols-[1fr_auto] items-end gap-3">
-                  <div>
-                    <div className="mb-1 flex items-center justify-between text-xs text-muted">
-                      <span>Bateria</span>
-                      <strong className="text-ink">{person.last_location?.battery ?? "-"}%</strong>
+
+          {sidebarTab === "fleet" ? (
+            <div className="max-h-[calc(100vh-150px)] overflow-auto">
+              {people.map((person) => (
+                <button
+                  key={person.id}
+                  className={`fleet-card w-full border-b border-line px-4 py-4 text-left ${selectedPerson?.id === person.id ? "selected" : ""}`}
+                  onClick={() => setSelected(person)}
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <h2 className="truncate font-semibold">{person.name}</h2>
+                      <p className="text-xs text-muted">{person.device_id}</p>
                     </div>
-                    <div className="battery-track">
-                      <div
-                        className={`battery-fill ${batteryClass(person.last_location?.battery)}`}
-                        style={{ width: `${Math.max(0, Math.min(100, person.last_location?.battery ?? 0))}%` }}
-                      />
+                    <span className={`status-pill ${statusClass(person.computed_status)}`}>
+                      <span />
+                      {statusLabel(person.computed_status)}
+                    </span>
+                  </div>
+                  <div className="mt-4 grid grid-cols-[1fr_auto] items-end gap-3">
+                    <div>
+                      <div className="mb-1 flex items-center justify-between text-xs text-muted">
+                        <span>Bateria</span>
+                        <strong className="text-ink">{person.last_location?.battery ?? "-"}%</strong>
+                      </div>
+                      <div className="battery-track">
+                        <div
+                          className={`battery-fill ${batteryClass(person.last_location?.battery)}`}
+                          style={{ width: `${Math.max(0, Math.min(100, person.last_location?.battery ?? 0))}%` }}
+                        />
+                      </div>
+                    </div>
+                    <div className="speed-box">
+                      <strong>{formatSpeed(person.last_location?.speed)}</strong>
+                      <span>km/h</span>
                     </div>
                   </div>
-                  <div className="speed-box">
-                    <strong>{formatSpeed(person.last_location?.speed)}</strong>
-                    <span>km/h</span>
+                  <div className="mt-3 space-y-1 text-xs text-muted">
+                    <p>Ultima: {fmt(person.last_location?.timestamp)}</p>
+                    <p>
+                      Local: {person.last_location ? `${person.last_location.lat.toFixed(5)}, ${person.last_location.lng.toFixed(5)}` : "-"}
+                    </p>
                   </div>
-                </div>
-                <div className="mt-3 space-y-1 text-xs text-muted">
-                  <p>Ultima: {fmt(person.last_location?.timestamp)}</p>
-                  <p>
-                    Local: {person.last_location ? `${person.last_location.lat.toFixed(5)}, ${person.last_location.lng.toFixed(5)}` : "-"}
-                  </p>
-                </div>
-              </button>
-            ))}
-          </div>
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className="max-h-[calc(100vh-150px)] overflow-auto">
+              <DeliveryRecordsPanel deliveryPeople={people} canManageDeliveries={canManageDeliveries} />
+            </div>
+          )}
         </aside>
 
         <section className="grid grid-rows-[1fr_auto]">
