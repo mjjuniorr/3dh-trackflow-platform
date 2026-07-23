@@ -21,6 +21,7 @@ trackflow:create-public-links
 trackflow:revoke-public-links
 trackflow:manage-settings
 trackflow:manage-deliveries
+trackflow:view-reports
 trackflow:admin
 ```
 
@@ -30,6 +31,7 @@ trackflow:admin
 - revoke-public-links: revogar links publicos;
 - manage-settings: administrar configuracoes tecnicas, incluindo Kafka;
 - manage-deliveries: registrar e cancelar entregas por nota fiscal;
+- view-reports: consultar relatorios operacionais de entregas por NF;
 - admin: reservado para operacoes futuras de alto impacto.
 
 ## Modos
@@ -123,12 +125,15 @@ Na homologacao conjunta, o TrackFlow usa `http://localhost:4181` porque a porta 
 - Socket.IO rejeita usuario sem `view`;
 - comandos da UI acompanham as roles;
 - usuarios com `trackflow:manage-deliveries` registram e cancelam entregas por NF;
+- usuarios com `trackflow:view-reports` consultam relatorios operacionais;
 - API bloqueia chamadas diretas sem role;
 - links publicos continuam sem login;
 - Android e placas continuam usando os endpoints de telemetria;
 - logout encerra a sessao no Keycloak;
 - login legado funciona durante `hybrid`;
 - dados existentes permanecem intactos.
+
+
 
 
 

@@ -10,6 +10,7 @@ O 3DH TrackFlow e uma plataforma de rastreamento em tempo real para frota. Ela p
 - mapa com todos os veiculos ativos;
 - cadastro e edicao de entregadores/veiculos;
 - registro administrativo de entregas por nota fiscal unica;
+- relatorio operacional de entregas por NF com filtros e permissao propria;
 - links publicos temporarios para clientes;
 - app Android para cadastro e envio de telemetria;
 - consumo de telemetria via Kafka;
@@ -167,6 +168,7 @@ As tags `producao` sao sobrescritas. Depois de publicar nova imagem, e preciso f
 docker service update --force 3dh-trackflow-platform_frontend
 docker service update --force 3dh-trackflow-platform_backend
 ```
+
 
 
 

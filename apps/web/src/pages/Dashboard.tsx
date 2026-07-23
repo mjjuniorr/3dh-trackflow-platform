@@ -1,9 +1,10 @@
-import { LogOut, RefreshCcw, Send, Settings } from "lucide-react";
+import { BarChart3, LogOut, Map, RefreshCcw, Send, Settings } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { clearToken, getToken, listDeliveryPeople } from "../api";
 import { getAuthType, hasPermission, logout } from "../auth";
 import { DeliveryRecordsPanel } from "../components/DeliveryRecordsPanel";
 import { GenerateLinkModal } from "../components/GenerateLinkModal";
+import { ReportsPanel } from "../components/ReportsPanel";
 import { SettingsModal } from "../components/SettingsModal";
 import { TrackingMap } from "../components/TrackingMap";
 import { createSocket } from "../socket";
@@ -42,11 +43,13 @@ export function Dashboard() {
   const [modalPerson, setModalPerson] = useState<DeliveryPerson | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [theme, setTheme] = useState<"classic" | "dark">(() => localStorage.getItem("tracking_theme") === "dark" ? "dark" : "classic");
+  const [view, setView] = useState<"tracking" | "reports">(() => window.location.pathname === "/dashboard/reports" && hasPermission("trackflow:view-reports") ? "reports" : "tracking");
   const selectedPerson = selected ?? people[0] ?? null;
   const canManageFleet = hasPermission("trackflow:manage-delivery-people");
   const canCreatePublicLinks = hasPermission("trackflow:create-public-links");
   const canManageSettings = hasPermission("trackflow:manage-settings");
   const canManageDeliveries = hasPermission("trackflow:manage-deliveries");
+  const canViewReports = hasPermission("trackflow:view-reports");
 
   async function refresh() {
     const response = await listDeliveryPeople();
@@ -77,7 +80,15 @@ export function Dashboard() {
     offline: people.filter((person) => person.computed_status === "offline").length,
     signal: people.filter((person) => person.computed_status === "sem sinal").length
   }), [people]);
+  useEffect(() => {
+    if (view === "reports" && !canViewReports) switchView("tracking");
+  }, [canViewReports, view]);
 
+  function switchView(nextView: "tracking" | "reports") {
+    if (nextView === "reports" && !canViewReports) return;
+    setView(nextView);
+    window.history.replaceState(null, "", nextView === "reports" ? "/dashboard/reports" : "/dashboard");
+  }
   return (
     <main className="min-h-screen bg-panel text-ink">
       <header className="app-chrome flex flex-wrap items-center justify-between gap-3 border-b px-5 py-4">
@@ -94,6 +105,12 @@ export function Dashboard() {
             <RefreshCcw size={16} />
             Atualizar
           </button>
+          {canViewReports ? (
+            <button className="app-chrome-button inline-flex items-center gap-2 rounded-md border px-3 py-2 text-sm font-semibold" onClick={() => switchView(view === "reports" ? "tracking" : "reports")}>
+              {view === "reports" ? <Map size={16} /> : <BarChart3 size={16} />}
+              {view === "reports" ? "Mapa" : "Relatorios"}
+            </button>
+          ) : null}
           {canManageFleet || canManageSettings ? (
             <button className="app-chrome-button inline-flex items-center gap-2 rounded-md border px-3 py-2 text-sm font-semibold" onClick={() => setSettingsOpen(true)} aria-label="Configuracoes">
               <Settings size={16} />
@@ -106,7 +123,7 @@ export function Dashboard() {
         </div>
       </header>
 
-      <section className="grid min-h-[calc(100vh-73px)] grid-cols-1 xl:grid-cols-[360px_minmax(520px,1fr)_340px]">
+      <section className={`grid min-h-[calc(100vh-73px)] grid-cols-1 ${view === "reports" ? "xl:grid-cols-[360px_minmax(0,1fr)]" : "xl:grid-cols-[360px_minmax(520px,1fr)_340px]"}`}>
         <aside className="app-sidebar border-r border-line">
           <div className="app-sidebar-header border-b px-4 py-4">
             <div className="mb-3 flex items-center justify-between gap-3">
@@ -169,29 +186,35 @@ export function Dashboard() {
           </div>
         </aside>
 
-        <section className="grid min-h-[520px] grid-rows-[1fr_auto]">
-          <TrackingMap deliveryPeople={people} />
-          <div className="app-footer flex flex-wrap items-center justify-between gap-3 border-t px-5 py-4">
-            <div>
-              <p className="text-sm font-semibold">{selectedPerson?.name ?? "Selecione um entregador"}</p>
-              <p className="text-xs text-muted">{selectedPerson?.device_id ?? "Nenhum device selecionado"}</p>
-            </div>
-            {canCreatePublicLinks ? (
-              <button
-                className="btn-primary inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-semibold disabled:opacity-50"
-                disabled={!selectedPerson}
-                onClick={() => selectedPerson && setModalPerson(selectedPerson)}
-              >
-                <Send size={16} />
-                Gerar link de rastreio
-              </button>
-            ) : null}
-          </div>
-        </section>
+        {view === "reports" ? (
+          <ReportsPanel deliveryPeople={people} />
+        ) : (
+          <>
+            <section className="grid min-h-[520px] grid-rows-[1fr_auto]">
+              <TrackingMap deliveryPeople={people} />
+              <div className="app-footer flex flex-wrap items-center justify-between gap-3 border-t px-5 py-4">
+                <div>
+                  <p className="text-sm font-semibold">{selectedPerson?.name ?? "Selecione um entregador"}</p>
+                  <p className="text-xs text-muted">{selectedPerson?.device_id ?? "Nenhum device selecionado"}</p>
+                </div>
+                {canCreatePublicLinks ? (
+                  <button
+                    className="btn-primary inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-semibold disabled:opacity-50"
+                    disabled={!selectedPerson}
+                    onClick={() => selectedPerson && setModalPerson(selectedPerson)}
+                  >
+                    <Send size={16} />
+                    Gerar link de rastreio
+                  </button>
+                ) : null}
+              </div>
+            </section>
 
-        <aside className="border-l border-line bg-panel">
-          <DeliveryRecordsPanel deliveryPeople={people} canManageDeliveries={canManageDeliveries} />
-        </aside>
+            <aside className="border-l border-line bg-panel">
+              <DeliveryRecordsPanel deliveryPeople={people} canManageDeliveries={canManageDeliveries} />
+            </aside>
+          </>
+        )}
       </section>
 
       {modalPerson ? <GenerateLinkModal person={modalPerson} onClose={() => setModalPerson(null)} /> : null}
@@ -210,3 +233,8 @@ export function Dashboard() {
     </main>
   );
 }
+
+
+
+
+

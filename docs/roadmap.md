@@ -51,3 +51,23 @@
    - configurar secrets via Portainer;
    - rate limit por rota;
    - politica de retencao de eventos.
+
+## Backlog de relatorios e auditoria
+
+- Relatorio operacional de entregas:
+  - criar permissao `trackflow:view-reports`;
+  - consultar entregas por API;
+  - filtrar por periodo, entregador, status e numero da NF;
+  - exibir total por periodo e por entregador;
+  - exportar dados operacionais quando a primeira tela estiver validada.
+- Cruzamento com localizacao:
+  - registrar como evolucao futura do relatorio;
+  - cruzar NF registrada com eventos de localizacao do entregador;
+  - permitir auditoria por data/hora de entrega e posicao aproximada;
+  - definir antes da implementacao qual regra confirma uma entrega por localizacao.
+- Integracao Bling para auditoria de NF:
+  - consultar a NF no Bling pelo numero informado;
+  - comparar numero da NF, data de emissao da NF e dia em que a entrega foi registrada;
+  - armazenar apenas os dados necessarios para auditoria, sem transformar o Bling em fonte principal do rastreio;
+  - tratar falhas do Bling sem bloquear o registro operacional da entrega, salvo decisao futura em contrario.
+

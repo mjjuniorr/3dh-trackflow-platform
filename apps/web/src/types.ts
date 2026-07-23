@@ -66,3 +66,34 @@ export type DeliveryRecordSummary = {
     total: number;
   }>;
 };
+export type DeliveryReportSummary = {
+  total: number;
+  active: number;
+  cancelled: number;
+  by_delivery_person: Array<{
+    delivery_person_id: string;
+    name: string;
+    total: number;
+    active: number;
+    cancelled: number;
+  }>;
+};
+
+export type DeliveryReportResponse = {
+  filters: {
+    from: string;
+    to: string;
+    driverId: string | null;
+    invoiceNumber: string | null;
+    status: "all" | "active" | "cancelled";
+  };
+  pagination: {
+    page: number;
+    pageSize: number;
+    totalItems: number;
+    totalPages: number;
+  };
+  summary: DeliveryReportSummary;
+  records: DeliveryRecord[];
+};
+

@@ -5,6 +5,7 @@ import { createDeliveryPerson, deactivateDeliveryPerson, registerMobileDeliveryP
 import { cancelDeliveryRecord, createDeliveryRecord, listDeliveryRecords } from "./delivery-records.js";
 import { listDeliveryPeopleWithLocations } from "./location-store.js";
 import { createMobileHandlers } from "./mobile.js";
+import { listDeliveryReport } from "./reports.js";
 import { createTrackingSession, getPublicTrackingSession, revokeTrackingSession } from "./tracking-sessions.js";
 import { createSettingsHandlers } from "./settings.js";
 
@@ -30,6 +31,8 @@ export function createRouter(io: Server) {
   router.post("/delivery-records", requireAuth, requirePermission("trackflow:manage-deliveries"), createDeliveryRecord);
   router.post("/delivery-records/:id/cancel", requireAuth, requirePermission("trackflow:manage-deliveries"), cancelDeliveryRecord);
 
+  router.get("/reports/deliveries", requireAuth, requirePermission("trackflow:view-reports"), listDeliveryReport);
+
   router.get("/settings/kafka", requireAuth, requirePermission("trackflow:manage-settings"), settings.getKafkaSettings);
   router.post("/settings/kafka", requireAuth, requirePermission("trackflow:manage-settings"), settings.saveKafkaSettings);
   router.post("/settings/kafka/test", requireAuth, requirePermission("trackflow:manage-settings"), settings.testKafkaSettings);
@@ -42,4 +45,5 @@ export function createRouter(io: Server) {
 
   return router;
 }
+
 

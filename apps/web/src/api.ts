@@ -1,4 +1,4 @@
-import type { DeliveryPerson, DeliveryRecord, DeliveryRecordSummary, PublicTrackingPayload, VehicleType } from "./types";
+import type { DeliveryPerson, DeliveryRecord, DeliveryRecordSummary, DeliveryReportResponse, PublicTrackingPayload, VehicleType } from "./types";
 import { clearAuthentication, getAccessToken, setLegacyToken } from "./auth";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
@@ -82,6 +82,25 @@ export async function cancelDeliveryRecord(id: string) {
     method: "POST"
   });
 }
+
+export type DeliveryReportFilters = {
+  from?: string;
+  to?: string;
+  driverId?: string;
+  invoiceNumber?: string;
+  status?: "all" | "active" | "cancelled";
+  page?: number;
+  pageSize?: number;
+};
+
+export async function listDeliveryReport(filters: DeliveryReportFilters = {}) {
+  const params = new URLSearchParams();
+  Object.entries(filters).forEach(([key, value]) => {
+    if (value !== undefined && value !== "") params.set(key, String(value));
+  });
+  const query = params.toString() ? `?${params.toString()}` : "";
+  return request<DeliveryReportResponse>(`/api/reports/deliveries${query}`);
+}
 export async function createTrackingSession(deliveryPersonId: string, expiresInMinutes: number, title?: string) {
   return request<{ public_path?: string; public_url?: string; session: { id: string; expires_at: string } }>("/api/tracking-sessions", {
     method: "POST",
@@ -144,4 +163,5 @@ export async function saveServiceDomainSettings(settings: ServiceDomainSettings,
     body: JSON.stringify({ ...settings, ...(adminPassword ? { admin_password: adminPassword } : {}) })
   });
 }
+
 
