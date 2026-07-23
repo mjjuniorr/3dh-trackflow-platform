@@ -1,6 +1,6 @@
 services:
   frontend:
-    image: ghcr.io/mjjuniorr/3dh-trackflow-web:3d174bf562577ae9a20f6799fee143d3f86c1c8c
+    image: ghcr.io/mjjuniorr/3dh-trackflow-web:ac59dba3e5e42609d53c9f925b650dac595412e9
     networks:
       - PortainerRede
     depends_on:
@@ -19,7 +19,7 @@ services:
         - traefik.http.services.trackflow-prod.loadbalancer.server.port=80
 
   backend:
-    image: ghcr.io/mjjuniorr/3dh-trackflow-backend:7f9cc003e2af01fa6aee1512191c9b0915fef243
+    image: ghcr.io/mjjuniorr/3dh-trackflow-backend:ac59dba3e5e42609d53c9f925b650dac595412e9
     environment:
       NODE_ENV: production
       PORT: 4000
@@ -93,3 +93,6 @@ networks:
   PortainerRede:
     external: true
     name: PortainerRede
+
+
+
