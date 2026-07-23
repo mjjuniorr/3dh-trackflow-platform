@@ -1,6 +1,6 @@
 services:
   frontend:
-    image: ghcr.io/mjjuniorr/3dh-trackflow-web:7f9cc003e2af01fa6aee1512191c9b0915fef243
+    image: ghcr.io/mjjuniorr/3dh-trackflow-web:3d174bf562577ae9a20f6799fee143d3f86c1c8c
     networks:
       - PortainerRede
     depends_on:
@@ -93,4 +93,3 @@ networks:
   PortainerRede:
     external: true
     name: PortainerRede
-
