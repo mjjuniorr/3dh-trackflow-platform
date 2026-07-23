@@ -1,8 +1,9 @@
-import { Ban, ClipboardList, Plus, RefreshCcw } from "lucide-react";
+import { Ban, BarChart3, ClipboardList, Plus, RefreshCcw } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { cancelDeliveryRecord, createDeliveryRecord, listDeliveryRecords } from "../api";
 import { localDateKey } from "../local-date-key";
 import type { DeliveryPerson, DeliveryRecord, DeliveryRecordSummary } from "../types";
+
 
 function fmtTime(value: string) {
   return new Intl.DateTimeFormat("pt-BR", { hour: "2-digit", minute: "2-digit" }).format(new Date(value));
@@ -10,10 +11,14 @@ function fmtTime(value: string) {
 
 export function DeliveryRecordsPanel({
   deliveryPeople,
-  canManageDeliveries
+  canManageDeliveries,
+  canViewReports,
+  onOpenReports
 }: {
   deliveryPeople: DeliveryPerson[];
   canManageDeliveries: boolean;
+  canViewReports: boolean;
+  onOpenReports: () => void;
 }) {
   const [records, setRecords] = useState<DeliveryRecord[]>([]);
   const [summary, setSummary] = useState<DeliveryRecordSummary>({ total: 0, by_delivery_person: [] });
@@ -98,6 +103,12 @@ export function DeliveryRecordsPanel({
             <strong className="block text-2xl leading-tight">{summary.by_delivery_person.length}</strong>
           </div>
         </div>
+        {canViewReports ? (
+          <button className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-md border border-line px-3 py-2 text-sm font-semibold" onClick={onOpenReports}>
+            <BarChart3 size={16} />
+            Abrir relatorios
+          </button>
+        ) : null}
       </div>
 
       {canManageDeliveries ? (
@@ -158,3 +169,5 @@ export function DeliveryRecordsPanel({
     </div>
   );
 }
+
+

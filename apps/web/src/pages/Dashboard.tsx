@@ -211,7 +211,7 @@ export function Dashboard() {
             </section>
 
             <aside className="border-l border-line bg-panel">
-              <DeliveryRecordsPanel deliveryPeople={people} canManageDeliveries={canManageDeliveries} />
+              <DeliveryRecordsPanel deliveryPeople={people} canManageDeliveries={canManageDeliveries} canViewReports={canViewReports} onOpenReports={() => switchView("reports")} />
             </aside>
           </>
         )}
