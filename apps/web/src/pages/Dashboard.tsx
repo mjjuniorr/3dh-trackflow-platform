@@ -93,7 +93,7 @@ export function Dashboard() {
     <main className="min-h-screen bg-panel text-ink">
       <header className="app-chrome flex flex-wrap items-center justify-between gap-3 border-b px-5 py-4">
         <div className="flex items-center gap-3">
-          <div className="brand-mark">3DH</div>
+          <a className="brand-logo-link" href="https://portal.3dhmanaus.com.br" title="Voltar ao Portal 3DH" aria-label="Voltar ao Portal 3DH"><img className="brand-logo-image" src="/assets/logo-3dh-manaus.png" alt="3DH Manaus" /></a>
           <div>
             <p className="brand-kicker">TrackFlow</p>
             <h1 className="text-xl font-semibold">Rastreamento em tempo real</h1>
