@@ -1,11 +1,8 @@
 import { Ban, ClipboardList, Plus, RefreshCcw } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { cancelDeliveryRecord, createDeliveryRecord, listDeliveryRecords } from "../api";
+import { localDateKey } from "../local-date-key";
 import type { DeliveryPerson, DeliveryRecord, DeliveryRecordSummary } from "../types";
-
-function todayKey() {
-  return new Date().toISOString().slice(0, 10);
-}
 
 function fmtTime(value: string) {
   return new Intl.DateTimeFormat("pt-BR", { hour: "2-digit", minute: "2-digit" }).format(new Date(value));
@@ -33,7 +30,7 @@ export function DeliveryRecordsPanel({
   }, [activePeople, deliveryPersonId]);
 
   async function refresh() {
-    const response = await listDeliveryRecords(todayKey());
+    const response = await listDeliveryRecords(localDateKey());
     setRecords(response.records);
     setSummary(response.summary);
   }
