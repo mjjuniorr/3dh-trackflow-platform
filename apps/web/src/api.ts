@@ -83,6 +83,12 @@ export async function cancelDeliveryRecord(id: string) {
   });
 }
 
+export async function validateDeliveryRecordWithBling(id: string) {
+  return request<{ record: DeliveryRecord }>(`/api/delivery-records/${id}/validate-bling`, {
+    method: "POST"
+  });
+}
+
 export type DeliveryReportFilters = {
   from?: string;
   to?: string;
@@ -163,5 +169,3 @@ export async function saveServiceDomainSettings(settings: ServiceDomainSettings,
     body: JSON.stringify({ ...settings, ...(adminPassword ? { admin_password: adminPassword } : {}) })
   });
 }
-
-

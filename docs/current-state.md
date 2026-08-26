@@ -11,6 +11,7 @@ O 3DH TrackFlow e uma plataforma de rastreamento em tempo real para frota. Ela p
 - cadastro e edicao de entregadores/veiculos;
 - registro administrativo de entregas por nota fiscal unica;
 - relatorio operacional de entregas por NF com filtros e permissao propria;
+- auditoria de NF no Bling via webhook n8n, mantendo OAuth fora do TrackFlow;
 - links publicos temporarios para clientes;
 - app Android para cadastro e envio de telemetria;
 - consumo de telemetria via Kafka;
@@ -95,6 +96,24 @@ Modelos principais:
 
 `DeliveryRecord.invoice_number` e unico para sempre. Cancelamentos sao logicos, preservando auditoria.
 
+`DeliveryRecord` tambem guarda o resultado da validacao Bling:
+
+```text
+bling_validation_status
+bling_document_type
+bling_issue_date
+bling_validated_at
+bling_error
+```
+
+O TrackFlow nao armazena token OAuth do Bling. A API protegida chama um webhook n8n usando `BLING_VALIDATION_WEBHOOK_URL` e `BLING_VALIDATION_SECRET`. O n8n consulta Bling com sua credencial OAuth e retorna somente o resultado sanitizado.
+
+Requisitos completos:
+
+```text
+docs/requirements-bling-validation.md
+```
+
 `DeliveryPerson.vehicle_type` e texto com default `motorcycle`.
 
 Migration que criou a coluna:
@@ -168,8 +187,3 @@ As tags `producao` sao sobrescritas. Depois de publicar nova imagem, e preciso f
 docker service update --force 3dh-trackflow-platform_frontend
 docker service update --force 3dh-trackflow-platform_backend
 ```
-
-
-
-
-

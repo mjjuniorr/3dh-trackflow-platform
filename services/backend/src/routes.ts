@@ -1,6 +1,7 @@
 import { Router } from "express";
 import type { Server } from "socket.io";
 import { authConfig, currentUser, login, requireAdmin, requireAuth, requirePermission } from "./auth.js";
+import { validateDeliveryRecordWithBling } from "./bling-validation.js";
 import { createDeliveryPerson, deactivateDeliveryPerson, registerMobileDeliveryPerson, updateDeliveryPerson } from "./delivery-people.js";
 import { cancelDeliveryRecord, createDeliveryRecord, listDeliveryRecords } from "./delivery-records.js";
 import { listDeliveryPeopleWithLocations } from "./location-store.js";
@@ -30,6 +31,7 @@ export function createRouter(io: Server) {
   router.get("/delivery-records", requireAuth, requirePermission("trackflow:view"), listDeliveryRecords);
   router.post("/delivery-records", requireAuth, requirePermission("trackflow:manage-deliveries"), createDeliveryRecord);
   router.post("/delivery-records/:id/cancel", requireAuth, requirePermission("trackflow:manage-deliveries"), cancelDeliveryRecord);
+  router.post("/delivery-records/:id/validate-bling", requireAuth, requirePermission("trackflow:view-reports"), validateDeliveryRecordWithBling);
 
   router.get("/reports/deliveries", requireAuth, requirePermission("trackflow:view-reports"), listDeliveryReport);
 
@@ -45,5 +47,3 @@ export function createRouter(io: Server) {
 
   return router;
 }
-
-

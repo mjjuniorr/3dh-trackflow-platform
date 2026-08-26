@@ -1,6 +1,6 @@
-import { BarChart3, ChevronLeft, ChevronRight, Search } from "lucide-react";
+import { BarChart3, ChevronLeft, ChevronRight, RefreshCw, Search } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { listDeliveryReport, type DeliveryReportFilters } from "../api";
+import { listDeliveryReport, validateDeliveryRecordWithBling, type DeliveryReportFilters } from "../api";
 import { localDateKey } from "../local-date-key";
 import type { DeliveryPerson, DeliveryReportResponse } from "../types";
 
@@ -19,12 +19,29 @@ function statusText(cancelledAt?: string | null) {
   return cancelledAt ? "Cancelada" : "Ativa";
 }
 
+function validationText(status?: string) {
+  if (status === "valid") return "Validada";
+  if (status === "not_found") return "Nao encontrada";
+  if (status === "divergent") return "Divergente";
+  if (status === "error") return "Erro";
+  return "Pendente";
+}
+
+function validationClass(status?: string) {
+  if (status === "valid") return "bg-emerald-100 text-emerald-700";
+  if (status === "not_found") return "bg-amber-100 text-amber-800";
+  if (status === "divergent") return "bg-red-100 text-red-700";
+  if (status === "error") return "bg-slate-200 text-slate-700";
+  return "bg-slate-100 text-slate-600";
+}
+
 export function ReportsPanel({ deliveryPeople }: { deliveryPeople: DeliveryPerson[] }) {
   const today = useMemo(() => localDateKey(), []);
   const [filters, setFilters] = useState<DeliveryReportFilters>({ from: today, to: today, status: "all", page: 1, pageSize: 25 });
   const [draft, setDraft] = useState<DeliveryReportFilters>({ from: today, to: today, status: "all", pageSize: 25 });
   const [report, setReport] = useState<DeliveryReportResponse>(initialReport);
   const [loading, setLoading] = useState(false);
+  const [validatingId, setValidatingId] = useState<string | null>(null);
   const [message, setMessage] = useState("");
 
   async function load(nextFilters = filters) {
@@ -54,6 +71,22 @@ export function ReportsPanel({ deliveryPeople }: { deliveryPeople: DeliveryPerso
     const next = { ...filters, page };
     setFilters(next);
     void load(next);
+  }
+
+  async function validateRecord(id: string) {
+    setValidatingId(id);
+    setMessage("");
+    try {
+      const response = await validateDeliveryRecordWithBling(id);
+      setReport((current) => ({
+        ...current,
+        records: current.records.map((record) => record.id === id ? response.record : record)
+      }));
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Nao foi possivel validar a NF no Bling.");
+    } finally {
+      setValidatingId(null);
+    }
   }
 
   return (
@@ -122,6 +155,7 @@ export function ReportsPanel({ deliveryPeople }: { deliveryPeople: DeliveryPerso
                   <th className="px-4 py-3">Lancamento</th>
                   <th className="px-4 py-3">Usuario</th>
                   <th className="px-4 py-3">Status</th>
+                  <th className="px-4 py-3">Validacao</th>
                   <th className="px-4 py-3">Observacao</th>
                 </tr>
               </thead>
@@ -133,10 +167,18 @@ export function ReportsPanel({ deliveryPeople }: { deliveryPeople: DeliveryPerso
                     <td className="px-4 py-3">{fmtDateTime(record.created_at)}</td>
                     <td className="px-4 py-3">{record.created_by_user.name}</td>
                     <td className="px-4 py-3"><span className={`rounded-full px-2 py-1 text-xs font-semibold ${record.cancelled_at ? "bg-red-100 text-red-700" : "bg-emerald-100 text-emerald-700"}`}>{statusText(record.cancelled_at)}</span></td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        <span className={`rounded-full px-2 py-1 text-xs font-semibold ${validationClass(record.bling_validation_status)}`}>{validationText(record.bling_validation_status)}</span>
+                        <button className="rounded-md border border-line p-1.5 disabled:opacity-40" onClick={() => validateRecord(record.id)} disabled={loading || validatingId === record.id || Boolean(record.cancelled_at)} title="Validar NF no Bling" aria-label={`Validar NF ${record.invoice_number} no Bling`}>
+                          <RefreshCw size={14} className={validatingId === record.id ? "animate-spin" : ""} />
+                        </button>
+                      </div>
+                    </td>
                     <td className="max-w-[220px] truncate px-4 py-3 text-muted">{record.notes || "-"}</td>
                   </tr>
                 )) : (
-                  <tr><td className="px-4 py-6 text-center text-muted" colSpan={6}>Nenhuma entrega encontrada para os filtros.</td></tr>
+                  <tr><td className="px-4 py-6 text-center text-muted" colSpan={7}>Nenhuma entrega encontrada para os filtros.</td></tr>
                 )}
               </tbody>
             </table>

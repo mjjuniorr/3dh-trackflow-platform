@@ -53,6 +53,11 @@ export type DeliveryRecord = {
   created_at: string;
   cancelled_at?: string | null;
   cancelled_by_user_id?: string | null;
+  bling_validation_status?: "pending" | "valid" | "not_found" | "divergent" | "error";
+  bling_document_type?: "nfe" | "nfce" | null;
+  bling_issue_date?: string | null;
+  bling_validated_at?: string | null;
+  bling_error?: string | null;
   delivery_person: Pick<DeliveryPerson, "id" | "name" | "device_id" | "vehicle_type">;
   created_by_user: DeliveryRecordUser;
   cancelled_by_user?: DeliveryRecordUser | null;
@@ -96,4 +101,3 @@ export type DeliveryReportResponse = {
   summary: DeliveryReportSummary;
   records: DeliveryRecord[];
 };
-

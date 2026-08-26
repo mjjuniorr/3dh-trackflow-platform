@@ -81,6 +81,11 @@ model DeliveryRecord {
   created_at           DateTime       @default(now())
   cancelled_at         DateTime?
   cancelled_by_user_id String?
+  bling_validation_status String     @default("pending")
+  bling_document_type  String?
+  bling_issue_date     DateTime?
+  bling_validated_at   DateTime?
+  bling_error          String?
   delivery_person      DeliveryPerson @relation(fields: [delivery_person_id], references: [id], onDelete: Restrict)
   created_by_user      User           @relation("DeliveryRecordCreator", fields: [created_by_user_id], references: [id], onDelete: Restrict)
   cancelled_by_user    User?          @relation("DeliveryRecordCanceller", fields: [cancelled_by_user_id], references: [id], onDelete: Restrict)
@@ -89,4 +94,3 @@ model DeliveryRecord {
   @@index([delivery_person_id, created_at])
   @@map("delivery_records")
 }
-

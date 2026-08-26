@@ -45,5 +45,7 @@ export const config = {
   kafkaSaslMechanism: process.env.KAFKA_SASL_MECHANISM,
   kafkaSaslUsername: process.env.KAFKA_SASL_USERNAME,
   kafkaSaslPassword: process.env.KAFKA_SASL_PASSWORD,
-  mobileRegistrationSecret: process.env.MOBILE_REGISTRATION_SECRET
+  mobileRegistrationSecret: process.env.MOBILE_REGISTRATION_SECRET,
+  blingValidationWebhookUrl: process.env.BLING_VALIDATION_WEBHOOK_URL,
+  blingValidationSecret: process.env.BLING_VALIDATION_SECRET
 };

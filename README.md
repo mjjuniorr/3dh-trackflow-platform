@@ -248,10 +248,45 @@ Usuario padrao configuravel por ambiente:
 
 - `POST /api/auth/login`
 - `GET /api/delivery-people`
+- `GET /api/reports/deliveries`
+- `POST /api/delivery-records/:id/validate-bling`
 - `POST /api/tracking-sessions`
 - `POST /api/tracking-sessions/:id/revoke`
 - `GET /api/public/:publicToken`
 - `GET /health`
+
+## Auditoria Bling por n8n
+
+O TrackFlow valida NFs pelo backend, sem expor OAuth do Bling no frontend. A rota protegida `POST /api/delivery-records/:id/validate-bling` envia para o n8n:
+
+```json
+{
+  "record_id": "id_do_lancamento",
+  "invoice_number": "000445",
+  "issue_date": "2026-08-25",
+  "issue_date_end": "2026-08-26"
+}
+```
+
+Configure no backend:
+
+```env
+BLING_VALIDATION_WEBHOOK_URL=https://n8n.3dhmanaus.shop/webhook/trackflow/bling/validate-invoice
+BLING_VALIDATION_SECRET=troque_este_segredo
+```
+
+O webhook n8n deve validar o header `X-TrackFlow-Bling-Secret`, consultar NF-e e NFC-e no Bling preservando zeros a esquerda e responder:
+
+```json
+{
+  "found": true,
+  "document_type": "nfe",
+  "invoice_number": "000445",
+  "issue_date": "2026-08-25",
+  "status": "6",
+  "divergent": false
+}
+```
 
 ## Tempo real
 
@@ -264,6 +299,8 @@ Usuario padrao configuravel por ambiente:
 - `docs/testing.md`: simulacoes Kafka e roteiro de validacao manual.
 - `docs/HANDOFF.md`: resumo para continuar em outra conversa Codex.
 - `docs/current-state.md`: estado atual do produto, deploy e problemas conhecidos.
+- `docs/requirements-bling-validation.md`: requisitos funcionais, seguranca e aceite da auditoria Bling.
+- `docs/bling-validation-n8n.md`: contrato do webhook n8n para auditoria de NF no Bling.
 - `docs/vehicle-icons.md`: fluxo correto para trocar assets de veiculos.
 - `docs/operations.md`: comandos operacionais de deploy, Android e Kafka.
 - `infra/portainer/README.md`: deploy VPS com Portainer, Swarm, Traefik e registry.

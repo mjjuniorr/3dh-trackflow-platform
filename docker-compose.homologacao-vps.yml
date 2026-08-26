@@ -47,6 +47,9 @@ services:
       CORS_ORIGIN: ${CORS_ORIGIN:-https://rastreio.3dhmanaus.com.br}
       SEED_ADMIN_EMAIL: ${SEED_ADMIN_EMAIL:-admin@3dhmanaus.com.br}
       SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-admin123}
+      MOBILE_REGISTRATION_SECRET: ${MOBILE_REGISTRATION_SECRET:-}
+      BLING_VALIDATION_WEBHOOK_URL: ${BLING_VALIDATION_WEBHOOK_URL:-}
+      BLING_VALIDATION_SECRET: ${BLING_VALIDATION_SECRET:-}
     networks:
       - PortainerRede
     depends_on:

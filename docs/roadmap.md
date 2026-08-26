@@ -66,8 +66,8 @@
   - permitir auditoria por data/hora de entrega e posicao aproximada;
   - definir antes da implementacao qual regra confirma uma entrega por localizacao.
 - Integracao Bling para auditoria de NF:
-  - consultar a NF no Bling pelo numero informado;
-  - comparar numero da NF, data de emissao da NF e dia em que a entrega foi registrada;
-  - armazenar apenas os dados necessarios para auditoria, sem transformar o Bling em fonte principal do rastreio;
+  - consultar a NF no Bling pelo numero informado via webhook n8n;
+  - preservar zeros a esquerda no numero da NF;
+  - usar data inicial do lancamento e data final no dia seguinte;
+  - armazenar apenas o resultado necessario para auditoria, sem transformar o Bling em fonte principal do rastreio;
   - tratar falhas do Bling sem bloquear o registro operacional da entrega, salvo decisao futura em contrario.
-
