@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   buildBlingValidationPayload,
+  parseBlingValidationResponse,
   resolveBlingValidationStatus,
   sanitizeBlingValidationError
 } from "../dist/src/bling-validation.js";
@@ -41,6 +42,67 @@ test("resolveBlingValidationStatus marks matching authorized invoice as valid", 
       status: "6"
     }),
     "valid"
+  );
+});
+
+test("parseBlingValidationResponse accepts n8n camelCase invoice response", () => {
+  assert.deepEqual(
+    parseBlingValidationResponse({
+      found: true,
+      documentType: "nfce",
+      numero: "001466",
+      issueDate: "2026-08-26",
+      status: "5",
+      message: "NF encontrada no Bling."
+    }),
+    {
+      found: true,
+      document_type: "nfce",
+      invoice_number: "001466",
+      issue_date: "2026-08-26",
+      status: "5",
+      message: "NF encontrada no Bling."
+    }
+  );
+});
+
+test("parseBlingValidationResponse accepts n8n item-array response", () => {
+  assert.deepEqual(
+    parseBlingValidationResponse([{
+      json: {
+        found: true,
+        documentType: "nfce",
+        numero: "001468",
+        issueDate: "2026-08-27",
+        status: "5"
+      }
+    }]),
+    {
+      found: true,
+      document_type: "nfce",
+      invoice_number: "001468",
+      issue_date: "2026-08-27",
+      status: "5"
+    }
+  );
+});
+
+test("parseBlingValidationResponse coerces n8n numeric fields", () => {
+  assert.deepEqual(
+    parseBlingValidationResponse({
+      found: true,
+      documentType: "nfce",
+      numero: 1471,
+      issueDate: "2026-08-27T00:00:00-04:00",
+      status: 5
+    }),
+    {
+      found: true,
+      document_type: "nfce",
+      invoice_number: "1471",
+      issue_date: "2026-08-27",
+      status: "5"
+    }
   );
 });
 
