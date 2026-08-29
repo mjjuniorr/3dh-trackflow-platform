@@ -19,7 +19,7 @@ services:
         - traefik.http.services.trackflow-prod.loadbalancer.server.port=80
 
   backend:
-    image: ghcr.io/mjjuniorr/3dh-trackflow-backend:01c76ef8346c73b51226d29928ff2ea7d3439f01
+    image: ghcr.io/mjjuniorr/3dh-trackflow-backend:95cfa7a8f501fa889ffa1ba83a01900c5c674e5b
     environment:
       NODE_ENV: production
       PORT: 4000
