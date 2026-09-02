@@ -9,7 +9,7 @@ Este guia existe para executar o projeto sozinho, inclusive quando a conversa co
 Abra o PowerShell e entre no repositorio:
 
 ```powershell
-cd C:\Users\mjjun\Documents\Codex\2026-05-12\refine-a-aplica-o-fullstack-de
+cd C:\Users\mjjun\Documents\Codex\2026-05-21\continuar-o-projeto-3dh-trackflow-platform\3dh-trackflow-platform
 ```
 
 Confirme que esta na pasta certa:
@@ -211,6 +211,49 @@ Topico:
 
 ```text
 rastreamento
+```
+
+## Firmware GPS Board A7670SA
+
+O firmware fica em:
+
+```text
+firmware/gps-board
+```
+
+Antes de compilar, copie o modelo de segredos:
+
+```powershell
+cd firmware\gps-board
+Copy-Item include\secrets.example.h include\secrets.h
+```
+
+Edite `include\secrets.h` com Wi-Fi, endpoint TrackFlow, `MOBILE_REGISTRATION_SECRET` e `TRACKFLOW_DEVICE_ID`.
+
+Compilar:
+
+```powershell
+C:\Users\mjjun\.platformio\python3\Scripts\pio.exe run -e lilygo_a7670sa_wifi
+```
+
+Gravar na placa conectada em `COM8`:
+
+```powershell
+C:\Users\mjjun\.platformio\python3\Scripts\pio.exe run -e lilygo_a7670sa_wifi -t upload
+```
+
+Monitor serial:
+
+```powershell
+C:\Users\mjjun\.platformio\python3\Scripts\pio.exe device monitor -p COM8 -b 115200
+```
+
+Nunca commitar:
+
+```text
+firmware/gps-board/include/secrets.h
+firmware/gps-board/.pio/
+firmware/gps-board/.vscode/
 ```
 
 ## Conferir producao depois do deploy

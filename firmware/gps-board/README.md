@@ -1,10 +1,139 @@
 # 3DH TrackFlow GPS Board Firmware
 
-Modulo reservado para o firmware das placas GPS.
+Firmware inicial para a placa LILYGO TTGO T-SIM A7670SA usando Wi-Fi e GNSS
+interno.
 
-Objetivos previstos:
+Esta primeira versao ainda nao usa SIM ou dados 4G. Ela valida a placa, a
+gravacao via USB, a conexao Wi-Fi, a leitura do GNSS interno do A7670SA e o
+envio HTTPS para a API tecnica de telemetria do TrackFlow.
 
-- ler coordenadas GPS;
-- coletar bateria, velocidade, heading e precisao;
-- enviar payloads compativeis com o topico Kafka `rastreamento`;
-- manter identificacao unica por `device_id`.
+## Hardware
+
+- Placa: LILYGO TTGO T-SIM A7670SA
+- Serial USB detectada no Windows: `USB Enhanced Serial CH9102`
+- Porta usada neste projeto: `COM8`
+- Baud rate do monitor serial: `115200`
+- Modem A7670SA: `Serial1`, RX `GPIO27`, TX `GPIO26`
+- GNSS: via comandos AT no modem, depois de conectar a antena GPS/GNSS
+
+## Configurar segredos locais
+
+Copie o modelo:
+
+```powershell
+Copy-Item include\secrets.example.h include\secrets.h
+```
+
+Edite `include/secrets.h`:
+
+```cpp
+#define TRACKFLOW_WIFI_SSID "NOME_DA_REDE"
+#define TRACKFLOW_WIFI_PASSWORD "SENHA_DA_REDE"
+#define TRACKFLOW_API_URL "https://rastreio.3dhmanaus.com.br/api/mobile/telemetry"
+#define TRACKFLOW_MOBILE_SECRET "COLOQUE_O_MOBILE_REGISTRATION_SECRET"
+#define TRACKFLOW_DEVICE_ID "final_test_carro_amazonas"
+```
+
+O arquivo `include/secrets.h` fica fora do Git.
+
+`TRACKFLOW_DEVICE_ID` associa a placa a um dispositivo ja existente no painel.
+Se ficar vazio, a firmware gera um ID automatico a partir do MAC da placa.
+
+## Ordem de conectividade
+
+Nesta fase, a placa usa Wi-Fi como transporte:
+
+1. tenta a rede salva em `TRACKFLOW_WIFI_SSID`;
+2. se falhar, procura redes Wi-Fi abertas;
+3. conecta na melhor rede aberta encontrada;
+4. faz um teste simples de acesso externo antes de enviar telemetria;
+5. se nao houver conexao, nao envia e tenta novamente no proximo ciclo.
+
+O fallback para redes abertas pode ser desligado no build com:
+
+```ini
+-D TRACKFLOW_ALLOW_OPEN_WIFI_FALLBACK=0
+```
+
+Diagnosticos detalhados do modem podem ser ligados temporariamente com:
+
+```ini
+-D TRACKFLOW_MODEM_DIAGNOSTICS=1
+```
+
+O 4G ficara na proxima fase, quando houver SIM e APN para validar.
+
+## Compilar
+
+```powershell
+C:\Users\mjjun\.platformio\python3\Scripts\pio.exe run -e lilygo_a7670sa_wifi
+```
+
+## Gravar na placa
+
+Conecte a placa na porta `COM8` e rode:
+
+```powershell
+C:\Users\mjjun\.platformio\python3\Scripts\pio.exe run -e lilygo_a7670sa_wifi -t upload
+```
+
+Se a gravacao travar aguardando boot, segure `BOOT`, aperte `RST/EN`, solte
+`RST/EN` e depois solte `BOOT`.
+
+## Monitor serial
+
+```powershell
+C:\Users\mjjun\.platformio\python3\Scripts\pio.exe device monitor -p COM8 -b 115200
+```
+
+Saida esperada:
+
+```text
+3DH TrackFlow GPS Board - Wi-Fi bring-up
+Board=LILYGO_A7670SA
+Device ID=final_test_carro_amazonas
+Wi-Fi salvo conectado. IP=...
+GNSS ativado. Aguardando fix da antena.
+GNSS fix lat=... lng=...
+POST https://rastreio.3dhmanaus.com.br/api/mobile/telemetry
+HTTP status=202
+```
+
+Se `AT+CGNSSINFO` retornar `ERROR`, a firmware tenta automaticamente
+`AT+CGPSINFO`, que tambem e comum nos modems SIMCom A76XX.
+
+## Contrato enviado ao TrackFlow
+
+Endpoint:
+
+```text
+POST /api/mobile/telemetry
+```
+
+Header:
+
+```text
+X-Mobile-Registration-Secret: <MOBILE_REGISTRATION_SECRET>
+```
+
+Payload:
+
+```json
+{
+  "device_id": "final_test_carro_amazonas",
+  "lat": -3.10194,
+  "lng": -60.025,
+  "speed": 0,
+  "heading": 0,
+  "battery": 100,
+  "accuracy": 25
+}
+```
+
+## Proximas etapas
+
+- Adicionar fila local para perda de sinal.
+- Substituir `client.setInsecure()` por CA raiz fixa.
+- Adicionar modo de configuracao Wi-Fi via portal local.
+- Ativar modem A7670SA quando houver SIM.
+- Criar tipo operacional proprio para `board`, sem tratar a placa como Android na interface.

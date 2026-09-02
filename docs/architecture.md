@@ -2,9 +2,9 @@
 
 Fluxo principal:
 
-1. Placa GPS ou aplicativo Android envia localizacao.
-2. Kafka recebe eventos no topico `rastreamento`.
-3. Backend consome eventos, persiste historico e atualiza estado em Redis/PostgreSQL.
+1. Aplicativo Android e firmware de placa enviam localizacao por HTTPS para a API tecnica.
+2. Produtores de infraestrutura podem publicar eventos no Kafka no topico `rastreamento`.
+3. Backend normaliza a telemetria, persiste historico e atualiza estado em Redis/PostgreSQL.
 4. Dashboard recebe todos os entregadores via Socket.IO.
 5. Link publico recebe somente o entregador vinculado a uma TrackingSession ativa.
 
@@ -40,6 +40,24 @@ X-Mobile-Registration-Secret: <MOBILE_REGISTRATION_SECRET>
 ```
 
 O backend usa o mesmo fluxo interno de persistencia e Socket.IO usado pelo consumidor Kafka. Kafka continua isolado da aplicacao Android.
+
+## Firmware A7670SA
+
+O firmware inicial fica em:
+
+```text
+firmware/gps-board
+```
+
+Ele foi criado para a placa LILYGO TTGO T-SIM A7670SA com GNSS interno do modem. Nesta fase, o transporte e Wi-Fi:
+
+- tenta a rede salva em `include/secrets.h`;
+- opcionalmente procura rede aberta se a rede salva falhar;
+- valida que existe acesso externo antes de enviar;
+- le `AT+CGNSSINFO` e usa `AT+CGPSINFO` como fallback;
+- envia para `/api/mobile/telemetry` usando `X-Mobile-Registration-Secret`.
+
+O 4G fica para a fase seguinte, quando houver SIM e APN para teste real.
 
 ## Tipos de veiculo
 
@@ -84,18 +102,21 @@ https://rastreio.3dhmanaus.com.br/t/abc123
 
 ## Rotacao do marcador
 
-O marcador da moto no mapa usa o campo `heading` recebido no evento Kafka. O valor deve ser informado em graus:
+O marcador no mapa usa um `heading` estabilizado pelo backend. O valor representa graus:
 
 - `0`: norte;
 - `90`: leste;
 - `180`: sul;
 - `270`: oeste.
 
-Recomendacao para o Android:
+Regra atual do backend:
 
-- em movimento, preferir o `bearing` do GPS;
-- parado ou abaixo de 5 km/h, usar bussola/sensores como fallback;
-- enviar sempre o melhor valor disponivel em `heading`.
+- abaixo de 3 km/h, preserva o angulo anterior quando existir;
+- acima de 5 km/h, usa o `heading` recebido se ele for valido;
+- quando o `heading` nao vem do dispositivo, calcula o bearing pelo deslocamento entre a localizacao anterior e a atual;
+- ignora deslocamentos muito pequenos para evitar giro falso no mapa.
+
+Isso protege placas sem giroscopio e melhora tambem o comportamento do Android.
 
 Payload esperado:
 

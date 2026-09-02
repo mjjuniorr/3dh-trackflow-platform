@@ -24,7 +24,7 @@ Plataforma 3DH para rastreamento em tempo real, operacao de entregadores, links 
 - Backend: Node.js, TypeScript, Express, Socket.IO, KafkaJS, Prisma, PostgreSQL, Redis e JWT.
 - Web: React, Vite, TypeScript, TailwindCSS, Leaflet e Socket.IO Client.
 - Android: aplicativo nativo dos entregadores para cadastro e telemetria.
-- Firmware: modulo reservado para placas GPS.
+- Firmware: placa LILYGO TTGO T-SIM A7670SA com Wi-Fi, GNSS interno e envio HTTPS.
 - Deploy: Docker Swarm/Portainer com Traefik e rede externa `PortainerRede`.
 
 ## Ambientes oficiais
@@ -46,7 +46,7 @@ Para operacao diaria, prefira os arquivos oficiais acima.
 - Cadastro, edicao e desativacao de entregadores pelo painel administrativo.
 - Cadastro automatico de entregadores pelo aplicativo Android.
 - Mapa com marcador PNG transparente da moto.
-- Rotacao da moto pelo campo Kafka `heading`.
+- Rotacao estavel do marcador usando `heading`, deslocamento real e preservacao do angulo quando parado.
 - Status visual: online colorido, sem sinal e offline.
 - Criacao de links publicos temporarios em `/t/:public_token`.
 - Link publico somente leitura, sem listar outros entregadores.

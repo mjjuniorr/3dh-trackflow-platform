@@ -1,6 +1,7 @@
 import type { DeliveryPerson, LocationEvent } from "@prisma/client";
 import { Redis } from "ioredis";
 import { config } from "./config.js";
+import { resolveStableHeading } from "./heading.js";
 import { prisma } from "./prisma.js";
 
 export type LocationMessage = {
@@ -38,6 +39,13 @@ export function computeStatus(timestamp?: Date | string | null): "online" | "off
 
 export async function saveLocation(message: LocationMessage) {
   await upsertDeliveryPersonFromDevice(message);
+  const previousLocation = await getLastLocation(message.device_id);
+  const stableHeading = resolveStableHeading({
+    incomingHeading: message.heading,
+    speed: message.speed,
+    previous: previousLocation,
+    current: { lat: message.lat, lng: message.lng }
+  });
 
   const event = await prisma.locationEvent.create({
     data: {
@@ -45,7 +53,7 @@ export async function saveLocation(message: LocationMessage) {
       lat: message.lat,
       lng: message.lng,
       speed: message.speed,
-      heading: message.heading,
+      heading: stableHeading,
       battery: message.battery,
       accuracy: message.accuracy,
       timestamp: new Date(message.timestamp)

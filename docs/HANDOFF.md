@@ -51,6 +51,8 @@ Ja funciona:
 - cadastro manual de entregadores pela engrenagem;
 - cadastro automatico pelo Android;
 - telemetria Android via backend HTTPS;
+- firmware inicial da placa LILYGO TTGO T-SIM A7670SA com Wi-Fi, GNSS interno e envio HTTPS;
+- heading estabilizado no backend para evitar giro falso de marcador parado;
 - Kafka consumindo eventos no topico `rastreamento` pela rede interna;
 - registro administrativo de entregas por nota fiscal unica, em homologacao;
 - selecao de tipo de veiculo:
@@ -100,6 +102,7 @@ Backend:
 ```text
 services/backend/src/kafka.ts
 services/backend/src/location-store.ts
+services/backend/src/heading.ts
 services/backend/src/delivery-people.ts
 services/backend/src/mobile.ts
 services/backend/prisma/schema.prisma
@@ -112,6 +115,16 @@ apps/web/src/components/TrackingMap.tsx
 apps/web/src/components/SettingsModal.tsx
 apps/web/src/types.ts
 apps/web/public/assets/
+```
+
+Firmware:
+
+```text
+firmware/gps-board/README.md
+firmware/gps-board/platformio.ini
+firmware/gps-board/src/main.cpp
+firmware/gps-board/include/secrets.example.h
+docs/requirements-gps-board.md
 ```
 
 Android:
@@ -191,8 +204,15 @@ Backend:
 
 ```bash
 npm run typecheck --workspace @3dh-trackflow/backend
+npm run test:heading --workspace @3dh-trackflow/backend
 docker build -f services/backend/Dockerfile -t ghcr.io/mjjuniorr/3dh-trackflow-backend:producao .
 docker push ghcr.io/mjjuniorr/3dh-trackflow-backend:producao
+```
+
+Firmware A7670SA:
+
+```bash
+C:\Users\mjjun\.platformio\python3\Scripts\pio.exe run -e lilygo_a7670sa_wifi
 ```
 
 Android:

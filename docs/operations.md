@@ -12,6 +12,13 @@ Para um passo a passo completo de build web, backend, Android, containers locais
 docs/build-run-commit.md
 ```
 
+Para gravar e testar a placa LILYGO TTGO T-SIM A7670SA, veja:
+
+```text
+firmware/gps-board/README.md
+docs/requirements-gps-board.md
+```
+
 ## Publicar imagens de producao
 
 Backend:
@@ -158,6 +165,28 @@ Limpar cadastro local:
 ```powershell
 & 'C:\Users\mjjun\AppData\Local\Android\Sdk\platform-tools\adb.exe' shell pm clear br.com.tresdhmanaus.trackflow
 ```
+
+## Firmware GPS Board
+
+Compilar:
+
+```powershell
+C:\Users\mjjun\.platformio\python3\Scripts\pio.exe run -e lilygo_a7670sa_wifi
+```
+
+Gravar na placa conectada em `COM8`:
+
+```powershell
+C:\Users\mjjun\.platformio\python3\Scripts\pio.exe run -e lilygo_a7670sa_wifi -t upload
+```
+
+Abrir monitor serial:
+
+```powershell
+C:\Users\mjjun\.platformio\python3\Scripts\pio.exe device monitor -p COM8 -b 115200
+```
+
+O arquivo `firmware/gps-board/include/secrets.h` e local, contem Wi-Fi e `MOBILE_REGISTRATION_SECRET`, e nunca deve ser commitado.
 
 ## Checklist apos deploy
 

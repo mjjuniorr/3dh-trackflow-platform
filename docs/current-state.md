@@ -1,6 +1,6 @@
 # Estado atual do projeto
 
-Ultima revisao desta documentacao: 2026-05-21.
+Ultima revisao desta documentacao: 2026-09-02.
 
 ## Produto
 
@@ -14,6 +14,7 @@ O 3DH TrackFlow e uma plataforma de rastreamento em tempo real para frota. Ela p
 - auditoria de NF no Bling via webhook n8n, mantendo OAuth fora do TrackFlow;
 - links publicos temporarios para clientes;
 - app Android para cadastro e envio de telemetria;
+- firmware inicial para placa LILYGO TTGO T-SIM A7670SA com GNSS interno e Wi-Fi;
 - consumo de telemetria via Kafka;
 - suporte a multiplos tipos de veiculo.
 
@@ -83,6 +84,26 @@ Fluxo:
 1. App registra entregador em `/api/mobile/delivery-people/register`.
 2. App envia telemetria em `/api/mobile/telemetry`.
 3. Backend salva e emite Socket.IO.
+
+### Placa A7670SA
+
+A placa LILYGO TTGO T-SIM A7670SA tambem nao publica direto no Kafka nesta fase.
+
+Fluxo validado:
+
+1. firmware conecta primeiro em Wi-Fi salvo;
+2. se falhar, procura uma rede Wi-Fi aberta e testa acesso externo;
+3. le GNSS interno do modem A7670SA por comandos AT;
+4. envia telemetria por HTTPS para `/api/mobile/telemetry`;
+5. backend persiste e emite Socket.IO usando o mesmo fluxo tecnico do Android.
+
+O firmware foi validado em bancada com `device_id=final_test_carro_amazonas`, GNSS real e resposta HTTP `202` da API.
+
+Requisitos completos:
+
+```text
+docs/requirements-gps-board.md
+```
 
 ## Banco de dados
 
