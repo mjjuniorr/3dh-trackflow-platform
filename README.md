@@ -12,7 +12,8 @@ Plataforma 3DH para rastreamento em tempo real, operacao de entregadores, links 
   services/
     backend/           # API, WebSocket, Kafka, Prisma, Redis e JWT
   firmware/
-    gps-board/         # Firmware das placas GPS
+    lilygo-a7670sa/    # Firmware LILYGO TTGO T-SIM A7670SA
+    zx908/             # Firmware ZX908 (projeto independente)
   infra/
     docker/            # Arquivos e notas de Docker
     portainer/         # Notas de deploy no Portainer/Swarm
@@ -24,7 +25,7 @@ Plataforma 3DH para rastreamento em tempo real, operacao de entregadores, links 
 - Backend: Node.js, TypeScript, Express, Socket.IO, KafkaJS, Prisma, PostgreSQL, Redis e JWT.
 - Web: React, Vite, TypeScript, TailwindCSS, Leaflet e Socket.IO Client.
 - Android: aplicativo nativo dos entregadores para cadastro e telemetria.
-- Firmware: placa LILYGO TTGO T-SIM A7670SA com Wi-Fi, GNSS interno e envio HTTPS.
+- Firmware: projetos independentes por placa. LILYGO A7670SA usa PlatformIO/Arduino; ZX908 tera stack definida apos validacao da variante fisica, com preferencia por QuecPython quando suportado.
 - Deploy: Docker Swarm/Portainer com Traefik e rede externa `PortainerRede`.
 
 ## Ambientes oficiais
@@ -295,6 +296,7 @@ O webhook n8n deve validar o header `X-TrackFlow-Bling-Secret`, consultar NF-e e
 
 ## Documentacao complementar
 
+- `firmware/README.md`: regra de um firmware independente por placa e contrato comum com o TrackFlow.
 - `docs/architecture.md`: fluxo tecnico, payload Kafka, heading e seguranca do link publico.
 - `docs/testing.md`: simulacoes Kafka e roteiro de validacao manual.
 - `docs/HANDOFF.md`: resumo para continuar em outra conversa Codex.
