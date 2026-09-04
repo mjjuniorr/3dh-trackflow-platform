@@ -1,11 +1,11 @@
 # 3DH TrackFlow GPS Board Firmware
 
-Firmware inicial para a placa LILYGO TTGO T-SIM A7670SA usando Wi-Fi e GNSS
-interno.
+Firmware para a placa LILYGO TTGO T-SIM A7670SA, com GNSS interno e envio de
+telemetria HTTPS para o TrackFlow por Wi-Fi ou 4G.
 
-Esta primeira versao ainda nao usa SIM ou dados 4G. Ela valida a placa, a
-gravacao via USB, a conexao Wi-Fi, a leitura do GNSS interno do A7670SA e o
-envio HTTPS para a API tecnica de telemetria do TrackFlow.
+O firmware de conectividade foi validado na placa real: obteve fix GNSS e a
+API do TrackFlow aceitou a telemetria com `HTTP 202` por Wi-Fi e por 4G. A
+placa nunca se conecta diretamente ao Kafka.
 
 ## Hardware
 
@@ -29,6 +29,9 @@ Edite `include/secrets.h`:
 ```cpp
 #define TRACKFLOW_WIFI_SSID "NOME_DA_REDE"
 #define TRACKFLOW_WIFI_PASSWORD "SENHA_DA_REDE"
+#define TRACKFLOW_CELLULAR_APN "APN_DA_OPERADORA"
+#define TRACKFLOW_CELLULAR_USER "USUARIO_DA_OPERADORA"
+#define TRACKFLOW_CELLULAR_PASSWORD "SENHA_DA_OPERADORA"
 #define TRACKFLOW_API_URL "https://rastreio.3dhmanaus.com.br/api/mobile/telemetry"
 #define TRACKFLOW_MOBILE_SECRET "COLOQUE_O_MOBILE_REGISTRATION_SECRET"
 #define TRACKFLOW_DEVICE_ID "final_test_carro_amazonas"
@@ -41,13 +44,24 @@ Se ficar vazio, a firmware gera um ID automatico a partir do MAC da placa.
 
 ## Ordem de conectividade
 
-Nesta fase, a placa usa Wi-Fi como transporte:
+Em cada ciclo, a placa tenta os transportes nesta ordem:
 
-1. tenta a rede salva em `TRACKFLOW_WIFI_SSID`;
-2. se falhar, procura redes Wi-Fi abertas;
-3. conecta na melhor rede aberta encontrada;
-4. faz um teste simples de acesso externo antes de enviar telemetria;
-5. se nao houver conexao, nao envia e tenta novamente no proximo ciclo.
+1. rede Wi-Fi salva em `TRACKFLOW_WIFI_SSID`;
+2. dados 4G pelo SIM, usando `TRACKFLOW_CELLULAR_APN`;
+3. redes Wi-Fi abertas, quando esse fallback estiver habilitado;
+4. se nenhum transporte estiver disponivel, nao envia uma posicao parcial e
+   tenta novamente no proximo ciclo.
+
+Para usar somente o Wi-Fi, deixe `TRACKFLOW_CELLULAR_APN` vazio. Para forcar
+um teste 4G e ignorar o Wi-Fi salvo durante aquele boot, adicione ao
+`platformio.ini` local:
+
+```ini
+-D TRACKFLOW_FORCE_CELLULAR_TEST=1
+```
+
+O monitor serial oculta comandos que contenham o segredo mobile ou
+credenciais da operadora.
 
 O fallback para redes abertas pode ser desligado no build com:
 
@@ -61,7 +75,8 @@ Diagnosticos detalhados do modem podem ser ligados temporariamente com:
 -D TRACKFLOW_MODEM_DIAGNOSTICS=1
 ```
 
-O 4G ficara na proxima fase, quando houver SIM e APN para validar.
+O firmware usa HTTPS no modem A7670SA e possui um segundo caminho de socket
+TLS quando o cliente HTTP do modem nao consegue concluir a requisicao.
 
 ## Compilar
 
@@ -89,15 +104,18 @@ C:\Users\mjjun\.platformio\python3\Scripts\pio.exe device monitor -p COM8 -b 115
 Saida esperada:
 
 ```text
-3DH TrackFlow GPS Board - Wi-Fi bring-up
+3DH TrackFlow GPS Board
 Board=LILYGO_A7670SA
 Device ID=final_test_carro_amazonas
 Wi-Fi salvo conectado. IP=...
 GNSS ativado. Aguardando fix da antena.
 GNSS fix lat=... lng=...
-POST https://rastreio.3dhmanaus.com.br/api/mobile/telemetry
-HTTP status=202
+POST Wi-Fi https://rastreio.3dhmanaus.com.br/api/mobile/telemetry
+HTTP Wi-Fi status=202
 ```
+
+Em conexao celular, o sucesso aparecera como `HTTP 4G status=202` ou
+`Socket TLS status=202`.
 
 Se `AT+CGNSSINFO` retornar `ERROR`, a firmware tenta automaticamente
 `AT+CGPSINFO`, que tambem e comum nos modems SIMCom A76XX.
@@ -130,10 +148,21 @@ Payload:
 }
 ```
 
+## Estado de testes
+
+- Compilacao ESP32: validada localmente.
+- Telemetria por Wi-Fi e GNSS: validada na placa real com `HTTP 202`.
+- Telemetria por 4G e GNSS: validada em teste de campo com SIM Vivo e
+  `HTTP 202`.
+- Testes nativos de C++: pendentes neste computador, pois `gcc/g++` nao estao
+  instalados. Isso nao impede a compilacao nem a gravacao para ESP32.
+
 ## Proximas etapas
 
-- Adicionar fila local para perda de sinal.
-- Substituir `client.setInsecure()` por CA raiz fixa.
-- Adicionar modo de configuracao Wi-Fi via portal local.
-- Ativar modem A7670SA quando houver SIM.
-- Criar tipo operacional proprio para `board`, sem tratar a placa como Android na interface.
+- Medicao de bateria por GPIO35, com calibracao por multimetro.
+- Fila persistente para perda de sinal e politica adaptativa de economia de
+  bateria, ainda em branch experimental separada.
+- Substituir `client.setInsecure()` do caminho Wi-Fi por uma CA raiz fixa.
+- Modo de configuracao Wi-Fi local.
+- Criar tipo operacional proprio para `board`, sem tratar a placa como Android
+  na interface.

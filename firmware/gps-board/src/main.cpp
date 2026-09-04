@@ -5,6 +5,7 @@
 
 #include <A7670Gnss.h>
 #include <TrackFlowPayload.h>
+#include <TransportPriority.h>
 #include <WifiFailover.h>
 
 #if __has_include("secrets.h")
@@ -12,9 +13,24 @@
 #else
 #define TRACKFLOW_WIFI_SSID ""
 #define TRACKFLOW_WIFI_PASSWORD ""
+#define TRACKFLOW_CELLULAR_APN ""
+#define TRACKFLOW_CELLULAR_USER ""
+#define TRACKFLOW_CELLULAR_PASSWORD ""
 #define TRACKFLOW_API_URL "https://rastreio.3dhmanaus.com.br/api/mobile/telemetry"
 #define TRACKFLOW_MOBILE_SECRET ""
 #define TRACKFLOW_DEVICE_ID ""
+#endif
+
+#ifndef TRACKFLOW_CELLULAR_APN
+#define TRACKFLOW_CELLULAR_APN ""
+#endif
+
+#ifndef TRACKFLOW_CELLULAR_USER
+#define TRACKFLOW_CELLULAR_USER ""
+#endif
+
+#ifndef TRACKFLOW_CELLULAR_PASSWORD
+#define TRACKFLOW_CELLULAR_PASSWORD ""
 #endif
 
 #ifndef TRACKFLOW_ALLOW_FIXED_LOCATION_FALLBACK
@@ -29,12 +45,22 @@
 #define TRACKFLOW_MODEM_DIAGNOSTICS 0
 #endif
 
+#ifndef TRACKFLOW_FORCE_CELLULAR_TEST
+#define TRACKFLOW_FORCE_CELLULAR_TEST 0
+#endif
+
 constexpr unsigned long POST_INTERVAL_MS = 30000;
 constexpr unsigned long WIFI_CONNECT_TIMEOUT_MS = 20000;
 constexpr unsigned long INTERNET_CHECK_TIMEOUT_MS = 8000;
+constexpr unsigned long CELLULAR_NETWORK_TIMEOUT_MS = 90000;
+constexpr unsigned long CELLULAR_DATA_TIMEOUT_MS = 60000;
+constexpr unsigned long CELLULAR_HTTP_TIMEOUT_MS = 120000;
+constexpr char TRACKFLOW_API_HOST[] = "rastreio.3dhmanaus.com.br";
+constexpr char TRACKFLOW_API_PATH[] = "/api/mobile/telemetry";
 unsigned long lastPostAt = 0;
 std::string deviceId;
 HardwareSerial modemSerial(1);
+bool cellularConnected = false;
 
 String readModemResponse(unsigned long timeoutMs) {
   String response;
@@ -52,12 +78,13 @@ String readModemResponse(unsigned long timeoutMs) {
   return response;
 }
 
-String sendAtCommand(const char *command, unsigned long timeoutMs = 2000) {
+String sendAtCommand(const char *command, unsigned long timeoutMs = 2000, bool logCommand = true) {
   while (modemSerial.available()) {
     modemSerial.read();
   }
 
-  Serial.printf("AT> %s\n", command);
+  if (logCommand) Serial.printf("AT> %s\n", command);
+  else Serial.println("AT> [comando sensivel ocultado]");
   modemSerial.print(command);
   modemSerial.print("\r\n");
   const String response = readModemResponse(timeoutMs);
@@ -65,11 +92,122 @@ String sendAtCommand(const char *command, unsigned long timeoutMs = 2000) {
   return response;
 }
 
+String sendAtCommand(const String &command, unsigned long timeoutMs = 2000, bool logCommand = true) {
+  return sendAtCommand(command.c_str(), timeoutMs, logCommand);
+}
+
+bool modemResponseOk(const String &response) {
+  return response.indexOf("OK") >= 0 && response.indexOf("ERROR") < 0;
+}
+
+bool waitForModemText(const char *text, unsigned long timeoutMs) {
+  String response;
+  const unsigned long startedAt = millis();
+  while (millis() - startedAt < timeoutMs) {
+    while (modemSerial.available()) {
+      const char ch = static_cast<char>(modemSerial.read());
+      response += ch;
+      Serial.print(ch);
+    }
+    if (response.indexOf(text) >= 0) return true;
+    if (response.indexOf("\r\nERROR\r\n") >= 0) return false;
+    delay(20);
+  }
+  return false;
+}
+
+String sendAtCommandAndWaitForText(const String &command, const char *text, unsigned long timeoutMs) {
+  while (modemSerial.available()) {
+    modemSerial.read();
+  }
+
+  Serial.printf("AT> %s\n", command.c_str());
+  modemSerial.print(command);
+  modemSerial.print("\r\n");
+
+  String response;
+  const unsigned long startedAt = millis();
+  while (millis() - startedAt < timeoutMs) {
+    while (modemSerial.available()) {
+      const char ch = static_cast<char>(modemSerial.read());
+      response += ch;
+      Serial.print(ch);
+    }
+
+    if (response.indexOf(text) >= 0 || response.indexOf("\r\nERROR\r\n") >= 0) {
+      return response;
+    }
+    delay(20);
+  }
+  return response;
+}
+
+String readModemUntilText(const char *text, unsigned long timeoutMs) {
+  String response;
+  const unsigned long startedAt = millis();
+  while (millis() - startedAt < timeoutMs) {
+    while (modemSerial.available()) {
+      const char ch = static_cast<char>(modemSerial.read());
+      response += ch;
+      Serial.print(ch);
+    }
+
+    if (response.indexOf(text) >= 0 || response.indexOf("\r\nERROR\r\n") >= 0) {
+      return response;
+    }
+    delay(20);
+  }
+  return response;
+}
+
+int waitForHttpActionStatus(unsigned long timeoutMs) {
+  String response;
+  const unsigned long startedAt = millis();
+  while (millis() - startedAt < timeoutMs) {
+    while (modemSerial.available()) {
+      const char ch = static_cast<char>(modemSerial.read());
+      response += ch;
+      Serial.print(ch);
+    }
+
+    const int marker = response.indexOf("+HTTPACTION:");
+    if (marker >= 0) {
+      const int firstComma = response.indexOf(',', marker);
+      const int secondComma = response.indexOf(',', firstComma + 1);
+      if (firstComma >= 0 && secondComma > firstComma) {
+        return response.substring(firstComma + 1, secondComma).toInt();
+      }
+    }
+
+    if (response.indexOf("\r\nERROR\r\n") >= 0) return -1;
+    delay(20);
+  }
+  return -1;
+}
+
 bool waitForModem() {
   for (int attempt = 1; attempt <= 10; attempt++) {
     const String response = sendAtCommand("AT", 1000);
     if (response.indexOf("OK") >= 0) return true;
     delay(1000);
+  }
+  return false;
+}
+
+bool isNetworkRegistered(const String &response) {
+  return response.indexOf(",1") >= 0 || response.indexOf(",5") >= 0;
+}
+
+bool waitForCellularNetwork() {
+  const unsigned long startedAt = millis();
+  while (millis() - startedAt < CELLULAR_NETWORK_TIMEOUT_MS) {
+    const String cereg = sendAtCommand("AT+CEREG?", 2000);
+    if (isNetworkRegistered(cereg)) return true;
+
+    const String creg = sendAtCommand("AT+CREG?", 2000);
+    if (isNetworkRegistered(creg)) return true;
+
+    delay(3000);
   }
   return false;
 }
@@ -254,20 +392,288 @@ bool connectOpenWifiFallback() {
   return false;
 }
 
-void connectWifi() {
-  if (WiFi.status() == WL_CONNECTED) return;
+bool connectCellular() {
+  if (cellularConnected) return true;
 
-  if (connectSavedWifi()) return;
-  if (connectOpenWifiFallback()) return;
+  if (String(TRACKFLOW_CELLULAR_APN).length() == 0 || String(TRACKFLOW_CELLULAR_APN) == "XXXX") {
+    Serial.println("TRACKFLOW_CELLULAR_APN nao configurado. 4G ignorado.");
+    return false;
+  }
 
-  Serial.println("Sem conectividade Wi-Fi. 4G sera testado quando houver SIM/APN.");
+  Serial.println("Iniciando conexao 4G pelo modem A7670SA...");
+
+  String response = sendAtCommand("AT+CPIN?", 5000);
+  if (response.indexOf("READY") < 0) {
+    Serial.println("SIM nao esta pronto ou nao foi detectado.");
+    return false;
+  }
+
+  sendAtCommand("AT+CSQ", 3000);
+  sendAtCommand("AT+COPS?", 5000);
+
+  if (!waitForCellularNetwork()) {
+    Serial.println("Modem nao registrou na rede celular dentro do tempo esperado.");
+    return false;
+  }
+
+  response = sendAtCommand(String("AT+CGDCONT=1,\"IP\",\"") + TRACKFLOW_CELLULAR_APN + "\"", 5000, false);
+  if (!modemResponseOk(response)) {
+    Serial.println("Nao foi possivel configurar APN.");
+    return false;
+  }
+
+  if (String(TRACKFLOW_CELLULAR_USER).length() > 0 && String(TRACKFLOW_CELLULAR_USER) != "XXXX") {
+    response = sendAtCommand(
+      String("AT+CGAUTH=1,1,\"") + TRACKFLOW_CELLULAR_USER + "\",\"" + TRACKFLOW_CELLULAR_PASSWORD + "\"",
+      5000,
+      false
+    );
+    if (!modemResponseOk(response)) {
+      Serial.println("Nao foi possivel configurar autenticacao da APN.");
+      return false;
+    }
+  }
+
+  response = sendAtCommand("AT+CGATT?", 5000);
+  if (response.indexOf("+CGATT: 1") < 0) {
+    response = sendAtCommand("AT+CGATT=1", CELLULAR_DATA_TIMEOUT_MS);
+    if (!modemResponseOk(response)) {
+      Serial.println("Attach manual falhou. Tentando ativar contexto PDP mesmo assim.");
+    }
+  }
+
+  response = sendAtCommand("AT+CGACT=1,1", CELLULAR_DATA_TIMEOUT_MS);
+  if (!modemResponseOk(response)) {
+    Serial.println("Ativacao manual do PDP falhou. Seguindo para HTTPINIT para testar ativacao automatica.");
+  }
+
+  sendAtCommand("AT+CGPADDR=1", 5000);
+  cellularConnected = true;
+  Serial.println("4G conectado.");
+  return true;
+}
+
+bool connectInternet() {
+  if (WiFi.status() == WL_CONNECTED || cellularConnected) return true;
+
+  bool savedWifiTried = TRACKFLOW_FORCE_CELLULAR_TEST;
+  bool cellularTried = false;
+  bool openWifiTried = false;
+
+#if TRACKFLOW_FORCE_CELLULAR_TEST
+  Serial.println("Modo teste 4G ativo: Wi-Fi salvo sera ignorado neste boot.");
+#endif
+
+  while (true) {
+    switch (chooseNextTransport(savedWifiTried, cellularTried, openWifiTried)) {
+      case Transport::SavedWifi:
+        savedWifiTried = true;
+        if (connectSavedWifi()) return true;
+        break;
+      case Transport::Cellular:
+        cellularTried = true;
+        if (connectCellular()) return true;
+        break;
+      case Transport::OpenWifi:
+        openWifiTried = true;
+        if (connectOpenWifiFallback()) return true;
+        break;
+      case Transport::None:
+        Serial.println("Sem conectividade. Tentara novamente no proximo ciclo.");
+        return false;
+    }
+  }
+}
+
+bool postTelemetryOverWifi(const std::string &body) {
+  WiFiClientSecure client;
+  client.setInsecure(); // Bring-up inicial. Depois trocaremos por CA raiz fixa.
+
+  HTTPClient http;
+  Serial.printf("POST Wi-Fi %s\n", TRACKFLOW_API_URL);
+  if (!http.begin(client, TRACKFLOW_API_URL)) {
+    Serial.println("Nao foi possivel iniciar HTTPS via Wi-Fi.");
+    return false;
+  }
+
+  http.addHeader("Content-Type", "application/json");
+  http.addHeader("X-Mobile-Registration-Secret", TRACKFLOW_MOBILE_SECRET);
+
+  const int statusCode = http.POST(String(body.c_str()));
+  Serial.printf("HTTP Wi-Fi status=%d\n", statusCode);
+  Serial.println(http.getString());
+  http.end();
+  return statusCode >= 200 && statusCode < 300;
+}
+
+bool sendCellularHttpData(const std::string &body) {
+  String response = sendAtCommand(String("AT+HTTPDATA=") + body.length() + ",10000", 5000);
+  if (response.indexOf("DOWNLOAD") < 0) {
+    Serial.println("Modem nao aceitou HTTPDATA.");
+    return false;
+  }
+
+  modemSerial.print(body.c_str());
+  response = readModemResponse(15000);
+  Serial.print(response);
+  return modemResponseOk(response);
+}
+
+bool postTelemetryOverCellular(const std::string &body) {
+  Serial.printf("POST 4G %s\n", TRACKFLOW_API_URL);
+  sendAtCommand("AT+HTTPTERM", 3000);
+  sendAtCommand("AT+CSSLCFG=\"sslversion\",0,4", 5000);
+  sendAtCommand("AT+CSSLCFG=\"authmode\",0,0", 5000);
+  sendAtCommand("AT+CSSLCFG=\"ignorelocaltime\",0,1", 5000);
+  sendAtCommand("AT+CSSLCFG=\"enableSNI\",0,1", 5000);
+
+  String response = sendAtCommand("AT+HTTPINIT", 10000);
+  if (!modemResponseOk(response)) {
+    Serial.println("Nao foi possivel iniciar HTTP no modem.");
+    return false;
+  }
+
+  sendAtCommand("AT+HTTPPARA=\"CONNECTTO\",120", 5000);
+  sendAtCommand("AT+HTTPPARA=\"RECVTO\",120", 5000);
+  sendAtCommand("AT+HTTPPARA=\"SSLCFG\",0", 5000);
+
+  response = sendAtCommand(String("AT+HTTPPARA=\"URL\",\"") + TRACKFLOW_API_URL + "\"", 10000);
+  if (!modemResponseOk(response)) {
+    Serial.println("Nao foi possivel configurar URL HTTP no modem.");
+    sendAtCommand("AT+HTTPTERM", 3000);
+    return false;
+  }
+
+  sendAtCommand("AT+HTTPPARA=\"CONTENT\",\"application/json\"", 5000);
+  sendAtCommand(
+    String("AT+HTTPPARA=\"USERDATA\",\"X-Mobile-Registration-Secret: ") + TRACKFLOW_MOBILE_SECRET + "\"",
+    5000,
+    false
+  );
+
+  if (!sendCellularHttpData(body)) {
+    sendAtCommand("AT+HTTPTERM", 3000);
+    return false;
+  }
+
+  response = sendAtCommand("AT+HTTPACTION=1", 10000);
+  if (!modemResponseOk(response)) {
+    Serial.println("POST 4G nao iniciou acao HTTP.");
+    sendAtCommand("AT+HTTPTERM", 3000);
+    return false;
+  }
+
+  const int statusCode = waitForHttpActionStatus(CELLULAR_HTTP_TIMEOUT_MS);
+  Serial.printf("HTTP 4G status=%d\n", statusCode);
+  if (statusCode < 200 || statusCode >= 300) {
+    Serial.println("POST 4G nao retornou resultado HTTP.");
+    sendAtCommand("AT+HTTPTERM", 3000);
+    return false;
+  }
+
+  sendAtCommand("AT+HTTPREAD", 15000);
+  sendAtCommand("AT+HTTPTERM", 3000);
+  return true;
+}
+
+bool postTelemetryOverCellularTlsSocket(const std::string &body) {
+  Serial.println("Tentando POST 4G por socket TLS direto...");
+
+  sendAtCommand("AT+CCHSTOP", 5000);
+  sendAtCommand("AT+CSSLCFG=\"sslversion\",0,4", 5000);
+  sendAtCommand("AT+CSSLCFG=\"authmode\",0,0", 5000);
+  sendAtCommand("AT+CSSLCFG=\"ignorelocaltime\",0,1", 5000);
+  sendAtCommand("AT+CSSLCFG=\"enableSNI\",0,1", 5000);
+
+  String response = sendAtCommandAndWaitForText("AT+CCHSTART", "+CCHSTART:", CELLULAR_HTTP_TIMEOUT_MS);
+  if (response.indexOf("+CCHSTART: 0") < 0) {
+    Serial.println("Servico TLS do modem nao iniciou.");
+    return false;
+  }
+
+#if TRACKFLOW_MODEM_DIAGNOSTICS
+  sendAtCommandAndWaitForText(
+    String("AT+CDNSGIP=\"") + TRACKFLOW_API_HOST + "\"",
+    "+CDNSGIP:",
+    30000
+  );
+  response = sendAtCommandAndWaitForText(
+    "AT+CCHOPEN=0,\"example.com\",443,1",
+    "+CCHOPEN:",
+    CELLULAR_HTTP_TIMEOUT_MS
+  );
+  if (response.indexOf("+CCHOPEN: 0,0") >= 0) {
+    Serial.println("Diagnostico: internet 4G alcanca HTTPS publico.");
+    sendAtCommandAndWaitForText("AT+CCHCLOSE=0", "+CCHCLOSE:", 20000);
+  } else {
+    Serial.println("Diagnostico: internet 4G nao abriu HTTPS publico.");
+  }
+  response = sendAtCommandAndWaitForText(
+    String("AT+CCHOPEN=0,\"") + TRACKFLOW_API_HOST + "\",443,1",
+    "+CCHOPEN:",
+    CELLULAR_HTTP_TIMEOUT_MS
+  );
+  if (response.indexOf("+CCHOPEN: 0,0") >= 0) {
+    Serial.println("Diagnostico: TCP na porta 443 conectado.");
+    sendAtCommandAndWaitForText("AT+CCHCLOSE=0", "+CCHCLOSE:", 20000);
+  } else {
+    Serial.println("Diagnostico: TCP na porta 443 tambem falhou.");
+  }
+#endif
+
+  response = sendAtCommand("AT+CCHSSLCFG=0,0", 5000);
+  if (!modemResponseOk(response)) {
+    sendAtCommand("AT+CCHSTOP", 5000);
+    return false;
+  }
+
+  sendAtCommand("AT+CCHCFG=\"sendtimeout\",0,120", 5000);
+  response = sendAtCommandAndWaitForText(
+    String("AT+CCHOPEN=0,\"") + TRACKFLOW_API_HOST + "\",443,2",
+    "+CCHOPEN:",
+    CELLULAR_HTTP_TIMEOUT_MS
+  );
+  if (response.indexOf("+CCHOPEN: 0,0") < 0) {
+    Serial.println("Socket TLS nao conectou ao TrackFlow.");
+    sendAtCommand("AT+CCHSTOP", 5000);
+    return false;
+  }
+
+  const String request =
+    String("POST ") + TRACKFLOW_API_PATH + " HTTP/1.1\r\n" +
+    "Host: " + TRACKFLOW_API_HOST + "\r\n" +
+    "User-Agent: TrackFlow-A7670SA/1.0\r\n" +
+    "Content-Type: application/json\r\n" +
+    "X-Mobile-Registration-Secret: " + TRACKFLOW_MOBILE_SECRET + "\r\n" +
+    "Content-Length: " + body.length() + "\r\n" +
+    "Connection: close\r\n\r\n" +
+    body.c_str();
+
+  response = sendAtCommandAndWaitForText(
+    String("AT+CCHSEND=0,") + request.length(),
+    ">",
+    10000
+  );
+  if (response.indexOf(">") < 0) {
+    Serial.println("Socket TLS nao aceitou o payload HTTP.");
+    sendAtCommand("AT+CCHCLOSE=0", 10000);
+    sendAtCommand("AT+CCHSTOP", 5000);
+    return false;
+  }
+
+  modemSerial.print(request);
+  response = readModemUntilText("HTTP/1.", CELLULAR_HTTP_TIMEOUT_MS);
+  const int statusStart = response.indexOf("HTTP/1.");
+  const int statusCode = statusStart >= 0 ? response.substring(statusStart + 9, statusStart + 12).toInt() : -1;
+  Serial.printf("Socket TLS status=%d\n", statusCode);
+
+  sendAtCommand("AT+CCHCLOSE=0", 10000);
+  sendAtCommand("AT+CCHSTOP", 5000);
+  return statusCode >= 200 && statusCode < 300;
 }
 
 void postTelemetry() {
-  if (WiFi.status() != WL_CONNECTED) {
-    connectWifi();
-    if (WiFi.status() != WL_CONNECTED) return;
-  }
+  if (!connectInternet()) return;
 
   if (String(TRACKFLOW_MOBILE_SECRET).length() == 0) {
     Serial.println("TRACKFLOW_MOBILE_SECRET nao configurado. POST nao enviado.");
@@ -298,23 +704,18 @@ void postTelemetry() {
 
   const std::string body = buildTelemetryJson(payload);
 
-  WiFiClientSecure client;
-  client.setInsecure(); // Bring-up inicial. Depois trocaremos por CA raiz fixa.
-
-  HTTPClient http;
-  Serial.printf("POST %s\n", TRACKFLOW_API_URL);
-  if (!http.begin(client, TRACKFLOW_API_URL)) {
-    Serial.println("Nao foi possivel iniciar HTTPS.");
+  if (WiFi.status() == WL_CONNECTED) {
+    postTelemetryOverWifi(body);
     return;
   }
 
-  http.addHeader("Content-Type", "application/json");
-  http.addHeader("X-Mobile-Registration-Secret", TRACKFLOW_MOBILE_SECRET);
-
-  const int statusCode = http.POST(String(body.c_str()));
-  Serial.printf("HTTP status=%d\n", statusCode);
-  Serial.println(http.getString());
-  http.end();
+  if (cellularConnected) {
+    if (!postTelemetryOverCellular(body)) {
+      if (!postTelemetryOverCellularTlsSocket(body)) {
+        cellularConnected = false;
+      }
+    }
+  }
 }
 
 void setup() {
@@ -330,8 +731,8 @@ void setup() {
     : buildDeviceId(WiFi.macAddress().c_str());
   Serial.printf("Device ID=%s\n", deviceId.c_str());
 
-  connectWifi();
   setupGnss();
+  connectInternet();
   postTelemetry();
   lastPostAt = millis();
 }
