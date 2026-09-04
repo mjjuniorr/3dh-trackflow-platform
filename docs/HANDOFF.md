@@ -2,6 +2,15 @@
 
 Este arquivo existe para continuar o projeto em uma conversa nova sem depender do historico longo da conversa anterior.
 
+## Retomada do Monitor Android — 2026-09-04
+
+Leia primeiro [Estado e pendencias do Monitor](android-monitor-handoff-2026-09-04.md)
+e [Teste autorizado com dados reais](android-monitor-real-data-test.md).
+O Monitor e nativo, usa dados reais e os icones do portal. O login Keycloak nativo
+continua pendente. O ultimo APK inclui atualizacao periodica de status, mas ainda
+precisa ser instalado e validado no tablet: o relato de icones coloridos apos
+ficarem offline nao deve ser considerado resolvido apenas porque o build passou.
+
 ## Contexto rapido
 
 Projeto: `3dh-trackflow-platform`
