@@ -208,3 +208,46 @@ As tags `producao` sao sobrescritas. Depois de publicar nova imagem, e preciso f
 docker service update --force 3dh-trackflow-platform_frontend
 docker service update --force 3dh-trackflow-platform_backend
 ```
+
+
+## Android Monitor e Central de Notificacoes
+
+Branch de desenvolvimento:
+
+```text
+feature/android-monitor-notification-center
+```
+
+Implementado:
+
+- segundo aplicativo Android como modulo `:monitor`;
+- application ID independente `br.com.tresdhmanaus.trackflow.monitor`;
+- mapa full-screen;
+- estado inicial via `GET /api/delivery-people`;
+- atualizacao em tempo real via Socket.IO `dashboard:join` / `location:update`;
+- camera enquadra objetos apenas na carga inicial e depois permanece sob controle do usuario;
+- filtro local de visibilidade por objeto com DataStore;
+- botoes flutuantes de sininho e configuracao;
+- central de notificacoes persistida no PostgreSQL;
+- notificacoes `DEVICE_OFFLINE` e `DEVICE_ONLINE`;
+- leitura de notificacao por usuario;
+- badge de nao lidas;
+- worker de offline a cada 30 segundos;
+- mesma regra de status ja existente: online <= 90 s, sem sinal <= 5 min, offline > 5 min;
+- protecao contra duplicacao de transicao em ambientes com mais de uma instancia do backend.
+
+Pendente antes de producao:
+
+- rodar `prisma generate`;
+- aplicar migration `20260903223000_add_notification_center`;
+- executar typecheck/build do backend;
+- executar teste `test:notifications`;
+- compilar `:app` para garantir que o app dos entregadores nao sofreu regressao;
+- compilar `:monitor`;
+- instalar APK em aparelho real;
+- validar login;
+- validar Socket.IO;
+- validar offline >5 min e recuperacao;
+- validar leitura independente com dois usuarios;
+- revisar experiencia visual dos marcadores;
+- avaliar login OIDC nativo caso o ambiente seja alterado para OIDC-only.

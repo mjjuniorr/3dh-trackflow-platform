@@ -20,6 +20,18 @@
 
 ## Em andamento
 
+### Android Monitor / Central de Notificacoes
+
+- backend de notificacoes implementado;
+- deteccao de offline e recuperacao implementada;
+- leitura por usuario implementada;
+- segundo APK Android `:monitor` implementado;
+- mapa full-screen, filtro local, sininho e badge implementados;
+- pendente build, migration e validacao em aparelho real;
+- push notification Android/FCM fica fora do primeiro MVP.
+
+
+
 - Padronizacao visual dos icones de veiculos.
 - Substituicao dos icones por PNGs transparentes reais, sem processamento local.
 - Ajuste fino de tamanho de cada marcador no mapa.

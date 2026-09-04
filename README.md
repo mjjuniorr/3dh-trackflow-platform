@@ -8,7 +8,7 @@ Plataforma 3DH para rastreamento em tempo real, operacao de entregadores, links 
 3dh-trackflow-platform/
   apps/
     web/               # Painel interno e pagina publica de rastreio
-    android/           # Aplicativo Android dos entregadores
+    android/           # Projeto Android: app entregador + app monitor
   services/
     backend/           # API, WebSocket, Kafka, Prisma, Redis e JWT
   firmware/
@@ -23,7 +23,7 @@ Plataforma 3DH para rastreamento em tempo real, operacao de entregadores, links 
 
 - Backend: Node.js, TypeScript, Express, Socket.IO, KafkaJS, Prisma, PostgreSQL, Redis e JWT.
 - Web: React, Vite, TypeScript, TailwindCSS, Leaflet e Socket.IO Client.
-- Android: aplicativo nativo dos entregadores para cadastro e telemetria.
+- Android: dois aplicativos nativos no mesmo projeto Gradle: entregador (`:app`) e TrackFlow Monitor (`:monitor`) somente leitura.
 - Firmware: placa LILYGO TTGO T-SIM A7670SA com Wi-Fi, GNSS interno e envio HTTPS.
 - Deploy: Docker Swarm/Portainer com Traefik e rede externa `PortainerRede`.
 
@@ -305,4 +305,5 @@ O webhook n8n deve validar o header `X-TrackFlow-Bling-Secret`, consultar NF-e e
 - `docs/operations.md`: comandos operacionais de deploy, Android e Kafka.
 - `infra/portainer/README.md`: deploy VPS com Portainer, Swarm, Traefik e registry.
 - `infra/docker/README.md`: builds Docker e execucao local.
-- `apps/android/README.md`: requisitos iniciais do app Android.
+- `apps/android/README.md`: requisitos iniciais do app Android de entregadores.
+- `apps/android/monitor/README.md`: novo app TrackFlow Monitor com mapa full-screen, filtros locais e notificacoes.
