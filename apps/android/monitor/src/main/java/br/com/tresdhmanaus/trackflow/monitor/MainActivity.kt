@@ -17,6 +17,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Badge
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -31,6 +32,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -58,11 +60,17 @@ class MainActivity : ComponentActivity() {
             MonitorTheme {
                 val state by viewModel.state.collectAsState()
                 if (state.token == null) {
-                    LoginScreen(
-                        loading = state.loading,
-                        error = state.error,
-                        onLogin = viewModel::login
-                    )
+                    MaterialTheme(colorScheme = darkColorScheme(
+                        primary = Color(0xFFF4672C),
+                        onPrimary = Color(0xFF111316),
+                        surface = Color(0xFF111316)
+                    )) {
+                        LoginScreen(
+                            loading = state.loading,
+                            error = state.error,
+                            onLogin = viewModel::login
+                        )
+                    }
                 } else {
                     MonitorScreen(
                         state = state,
@@ -86,10 +94,10 @@ private fun MonitorTheme(content: @Composable () -> Unit) {
 
 @Composable
 private fun LoginScreen(loading: Boolean, error: String?, onLogin: (String, String) -> Unit) {
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+    var email by rememberSaveable { mutableStateOf("") }
+    var password by rememberSaveable { mutableStateOf("") }
 
-    Surface(modifier = Modifier.fillMaxSize(), color = Color(0xFF111316)) {
+    Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
         Column(
             modifier = Modifier.fillMaxSize().padding(28.dp),
             verticalArrangement = Arrangement.Center
@@ -137,6 +145,24 @@ private fun MonitorScreen(
 
     Box(modifier = Modifier.fillMaxSize()) {
         TrackingMap(visible)
+
+        Surface(
+            modifier = Modifier.align(Alignment.TopStart).padding(top = 42.dp, start = 14.dp),
+            color = Color(0xE6111316)
+        ) {
+            Column(modifier = Modifier.padding(10.dp)) {
+                Text(
+                    if (state.realtimeConnected) "Ao vivo · ${state.people.size} objetos · ${state.people.count { it.computed_status == "online" }} online" else "Conectando ao TrackFlow...",
+                    color = Color.White
+                )
+                Text(
+                    "${state.people.count { it.computed_status == "sem sinal" }} sem sinal · ${state.people.count { it.computed_status == "offline" }} offline",
+                    color = Color.White,
+                    style = MaterialTheme.typography.bodySmall
+                )
+                state.error?.let { Text(it, color = Color(0xFFFFB4AB), style = MaterialTheme.typography.bodySmall) }
+            }
+        }
 
         Row(
             modifier = Modifier
@@ -199,6 +225,7 @@ private fun FloatingControl(label: String, badge: Int? = null, onClick: () -> Un
 @Composable
 private fun TrackingMap(people: List<DeliveryPerson>) {
     val context = LocalContext.current
+    val vehicleIcons = remember(context) { VehicleMarkerIcons(context) }
     val mapView = remember {
         Configuration.getInstance().userAgentValue = context.packageName
         MapView(context).apply {
@@ -224,8 +251,10 @@ private fun TrackingMap(people: List<DeliveryPerson>) {
                     Marker(map).apply {
                         position = GeoPoint(location.lat, location.lng)
                         title = person.name
+                        icon = vehicleIcons.icon(person.vehicle_type, person.computed_status)
                         snippet = person.computed_status + " • " + location.speed.toInt() + " km/h"
-                        rotation = location.heading?.toFloat() ?: 0f
+                        // osmdroid rotates counterclockwise; portal headings rotate clockwise.
+                        rotation = -(location.heading?.takeIf { it.isFinite() }?.toFloat() ?: 0f)
                         setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
                         map.overlays.add(this)
                     }

@@ -10,7 +10,8 @@ class MonitorSocket(
     private val onLocationUpdate: (String) -> Unit,
     private val onNotification: () -> Unit,
     private val onUnreadCount: (Int) -> Unit,
-    private val onAuthError: () -> Unit
+    private val onAuthError: () -> Unit,
+    private val onDisconnected: () -> Unit
 ) {
     private val socket: Socket = IO.socket(
         BuildConfig.TRACKFLOW_API_BASE_URL,
@@ -18,6 +19,8 @@ class MonitorSocket(
     )
 
     fun connect() {
+        socket.on(Socket.EVENT_DISCONNECT) { onDisconnected() }
+        socket.on(Socket.EVENT_CONNECT_ERROR) { onDisconnected() }
         socket.on(Socket.EVENT_CONNECT) {
             socket.emit("dashboard:join", JSONObject().put("token", token))
         }
