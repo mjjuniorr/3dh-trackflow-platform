@@ -16,3 +16,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "TrackFlowAndroid"
 include(":app")
+include(":monitor")
