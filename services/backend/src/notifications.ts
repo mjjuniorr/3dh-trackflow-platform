@@ -90,7 +90,7 @@ export function createNotificationHandlers(io: Server) {
       res.json({ unread_count: count });
     },
 
-    async markRead(req: Request, res: Response) {
+    async markRead(req: Request<{ id: string }>, res: Response) {
       const notification = await prisma.notification.findUnique({ where: { id: req.params.id } });
       if (!notification) return res.status(404).json({ message: "Notificacao nao encontrada." });
 
