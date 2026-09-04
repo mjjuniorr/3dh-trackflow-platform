@@ -6,6 +6,7 @@ import br.com.tresdhmanaus.trackflow.monitor.data.LoginRequest
 import br.com.tresdhmanaus.trackflow.monitor.data.LoginResponse
 import br.com.tresdhmanaus.trackflow.monitor.data.NotificationsResponse
 import br.com.tresdhmanaus.trackflow.monitor.data.UnreadCountResponse
+import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType

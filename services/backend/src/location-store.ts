@@ -68,15 +68,19 @@ export async function saveLocation(message: LocationMessage, io?: Server) {
   });
 
   const status = computeStatus(event.timestamp);
-  await Promise.all([
+  const [, statusUpdate] = await Promise.all([
     redis.set(`${LAST_LOCATION_PREFIX}${message.device_id}`, JSON.stringify(event), "EX", 60 * 60 * 24),
     prisma.deliveryPerson.updateMany({
-      where: { device_id: message.device_id, is_active: true },
+      where: {
+        device_id: message.device_id,
+        is_active: true,
+        ...(previousStatus ? { status: previousStatus } : {})
+      },
       data: { status }
     })
   ]);
 
-  if (io && person && previousStatus) {
+  if (io && person && previousStatus && statusUpdate.count > 0) {
     const transition = notificationForTransition(previousStatus, status);
     if (transition === "DEVICE_ONLINE") {
       await createDeviceNotification(io, {

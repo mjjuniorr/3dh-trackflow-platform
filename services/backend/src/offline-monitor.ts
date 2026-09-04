@@ -15,10 +15,11 @@ async function reconcileSilentDevices(io: Server) {
     const previousStatus = person.status as DeviceOperationalStatus;
     if (nextStatus === previousStatus) continue;
 
-    await prisma.deliveryPerson.update({
-      where: { id: person.id },
+    const claimed = await prisma.deliveryPerson.updateMany({
+      where: { id: person.id, status: previousStatus },
       data: { status: nextStatus }
     });
+    if (claimed.count === 0) continue;
 
     const type = notificationForTransition(previousStatus, nextStatus);
     if (type === "DEVICE_OFFLINE") {
