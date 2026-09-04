@@ -4,7 +4,7 @@ Date: 2026-09-04
 
 ## Goal
 
-Consolidate only the field-validated A7670SA 4G transport into TrackFlow main, while preserving the current Android Monitor and Notification Center and keeping unvalidated firmware experiments isolated.
+Consolidate the field-validated A7670SA 4G transport into TrackFlow main, while preserving the current Android Monitor and Notification Center and keeping only unvalidated adaptive-tracking and multi-board changes isolated.
 
 ## Current Baseline
 
@@ -53,7 +53,7 @@ feature/android-monitor-notification-center
 Reasons:
 
 - the Android Monitor branch is already behind main;
-- adaptive tracking v2 is not yet compiled, flashed, and field-validated;
+- the 4G transport itself is already field-validated; only the adaptive scheduling, offline queue, and energy-saving layer in adaptive tracking v2 are not yet compiled, flashed, and field-validated;
 - multi-board architecture is an unvalidated directory reorganization and changes the firmware ownership boundary;
 - both firmware branches diverged before the current Monitor/Notification work and need a future rebase onto the consolidated base.
 
@@ -91,5 +91,5 @@ The consolidation is accepted only when:
 - the 4G fallback compiles;
 - all existing source examples are credential-free;
 - the diff is restricted to firmware transport, its tests, and concise documentation;
-- no experimental adaptive-tracking or multi-board code has been included;
+- no unvalidated adaptive-tracking, offline-queue, or multi-board code has been included;
 - main is changed only through a reviewed pull request.
