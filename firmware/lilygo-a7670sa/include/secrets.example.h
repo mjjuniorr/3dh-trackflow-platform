@@ -5,6 +5,9 @@
 
 #define TRACKFLOW_WIFI_SSID "NOME_DA_REDE"
 #define TRACKFLOW_WIFI_PASSWORD "SENHA_DA_REDE"
+#define TRACKFLOW_CELLULAR_APN "zap.vivo.com.br"
+#define TRACKFLOW_CELLULAR_USER "vivo"
+#define TRACKFLOW_CELLULAR_PASSWORD "vivo"
 #define TRACKFLOW_API_URL "https://rastreio.3dhmanaus.com.br/api/mobile/telemetry"
 #define TRACKFLOW_MOBILE_SECRET "COLOQUE_O_MOBILE_REGISTRATION_SECRET"
 #define TRACKFLOW_DEVICE_ID "final_test_carro_amazonas"

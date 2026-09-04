@@ -3,8 +3,8 @@
 Firmware inicial para a placa LILYGO TTGO T-SIM A7670SA usando Wi-Fi e GNSS
 interno.
 
-Esta primeira versao ainda nao usa SIM ou dados 4G. Ela valida a placa, a
-gravacao via USB, a conexao Wi-Fi, a leitura do GNSS interno do A7670SA e o
+Esta primeira versao valida a placa, a gravacao via USB, a conexao Wi-Fi, a
+leitura do GNSS interno do A7670SA, o fallback para dados 4G com SIM/APN e o
 envio HTTPS para a API tecnica de telemetria do TrackFlow.
 
 ## Hardware
@@ -29,6 +29,9 @@ Edite `include/secrets.h`:
 ```cpp
 #define TRACKFLOW_WIFI_SSID "NOME_DA_REDE"
 #define TRACKFLOW_WIFI_PASSWORD "SENHA_DA_REDE"
+#define TRACKFLOW_CELLULAR_APN "zap.vivo.com.br"
+#define TRACKFLOW_CELLULAR_USER "vivo"
+#define TRACKFLOW_CELLULAR_PASSWORD "vivo"
 #define TRACKFLOW_API_URL "https://rastreio.3dhmanaus.com.br/api/mobile/telemetry"
 #define TRACKFLOW_MOBILE_SECRET "COLOQUE_O_MOBILE_REGISTRATION_SECRET"
 #define TRACKFLOW_DEVICE_ID "final_test_carro_amazonas"
@@ -41,13 +44,14 @@ Se ficar vazio, a firmware gera um ID automatico a partir do MAC da placa.
 
 ## Ordem de conectividade
 
-Nesta fase, a placa usa Wi-Fi como transporte:
+Nesta fase, a placa usa a seguinte prioridade de transporte:
 
 1. tenta a rede salva em `TRACKFLOW_WIFI_SSID`;
-2. se falhar, procura redes Wi-Fi abertas;
-3. conecta na melhor rede aberta encontrada;
-4. faz um teste simples de acesso externo antes de enviar telemetria;
-5. se nao houver conexao, nao envia e tenta novamente no proximo ciclo.
+2. se falhar, tenta dados 4G usando `TRACKFLOW_CELLULAR_APN`;
+3. se 4G falhar, procura redes Wi-Fi abertas;
+4. conecta na melhor rede aberta encontrada;
+5. faz um teste simples de acesso externo antes de enviar telemetria por Wi-Fi aberto;
+6. se nao houver conexao, nao envia e tenta novamente no proximo ciclo.
 
 O fallback para redes abertas pode ser desligado no build com:
 
@@ -61,7 +65,35 @@ Diagnosticos detalhados do modem podem ser ligados temporariamente com:
 -D TRACKFLOW_MODEM_DIAGNOSTICS=1
 ```
 
-O 4G ficara na proxima fase, quando houver SIM e APN para validar.
+Para forcar o teste 4G sem alterar `secrets.h`, compile temporariamente com:
+
+```ini
+-D TRACKFLOW_FORCE_CELLULAR_TEST=1
+```
+
+Se o APN estiver vazio ou como `XXXX`, o 4G e ignorado. Para Vivo Brasil, use:
+
+```cpp
+#define TRACKFLOW_CELLULAR_APN "zap.vivo.com.br"
+#define TRACKFLOW_CELLULAR_USER "vivo"
+#define TRACKFLOW_CELLULAR_PASSWORD "vivo"
+```
+
+## Teste 4G com SIM
+
+1. Confirme que o SIM possui pacote de dados ativo em um celular.
+2. Coloque o SIM na placa desligada.
+3. Ligue a placa e acompanhe pelo monitor serial.
+4. Preencha `TRACKFLOW_CELLULAR_APN` em `include/secrets.h`.
+5. Compile e grave novamente.
+6. Desligue temporariamente o Wi-Fi salvo ou use uma rede inexistente para forcar o caminho 4G.
+7. Verifique no monitor:
+
+```text
+Iniciando conexao 4G pelo modem A7670SA...
+4G conectado.
+POST 4G https://rastreio.3dhmanaus.com.br/api/mobile/telemetry
+```
 
 ## Compilar
 
@@ -135,5 +167,5 @@ Payload:
 - Adicionar fila local para perda de sinal.
 - Substituir `client.setInsecure()` por CA raiz fixa.
 - Adicionar modo de configuracao Wi-Fi via portal local.
-- Ativar modem A7670SA quando houver SIM.
+- Validar APN real de operadora brasileira no A7670SA.
 - Criar tipo operacional proprio para `board`, sem tratar a placa como Android na interface.
