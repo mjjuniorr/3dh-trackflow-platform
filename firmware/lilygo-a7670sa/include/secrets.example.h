@@ -11,3 +11,6 @@
 #define TRACKFLOW_API_URL "https://rastreio.3dhmanaus.com.br/api/mobile/telemetry"
 #define TRACKFLOW_MOBILE_SECRET "COLOQUE_O_MOBILE_REGISTRATION_SECRET"
 #define TRACKFLOW_DEVICE_ID "final_test_carro_amazonas"
+
+// Economiza energia e evita conexao em redes desconhecidas por padrao.
+#define TRACKFLOW_ALLOW_OPEN_WIFI_FALLBACK 0

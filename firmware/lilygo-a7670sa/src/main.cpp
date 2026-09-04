@@ -1,9 +1,11 @@
 #include <Arduino.h>
 #include <HTTPClient.h>
+#include <Preferences.h>
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
 
 #include <A7670Gnss.h>
+#include <AdaptiveTracking.h>
 #include <TrackFlowPayload.h>
 #include <TransportPriority.h>
 #include <WifiFailover.h>
@@ -38,7 +40,7 @@
 #endif
 
 #ifndef TRACKFLOW_ALLOW_OPEN_WIFI_FALLBACK
-#define TRACKFLOW_ALLOW_OPEN_WIFI_FALLBACK 1
+#define TRACKFLOW_ALLOW_OPEN_WIFI_FALLBACK 0
 #endif
 
 #ifndef TRACKFLOW_MODEM_DIAGNOSTICS
@@ -49,7 +51,9 @@
 #define TRACKFLOW_FORCE_CELLULAR_TEST 0
 #endif
 
-constexpr unsigned long POST_INTERVAL_MS = 30000;
+constexpr unsigned long GNSS_SAMPLE_INTERVAL_MS = 15000;
+constexpr size_t TELEMETRY_QUEUE_CAPACITY = 24;
+constexpr size_t QUEUE_DRAIN_BUDGET = 3;
 constexpr unsigned long WIFI_CONNECT_TIMEOUT_MS = 20000;
 constexpr unsigned long INTERNET_CHECK_TIMEOUT_MS = 8000;
 constexpr unsigned long CELLULAR_NETWORK_TIMEOUT_MS = 90000;
@@ -57,10 +61,16 @@ constexpr unsigned long CELLULAR_DATA_TIMEOUT_MS = 60000;
 constexpr unsigned long CELLULAR_HTTP_TIMEOUT_MS = 120000;
 constexpr char TRACKFLOW_API_HOST[] = "rastreio.3dhmanaus.com.br";
 constexpr char TRACKFLOW_API_PATH[] = "/api/mobile/telemetry";
-unsigned long lastPostAt = 0;
+unsigned long lastGnssSampleAt = 0;
 std::string deviceId;
 HardwareSerial modemSerial(1);
 bool cellularConnected = false;
+AdaptiveTracker adaptiveTracker;
+RetryBackoff networkBackoff;
+Preferences telemetryQueuePrefs;
+uint8_t telemetryQueueHead = 0;
+uint8_t telemetryQueueCount = 0;
+bool telemetryQueueReady = false;
 
 String readModemResponse(unsigned long timeoutMs) {
   String response;
@@ -78,12 +88,13 @@ String readModemResponse(unsigned long timeoutMs) {
   return response;
 }
 
-String sendAtCommand(const char *command, unsigned long timeoutMs = 2000) {
+String sendAtCommand(const char *command, unsigned long timeoutMs = 2000, bool logCommand = true) {
   while (modemSerial.available()) {
     modemSerial.read();
   }
 
-  Serial.printf("AT> %s\n", command);
+  if (logCommand) Serial.printf("AT> %s\n", command);
+  else Serial.println("AT> [comando sensivel ocultado]");
   modemSerial.print(command);
   modemSerial.print("\r\n");
   const String response = readModemResponse(timeoutMs);
@@ -91,8 +102,8 @@ String sendAtCommand(const char *command, unsigned long timeoutMs = 2000) {
   return response;
 }
 
-String sendAtCommand(const String &command, unsigned long timeoutMs = 2000) {
-  return sendAtCommand(command.c_str(), timeoutMs);
+String sendAtCommand(const String &command, unsigned long timeoutMs = 2000, bool logCommand = true) {
+  return sendAtCommand(command.c_str(), timeoutMs, logCommand);
 }
 
 bool modemResponseOk(const String &response) {
@@ -182,6 +193,80 @@ int waitForHttpActionStatus(unsigned long timeoutMs) {
     delay(20);
   }
   return -1;
+}
+
+void telemetryQueueKey(uint8_t index, char *buffer, size_t bufferSize) {
+  snprintf(buffer, bufferSize, "q%02u", static_cast<unsigned int>(index));
+}
+
+void initTelemetryQueue() {
+  if (!telemetryQueuePrefs.begin("trackflowq", false)) {
+    Serial.println("Fila persistente indisponivel; telemetria offline nao sera preservada.");
+    return;
+  }
+  telemetryQueueReady = true;
+
+  telemetryQueueHead = telemetryQueuePrefs.getUChar("head", 0);
+  telemetryQueueCount = telemetryQueuePrefs.getUChar("count", 0);
+  if (telemetryQueueHead >= TELEMETRY_QUEUE_CAPACITY || telemetryQueueCount > TELEMETRY_QUEUE_CAPACITY) {
+    telemetryQueueHead = 0;
+    telemetryQueueCount = 0;
+    telemetryQueuePrefs.putUChar("head", telemetryQueueHead);
+    telemetryQueuePrefs.putUChar("count", telemetryQueueCount);
+  }
+  Serial.printf("Fila persistente carregada: %u registro(s).\n", telemetryQueueCount);
+}
+
+void persistTelemetryQueueMetadata() {
+  telemetryQueuePrefs.putUChar("head", telemetryQueueHead);
+  telemetryQueuePrefs.putUChar("count", telemetryQueueCount);
+}
+
+bool enqueueTelemetry(const std::string &body) {
+  if (!telemetryQueueReady) return false;
+
+  const bool full = telemetryQueueCount == TELEMETRY_QUEUE_CAPACITY;
+  const uint8_t writeIndex = full
+    ? telemetryQueueHead
+    : static_cast<uint8_t>((telemetryQueueHead + telemetryQueueCount) % TELEMETRY_QUEUE_CAPACITY);
+
+  char key[8];
+  telemetryQueueKey(writeIndex, key, sizeof(key));
+  if (telemetryQueuePrefs.putString(key, body.c_str()) == 0) {
+    Serial.println("Falha ao persistir telemetria offline.");
+    return false;
+  }
+
+  if (full) {
+    telemetryQueueHead = static_cast<uint8_t>((telemetryQueueHead + 1) % TELEMETRY_QUEUE_CAPACITY);
+    Serial.println("Fila offline cheia: registro mais antigo descartado.");
+  } else {
+    telemetryQueueCount++;
+  }
+
+  persistTelemetryQueueMetadata();
+  Serial.printf("Telemetria adicionada a fila offline. pendentes=%u\n", telemetryQueueCount);
+  return true;
+}
+
+bool peekTelemetry(std::string &body) {
+  if (!telemetryQueueReady || telemetryQueueCount == 0) return false;
+  char key[8];
+  telemetryQueueKey(telemetryQueueHead, key, sizeof(key));
+  const String value = telemetryQueuePrefs.getString(key, "");
+  if (value.length() == 0) return false;
+  body = value.c_str();
+  return true;
+}
+
+void popTelemetry() {
+  if (!telemetryQueueReady || telemetryQueueCount == 0) return;
+  char key[8];
+  telemetryQueueKey(telemetryQueueHead, key, sizeof(key));
+  telemetryQueuePrefs.remove(key);
+  telemetryQueueHead = static_cast<uint8_t>((telemetryQueueHead + 1) % TELEMETRY_QUEUE_CAPACITY);
+  telemetryQueueCount--;
+  persistTelemetryQueueMetadata();
 }
 
 bool waitForModem() {
@@ -335,6 +420,11 @@ bool connectSavedWifi() {
   }
 
   Serial.printf("Wi-Fi salvo conectado. IP=%s RSSI=%d\n", WiFi.localIP().toString().c_str(), WiFi.RSSI());
+  if (!hasInternetAccess()) {
+    Serial.println("Wi-Fi salvo sem acesso externo. Liberando fallback para 4G.");
+    WiFi.disconnect(true);
+    return false;
+  }
   return true;
 }
 
@@ -424,7 +514,8 @@ bool connectCellular() {
   if (String(TRACKFLOW_CELLULAR_USER).length() > 0 && String(TRACKFLOW_CELLULAR_USER) != "XXXX") {
     response = sendAtCommand(
       String("AT+CGAUTH=1,1,\"") + TRACKFLOW_CELLULAR_USER + "\",\"" + TRACKFLOW_CELLULAR_PASSWORD + "\"",
-      5000
+      5000,
+      false
     );
     if (!modemResponseOk(response)) {
       Serial.println("Nao foi possivel configurar autenticacao da APN.");
@@ -543,7 +634,11 @@ bool postTelemetryOverCellular(const std::string &body) {
   }
 
   sendAtCommand("AT+HTTPPARA=\"CONTENT\",\"application/json\"", 5000);
-  sendAtCommand(String("AT+HTTPPARA=\"USERDATA\",\"X-Mobile-Registration-Secret: ") + TRACKFLOW_MOBILE_SECRET + "\"", 5000);
+  sendAtCommand(
+    String("AT+HTTPPARA=\"USERDATA\",\"X-Mobile-Registration-Secret: ") + TRACKFLOW_MOBILE_SECRET + "\"",
+    5000,
+    false
+  );
 
   if (!sendCellularHttpData(body)) {
     sendAtCommand("AT+HTTPTERM", 3000);
@@ -666,11 +761,71 @@ bool postTelemetryOverCellularTlsSocket(const std::string &body) {
   return statusCode >= 200 && statusCode < 300;
 }
 
-void postTelemetry() {
-  if (!connectInternet()) return;
+bool sendTelemetryBody(const std::string &body) {
+  if (WiFi.status() == WL_CONNECTED) {
+    return postTelemetryOverWifi(body);
+  }
 
+  if (cellularConnected) {
+    if (postTelemetryOverCellular(body)) return true;
+    if (postTelemetryOverCellularTlsSocket(body)) return true;
+    cellularConnected = false;
+  }
+  return false;
+}
+
+bool ensureConnectivityWithBackoff(uint32_t nowMs) {
+  if (!networkBackoff.canAttempt(nowMs)) {
+    Serial.printf(
+      "OFFLINE: reconexao em backoff. falhas=%u proxima_tentativa_ms=%lu\n",
+      networkBackoff.failureCount(),
+      static_cast<unsigned long>(networkBackoff.nextAttemptAtMs())
+    );
+    return false;
+  }
+
+  if (WiFi.status() == WL_CONNECTED || cellularConnected) return true;
+
+  if (connectInternet()) return true;
+
+  const uint32_t delayMs = networkBackoff.recordFailure(nowMs);
+  Serial.printf("OFFLINE: nova tentativa de rede em %lu s.\n", static_cast<unsigned long>(delayMs / 1000));
+  return false;
+}
+
+bool drainTelemetryQueue(uint32_t nowMs) {
+  if (telemetryQueueCount == 0) return true;
+  if (!ensureConnectivityWithBackoff(nowMs)) return false;
+
+  size_t sent = 0;
+  while (telemetryQueueCount > 0 && sent < QUEUE_DRAIN_BUDGET) {
+    std::string queuedBody;
+    if (!peekTelemetry(queuedBody)) {
+      Serial.println("Fila offline inconsistente; removendo entrada vazia.");
+      popTelemetry();
+      continue;
+    }
+
+    if (!sendTelemetryBody(queuedBody)) {
+      const uint32_t delayMs = networkBackoff.recordFailure(nowMs);
+      Serial.printf("Falha ao reenviar fila. novo backoff=%lu s.\n", static_cast<unsigned long>(delayMs / 1000));
+      return false;
+    }
+
+    networkBackoff.recordSuccess();
+    popTelemetry();
+    sent++;
+  }
+
+  if (sent > 0) {
+    Serial.printf("Fila offline drenada: %u enviado(s), %u pendente(s).\n", static_cast<unsigned int>(sent), telemetryQueueCount);
+  }
+  return true;
+}
+
+void processTrackingCycle() {
   if (String(TRACKFLOW_MOBILE_SECRET).length() == 0) {
-    Serial.println("TRACKFLOW_MOBILE_SECRET nao configurado. POST nao enviado.");
+    Serial.println("TRACKFLOW_MOBILE_SECRET nao configurado. Ciclo ignorado.");
     return;
   }
 
@@ -680,9 +835,30 @@ void postTelemetry() {
     fix = {true, -3.10194, -60.02500, 0.0, 0, 25.0, ""};
     Serial.println("Usando fallback fixo de teste.");
 #else
-    Serial.println("POST nao enviado porque ainda nao ha localizacao real.");
+    Serial.println("GNSS sem fix: nenhuma telemetria nova sera criada neste ciclo.");
     return;
 #endif
+  }
+
+  const uint32_t nowMs = millis();
+  const TrackingPoint point{fix.lat, fix.lng, fix.speedKmh, fix.heading};
+  const TrackingDecision decision = adaptiveTracker.evaluate(point, nowMs);
+
+  Serial.printf(
+    "TRACK state=%s send=%s dist=%.1fm heading_delta=%d speed_delta=%.1fkmh queue=%u\n",
+    trackingStateName(decision.state),
+    decision.shouldSend ? "yes" : "no",
+    decision.distanceFromLastTelemetryMeters,
+    decision.headingDeltaDegrees,
+    decision.speedDeltaKmh,
+    telemetryQueueCount
+  );
+
+  if (!decision.shouldSend) {
+    if (telemetryQueueCount > 0 && networkBackoff.canAttempt(nowMs)) {
+      drainTelemetryQueue(nowMs);
+    }
+    return;
   }
 
   TelemetryPayload payload{
@@ -695,20 +871,26 @@ void postTelemetry() {
     fix.accuracy,
     fix.timestamp
   };
-
   const std::string body = buildTelemetryJson(payload);
 
-  if (WiFi.status() == WL_CONNECTED) {
-    postTelemetryOverWifi(body);
-    return;
+  bool acceptedForDelivery = false;
+  if (ensureConnectivityWithBackoff(nowMs)) {
+    const bool backlogReady = drainTelemetryQueue(nowMs);
+    if (backlogReady && sendTelemetryBody(body)) {
+      networkBackoff.recordSuccess();
+      acceptedForDelivery = true;
+    } else if (backlogReady) {
+      const uint32_t delayMs = networkBackoff.recordFailure(nowMs);
+      Serial.printf("Falha no envio atual. backoff=%lu s.\n", static_cast<unsigned long>(delayMs / 1000));
+    }
   }
 
-  if (cellularConnected) {
-    if (!postTelemetryOverCellular(body)) {
-      if (!postTelemetryOverCellularTlsSocket(body)) {
-        cellularConnected = false;
-      }
-    }
+  if (!acceptedForDelivery) {
+    acceptedForDelivery = enqueueTelemetry(body);
+  }
+
+  if (acceptedForDelivery) {
+    adaptiveTracker.markTelemetryAccepted(point, nowMs);
   }
 }
 
@@ -716,7 +898,7 @@ void setup() {
   Serial.begin(115200);
   delay(1000);
   Serial.println();
-  Serial.println("3DH TrackFlow GPS Board - Wi-Fi bring-up");
+  Serial.println("3DH TrackFlow LILYGO v2 - Adaptive Tracking");
   Serial.printf("Board=%s\n", TRACKFLOW_BOARD_NAME);
 
   WiFi.mode(WIFI_STA);
@@ -725,15 +907,16 @@ void setup() {
     : buildDeviceId(WiFi.macAddress().c_str());
   Serial.printf("Device ID=%s\n", deviceId.c_str());
 
+  initTelemetryQueue();
   setupGnss();
-  connectInternet();
-  postTelemetry();
-  lastPostAt = millis();
+  processTrackingCycle();
+  lastGnssSampleAt = millis();
 }
 
 void loop() {
-  if (millis() - lastPostAt >= POST_INTERVAL_MS) {
-    lastPostAt = millis();
-    postTelemetry();
+  if (millis() - lastGnssSampleAt >= GNSS_SAMPLE_INTERVAL_MS) {
+    lastGnssSampleAt = millis();
+    processTrackingCycle();
   }
+  delay(50);
 }
