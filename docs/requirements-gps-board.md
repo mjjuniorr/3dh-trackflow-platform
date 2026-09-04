@@ -1,6 +1,6 @@
 # Requisitos - Firmware GPS Board A7670SA
 
-Ultima revisao: 2026-09-02.
+Ultima revisao: 2026-09-03.
 
 ## Objetivo
 
@@ -21,12 +21,12 @@ Permitir que uma placa LILYGO TTGO T-SIM A7670SA envie localizacao para o TrackF
 3. Se a rede salva falhar, a placa deve tentar dados 4G quando houver APN configurado.
 4. Wi-Fi aberto e apenas contingencia opcional e fica desativado por padrao na v2.
 5. A placa deve testar conectividade externa antes de aceitar uma rede Wi-Fi como transporte.
-5. A placa deve ler localizacao real do GNSS interno por comandos AT.
-6. A placa deve enviar telemetria por HTTPS para a API tecnica do TrackFlow.
-7. A placa deve usar `X-Mobile-Registration-Secret` enquanto nao houver endpoint tecnico proprio para boards.
-8. A placa deve permitir associacao temporaria a um `device_id` existente.
-9. A placa nao deve publicar direto no Kafka.
-10. O backend deve manter o marcador estavel no mapa mesmo quando o dispositivo estiver parado ou sem giroscopio.
+6. A placa deve ler localizacao real do GNSS interno por comandos AT.
+7. A placa deve enviar telemetria por HTTPS para a API tecnica do TrackFlow.
+8. A placa deve usar `X-Mobile-Registration-Secret` enquanto nao houver endpoint tecnico proprio para boards.
+9. A placa deve permitir associacao temporaria a um `device_id` existente.
+10. A placa nao deve publicar direto no Kafka.
+11. O backend deve manter o marcador estavel no mapa mesmo quando o dispositivo estiver parado ou sem giroscopio.
 
 ## Requisitos de seguranca
 
@@ -81,13 +81,20 @@ Payload:
 
 ## Validacao ja realizada
 
-- Compilacao PlatformIO do firmware.
-- Gravacao USB na porta `COM8`.
-- Comunicacao AT com modem `A7670SA-FASE`.
-- Leitura real de GNSS com antena conectada.
-- Envio HTTPS para `https://rastreio.3dhmanaus.com.br/api/mobile/telemetry`.
-- Resposta HTTP `202` da API.
-- Visualizacao do dispositivo no dashboard do TrackFlow.
+Baseline v1 validada:
+
+- compilacao PlatformIO;
+- gravacao USB na porta `COM8`;
+- comunicacao AT com modem A7670SA;
+- leitura real de GNSS com antena conectada;
+- Wi-Fi funcional;
+- 4G Vivo funcional;
+- envio HTTPS para `https://rastreio.3dhmanaus.com.br/api/mobile/telemetry`;
+- resposta HTTP `202` da API;
+- visualizacao do dispositivo no dashboard do TrackFlow;
+- autonomia observada de aproximadamente `2h48` no teste inicial, sem capacidade real da bateria validada.
+
+A v2 ainda nao deve ser considerada validada em campo ate completar o protocolo em `docs/lilygo-adaptive-tracking-v2-validation.md`.
 
 ## Rastreamento adaptativo v2
 
@@ -106,5 +113,7 @@ Implementado na branch `feature/lilygo-adaptive-tracking-v2`, pendente de build 
 1. Criar cadastro e identidade propria para placas, separando `board` de `mobile`.
 2. Criar endpoint tecnico dedicado para placas, mantendo compatibilidade temporaria com `/api/mobile/telemetry`.
 3. Adicionar configuracao Wi-Fi simples, preferencialmente via portal local da placa.
-6. Adicionar CA raiz fixa para HTTPS.
-7. Registrar modelo, IMEI/identificador tecnico, versao de firmware e tipo de hardware no backend.
+4. Adicionar CA raiz fixa para HTTPS.
+5. Registrar modelo, IMEI/identificador tecnico, versao de firmware e tipo de hardware no backend.
+6. Avaliar deep sleep, PSM/eDRX e reducao do tempo de GNSS somente depois da validacao completa da v2.
+7. Implementar leitura real de bateria e calibracao do percentual.

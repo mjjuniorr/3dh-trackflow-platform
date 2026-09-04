@@ -184,3 +184,27 @@ Esta fase ainda nao usa deep sleep, PSM/eDRX nem desliga o GNSS. O objetivo e me
 - Adicionar modo de configuracao Wi-Fi via portal local.
 - Validar APN real de operadora brasileira no A7670SA.
 - Criar tipo operacional proprio para `board`, sem tratar a placa como Android na interface.
+
+
+## Status de validacao
+
+Baseline v1:
+
+- GNSS real: validado;
+- Wi-Fi: validado;
+- 4G Vivo: validado;
+- envio para TrackFlow: validado com HTTP `202`;
+- autonomia observada no teste inicial: aproximadamente `2h48` com a bateria usada no ensaio;
+- capacidade real da celula 18650 ainda nao foi validada, portanto o numero de `9900mAh` impresso na bateria nao deve ser usado em calculos.
+
+v2 Adaptive Tracking:
+
+- logica adaptativa: implementada;
+- testes C++ puros: executados;
+- build PlatformIO completo: pendente;
+- gravacao na placa: pendente;
+- validacao Wi-Fi/4G na v2: pendente;
+- fila offline persistente: pendente de teste fisico;
+- comparacao de autonomia v1 x v2: pendente.
+
+A v1 validada permanece preservada na branch `feature/multi-board-firmware-architecture`. A v2 e desenvolvida em `feature/lilygo-adaptive-tracking-v2`.

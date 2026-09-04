@@ -1,6 +1,6 @@
 # Estado atual do projeto
 
-Ultima revisao desta documentacao: 2026-09-02.
+Ultima revisao desta documentacao: 2026-09-03.
 
 ## Produto
 
@@ -104,6 +104,40 @@ Requisitos completos:
 
 ```text
 docs/requirements-gps-board.md
+```
+
+### Estado da v2 Adaptive Tracking
+
+Branch de desenvolvimento:
+
+```text
+feature/lilygo-adaptive-tracking-v2
+```
+
+Implementado:
+
+- estados MOVING, IDLE e PARKED;
+- amostragem GNSS a cada 15 segundos;
+- envio por tempo, distancia, mudanca de direcao e mudanca de velocidade;
+- heartbeat em PARKED;
+- backoff progressivo de rede;
+- fila offline persistente em NVS;
+- Wi-Fi aberto desativado por padrao;
+- redacao de comandos AT sensiveis no monitor serial.
+
+Pendente antes de promover a v2:
+
+- build PlatformIO completo;
+- upload para a placa;
+- confirmacao de HTTP 202 via Wi-Fi e 4G;
+- teste real da fila offline com perda/restauracao de rede;
+- confirmacao dos estados MOVING/IDLE/PARKED em campo;
+- repeticao do teste de autonomia contra o benchmark de aproximadamente 2h48.
+
+Protocolo:
+
+```text
+docs/lilygo-adaptive-tracking-v2-validation.md
 ```
 
 ## Banco de dados

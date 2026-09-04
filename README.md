@@ -302,6 +302,7 @@ O webhook n8n deve validar o header `X-TrackFlow-Bling-Secret`, consultar NF-e e
 - `docs/HANDOFF.md`: resumo para continuar em outra conversa Codex.
 - `docs/current-state.md`: estado atual do produto, deploy e problemas conhecidos.
 - `docs/requirements-bling-validation.md`: requisitos funcionais, seguranca e aceite da auditoria Bling.
+- `docs/lilygo-adaptive-tracking-v2-validation.md`: estado, parametros, pendencias e protocolo de validacao da LILYGO v2.
 - `docs/bling-validation-n8n.md`: contrato do webhook n8n para auditoria de NF no Bling.
 - `docs/vehicle-icons.md`: fluxo correto para trocar assets de veiculos.
 - `docs/operations.md`: comandos operacionais de deploy, Android e Kafka.

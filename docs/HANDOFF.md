@@ -51,7 +51,7 @@ Ja funciona:
 - cadastro manual de entregadores pela engrenagem;
 - cadastro automatico pelo Android;
 - telemetria Android via backend HTTPS;
-- firmware inicial da placa LILYGO TTGO T-SIM A7670SA com Wi-Fi, GNSS interno e envio HTTPS;
+- baseline v1 da LILYGO TTGO T-SIM A7670SA validada com GNSS, Wi-Fi, 4G Vivo e envio HTTPS;
 - heading estabilizado no backend para evitar giro falso de marcador parado;
 - Kafka consumindo eventos no topico `rastreamento` pela rede interna;
 - registro administrativo de entregas por nota fiscal unica, em homologacao;
@@ -251,4 +251,12 @@ Observacao: esse script pode ser atualizado com coordenadas finais quando os ico
 
 Branch: `feature/lilygo-adaptive-tracking-v2`.
 
-A baseline v1 com GNSS, Wi-Fi e 4G permanece preservada. A v2 implementa MOVING/IDLE/PARKED, backoff de rede, fila persistente NVS e Wi-Fi aberto desativado por padrao. Ainda requer build PlatformIO e teste na placa real antes de ser considerada validada.
+A baseline v1 com GNSS, Wi-Fi e 4G permanece preservada. A v2 implementa MOVING/IDLE/PARKED, backoff de rede, fila persistente NVS e Wi-Fi aberto desativado por padrao. Ainda requer build PlatformIO, upload e validacao de campo antes de ser considerada validada.
+
+Protocolo completo:
+
+```text
+docs/lilygo-adaptive-tracking-v2-validation.md
+```
+
+Benchmark de autonomia da v1: aproximadamente `2h48` com a bateria usada no primeiro ensaio; a capacidade real da celula ainda nao foi medida.

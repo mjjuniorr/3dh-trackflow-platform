@@ -20,6 +20,18 @@
 
 ## Em andamento
 
+### LILYGO Adaptive Tracking v2
+
+- baseline v1 preservada e validada com GNSS, Wi-Fi e 4G;
+- v2 implementada em `feature/lilygo-adaptive-tracking-v2`;
+- pendente build PlatformIO completo;
+- pendente upload para a placa;
+- pendente validacao de Wi-Fi/4G, fila offline e estados adaptativos;
+- pendente comparacao de autonomia contra o benchmark de aproximadamente 2h48;
+- deep sleep, PSM/eDRX e controle agressivo de GNSS ficam para fase posterior.
+
+
+
 - Padronizacao visual dos icones de veiculos.
 - Substituicao dos icones por PNGs transparentes reais, sem processamento local.
 - Ajuste fino de tamanho de cada marcador no mapa.
