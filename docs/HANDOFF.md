@@ -120,10 +120,10 @@ apps/web/public/assets/
 Firmware:
 
 ```text
-firmware/gps-board/README.md
-firmware/gps-board/platformio.ini
-firmware/gps-board/src/main.cpp
-firmware/gps-board/include/secrets.example.h
+firmware/lilygo-a7670sa/README.md
+firmware/lilygo-a7670sa/platformio.ini
+firmware/lilygo-a7670sa/src/main.cpp
+firmware/lilygo-a7670sa/include/secrets.example.h
 docs/requirements-gps-board.md
 ```
 
@@ -245,3 +245,10 @@ python scripts/send_vehicle_icon_test.py --broker <broker_protegido>
 Observacao: esse script pode ser atualizado com coordenadas finais quando os icones forem aprovados.
 
 
+
+
+## LILYGO Adaptive Tracking v2
+
+Branch: `feature/lilygo-adaptive-tracking-v2`.
+
+A baseline v1 com GNSS, Wi-Fi e 4G permanece preservada. A v2 implementa MOVING/IDLE/PARKED, backoff de rede, fila persistente NVS e Wi-Fi aberto desativado por padrao. Ainda requer build PlatformIO e teste na placa real antes de ser considerada validada.

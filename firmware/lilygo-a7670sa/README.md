@@ -1,7 +1,6 @@
 # 3DH TrackFlow GPS Board Firmware
 
-Firmware inicial para a placa LILYGO TTGO T-SIM A7670SA usando Wi-Fi e GNSS
-interno.
+Firmware da placa LILYGO TTGO T-SIM A7670SA para o TrackFlow, com GNSS interno, Wi-Fi, 4G e rastreamento adaptativo.
 
 Esta primeira versao valida a placa, a gravacao via USB, a conexao Wi-Fi, a
 leitura do GNSS interno do A7670SA, o fallback para dados 4G com SIM/APN e o
@@ -44,14 +43,14 @@ Se ficar vazio, a firmware gera um ID automatico a partir do MAC da placa.
 
 ## Ordem de conectividade
 
-Nesta fase, a placa usa a seguinte prioridade de transporte:
+A prioridade permanece:
 
-1. tenta a rede salva em `TRACKFLOW_WIFI_SSID`;
-2. se falhar, tenta dados 4G usando `TRACKFLOW_CELLULAR_APN`;
-3. se 4G falhar, procura redes Wi-Fi abertas;
-4. conecta na melhor rede aberta encontrada;
-5. faz um teste simples de acesso externo antes de enviar telemetria por Wi-Fi aberto;
-6. se nao houver conexao, nao envia e tenta novamente no proximo ciclo.
+1. rede salva em `TRACKFLOW_WIFI_SSID`;
+2. 4G usando `TRACKFLOW_CELLULAR_APN`;
+3. Wi-Fi aberto apenas quando `TRACKFLOW_ALLOW_OPEN_WIFI_FALLBACK=1`;
+4. sem conectividade, aplica backoff progressivo e guarda telemetria em fila persistente.
+
+Na v2, o fallback para Wi-Fi aberto fica **desativado por padrao** para evitar scans desnecessarios de radio.
 
 O fallback para redes abertas pode ser desligado no build com:
 
@@ -121,7 +120,7 @@ C:\Users\mjjun\.platformio\python3\Scripts\pio.exe device monitor -p COM8 -b 115
 Saida esperada:
 
 ```text
-3DH TrackFlow GPS Board - Wi-Fi bring-up
+3DH TrackFlow LILYGO v2 - Adaptive Tracking
 Board=LILYGO_A7670SA
 Device ID=final_test_carro_amazonas
 Wi-Fi salvo conectado. IP=...
@@ -162,9 +161,25 @@ Payload:
 }
 ```
 
+## Rastreamento adaptativo v2
+
+A v2 substitui o envio fixo de 30 segundos por decisao adaptativa. O GNSS e consultado a cada 15 segundos e a telemetria segue estes criterios iniciais:
+
+| Estado | Regra de envio |
+| --- | --- |
+| MOVING | no maximo 15 s, ou 50 m, ou 30 graus de direcao, ou 10 km/h de variacao |
+| IDLE | 60 s |
+| PARKED | 5 min |
+| OFFLINE | backoff 15 s, 30 s, 60 s, 2 min, 5 min |
+
+Movimento e inferido por velocidade GNSS >= 5 km/h ou deslocamento entre amostras. Depois de 5 minutos sem movimento, o estado passa para `PARKED`.
+
+Quando a rede falha, o JSON pronto para envio e armazenado em NVS (`Preferences`) em uma fila circular de 24 registros. A fila sobrevive a reset. Ao encher, o registro mais antigo e descartado. No maximo tres registros antigos sao drenados por ciclo.
+
+Esta fase ainda nao usa deep sleep, PSM/eDRX nem desliga o GNSS. O objetivo e medir primeiro o ganho obtido apenas com logica adaptativa e menor atividade de rede.
+
 ## Proximas etapas
 
-- Adicionar fila local para perda de sinal.
 - Substituir `client.setInsecure()` por CA raiz fixa.
 - Adicionar modo de configuracao Wi-Fi via portal local.
 - Validar APN real de operadora brasileira no A7670SA.

@@ -12,14 +12,15 @@ Permitir que uma placa LILYGO TTGO T-SIM A7670SA envie localizacao para o TrackF
 - USB serial no Windows: `USB Enhanced Serial CH9102`.
 - Porta usada em bancada: `COM8`.
 - GNSS: interno do modem A7670SA, com antena conectada.
-- 4G: previsto para fase seguinte, quando houver SIM e APN.
+- 4G: validado com SIM Vivo e APN configuravel.
 
 ## Requisitos funcionais
 
 1. A placa deve iniciar sem depender de SIM.
 2. A placa deve tentar conectar primeiro em uma rede Wi-Fi salva.
-3. Se a rede salva falhar, a placa pode procurar redes Wi-Fi abertas.
-4. A placa deve testar conectividade externa antes de usar uma rede aberta.
+3. Se a rede salva falhar, a placa deve tentar dados 4G quando houver APN configurado.
+4. Wi-Fi aberto e apenas contingencia opcional e fica desativado por padrao na v2.
+5. A placa deve testar conectividade externa antes de aceitar uma rede Wi-Fi como transporte.
 5. A placa deve ler localizacao real do GNSS interno por comandos AT.
 6. A placa deve enviar telemetria por HTTPS para a API tecnica do TrackFlow.
 7. A placa deve usar `X-Mobile-Registration-Secret` enquanto nao houver endpoint tecnico proprio para boards.
@@ -29,7 +30,7 @@ Permitir que uma placa LILYGO TTGO T-SIM A7670SA envie localizacao para o TrackF
 
 ## Requisitos de seguranca
 
-1. Segredos de Wi-Fi e `MOBILE_REGISTRATION_SECRET` ficam somente em `firmware/gps-board/include/secrets.h`.
+1. Segredos de Wi-Fi e `MOBILE_REGISTRATION_SECRET` ficam somente em `firmware/lilygo-a7670sa/include/secrets.h`.
 2. `include/secrets.h` nao pode ser commitado.
 3. Kafka deve continuar interno na VPS; a placa nunca deve usar o broker Kafka publico.
 4. O uso de rede Wi-Fi aberta e uma funcao de contingencia e pode ser desativado por build flag.
@@ -37,7 +38,7 @@ Permitir que uma placa LILYGO TTGO T-SIM A7670SA envie localizacao para o TrackF
 
 ## Requisitos tecnicos do firmware
 
-- Projeto PlatformIO em `firmware/gps-board`.
+- Projeto PlatformIO em `firmware/lilygo-a7670sa`.
 - Ambiente principal: `lilygo_a7670sa_wifi`.
 - Board PlatformIO: `esp32dev`.
 - Serial do modem: `Serial1`.
@@ -47,7 +48,8 @@ Permitir que uma placa LILYGO TTGO T-SIM A7670SA envie localizacao para o TrackF
 - RESET modem: `GPIO5`.
 - POWERON board: `GPIO12`.
 - Baud do modem: `115200`.
-- Intervalo inicial de envio: 30 segundos.
+- Amostragem GNSS v2: 15 segundos.
+- Envio adaptativo: MOVING ate 15 s / 50 m / 30 graus / 10 km/h de variacao; IDLE 60 s; PARKED 5 min.
 
 ## Telemetria esperada
 
@@ -87,12 +89,22 @@ Payload:
 - Resposta HTTP `202` da API.
 - Visualizacao do dispositivo no dashboard do TrackFlow.
 
+## Rastreamento adaptativo v2
+
+Implementado na branch `feature/lilygo-adaptive-tracking-v2`, pendente de build PlatformIO e teste fisico:
+
+- estados `MOVING`, `IDLE` e `PARKED` por velocidade/deslocamento GNSS;
+- heartbeat de 5 minutos quando estacionado;
+- backoff 15 s -> 30 s -> 60 s -> 2 min -> 5 min;
+- fila persistente NVS com 24 registros, descartando o mais antigo no overflow;
+- drenagem de ate tres registros antigos por ciclo;
+- Wi-Fi aberto desativado por padrao;
+- sem deep sleep, PSM/eDRX ou desligamento de GNSS nesta etapa.
+
 ## Melhorias futuras
 
 1. Criar cadastro e identidade propria para placas, separando `board` de `mobile`.
 2. Criar endpoint tecnico dedicado para placas, mantendo compatibilidade temporaria com `/api/mobile/telemetry`.
 3. Adicionar configuracao Wi-Fi simples, preferencialmente via portal local da placa.
-4. Adicionar suporte 4G com APN configuravel.
-5. Adicionar fila local para quedas de sinal.
 6. Adicionar CA raiz fixa para HTTPS.
 7. Registrar modelo, IMEI/identificador tecnico, versao de firmware e tipo de hardware no backend.

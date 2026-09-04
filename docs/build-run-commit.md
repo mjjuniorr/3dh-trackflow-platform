@@ -218,7 +218,7 @@ rastreamento
 O firmware fica em:
 
 ```text
-firmware/gps-board
+firmware/lilygo-a7670sa
 ```
 
 Antes de compilar, copie o modelo de segredos:
@@ -251,9 +251,9 @@ C:\Users\mjjun\.platformio\python3\Scripts\pio.exe device monitor -p COM8 -b 115
 Nunca commitar:
 
 ```text
-firmware/gps-board/include/secrets.h
-firmware/gps-board/.pio/
-firmware/gps-board/.vscode/
+firmware/lilygo-a7670sa/include/secrets.h
+firmware/lilygo-a7670sa/.pio/
+firmware/lilygo-a7670sa/.vscode/
 ```
 
 ## Conferir producao depois do deploy
