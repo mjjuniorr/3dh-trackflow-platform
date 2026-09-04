@@ -16,7 +16,8 @@
     "kafka:test:produce": "node dist/src/scripts/produce-test-location.js",
     "kafka:test:produce:dev": "tsx src/scripts/produce-test-location.ts",
     "kafka:test:heading": "node dist/src/scripts/produce-heading-demo.js",
-    "kafka:test:heading:dev": "tsx src/scripts/produce-heading-demo.ts"
+    "kafka:test:heading:dev": "tsx src/scripts/produce-heading-demo.ts",
+    "test:notifications": "npm run build && node test/notification-transition.test.mjs"
   },
   "dependencies": {
     "@prisma/client": "^6.8.2",

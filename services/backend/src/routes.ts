@@ -1,11 +1,12 @@
 import { Router } from "express";
 import type { Server } from "socket.io";
-import { authConfig, currentUser, login, requireAdmin, requireAuth, requirePermission } from "./auth.js";
+import { authConfig, currentUser, login, requireAuth, requirePermission } from "./auth.js";
 import { validateDeliveryRecordWithBling } from "./bling-validation.js";
 import { createDeliveryPerson, deactivateDeliveryPerson, registerMobileDeliveryPerson, updateDeliveryPerson } from "./delivery-people.js";
 import { cancelDeliveryRecord, createDeliveryRecord, listDeliveryRecords } from "./delivery-records.js";
 import { listDeliveryPeopleWithLocations } from "./location-store.js";
 import { createMobileHandlers } from "./mobile.js";
+import { createNotificationHandlers } from "./notifications.js";
 import { listDeliveryReport } from "./reports.js";
 import { createTrackingSession, getPublicTrackingSession, revokeTrackingSession } from "./tracking-sessions.js";
 import { createSettingsHandlers } from "./settings.js";
@@ -14,6 +15,7 @@ export function createRouter(io: Server) {
   const router = Router();
   const settings = createSettingsHandlers(io);
   const mobile = createMobileHandlers(io);
+  const notifications = createNotificationHandlers(io);
 
   router.get("/auth/config", authConfig);
   router.post("/auth/login", login);
@@ -24,6 +26,12 @@ export function createRouter(io: Server) {
   router.get("/delivery-people", requireAuth, requirePermission("trackflow:view"), async (_req, res) => {
     res.json({ delivery_people: await listDeliveryPeopleWithLocations() });
   });
+
+  router.get("/notifications", requireAuth, requirePermission("trackflow:view"), notifications.list);
+  router.get("/notifications/unread-count", requireAuth, requirePermission("trackflow:view"), notifications.unreadCount);
+  router.post("/notifications/:id/read", requireAuth, requirePermission("trackflow:view"), notifications.markRead);
+  router.post("/notifications/read-all", requireAuth, requirePermission("trackflow:view"), notifications.markAllRead);
+
   router.post("/delivery-people", requireAuth, requirePermission("trackflow:manage-delivery-people"), createDeliveryPerson);
   router.patch("/delivery-people/:id", requireAuth, requirePermission("trackflow:manage-delivery-people"), updateDeliveryPerson);
   router.delete("/delivery-people/:id", requireAuth, requirePermission("trackflow:manage-delivery-people"), deactivateDeliveryPerson);

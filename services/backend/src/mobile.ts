@@ -32,7 +32,7 @@ export function createMobileHandlers(io: Server) {
         ...parsed.data,
         speed: Math.round(parsed.data.speed * 10) / 10,
         timestamp: parsed.data.timestamp ?? new Date().toISOString()
-      });
+      }, io);
       await emitLocationUpdate(io, parsed.data.device_id);
 
       return res.status(202).json({

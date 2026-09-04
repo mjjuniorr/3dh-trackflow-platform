@@ -13,6 +13,7 @@ export function registerSocketHandlers(io: Server) {
           return socket.emit("auth:error", { message: "Acesso ao painel nao autorizado." });
         }
         await socket.join("dashboard");
+        await socket.join(`user:${user.id}`);
         socket.emit("location:update", { delivery_people: await listDeliveryPeopleWithLocations() });
       } catch {
         socket.emit("auth:error", { message: "Token invalido ou expirado." });

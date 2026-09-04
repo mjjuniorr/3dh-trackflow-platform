@@ -117,7 +117,7 @@ export async function startKafkaConsumer(io: Server) {
         return;
       }
 
-      await saveLocation(parsed.data);
+      await saveLocation(parsed.data, io);
       await emitLocationUpdate(io, parsed.data.device_id);
     }
   });

@@ -7,6 +7,7 @@ import { Server } from "socket.io";
 import { config } from "./config.js";
 import { createRouter } from "./routes.js";
 import { startKafkaConsumerWithRetry } from "./kafka.js";
+import { startOfflineMonitor } from "./offline-monitor.js";
 import { registerSocketHandlers } from "./realtime.js";
 
 const app = express();
@@ -27,6 +28,7 @@ app.get("/health", (_req, res) => res.json({ status: "ok" }));
 app.use("/api", createRouter(io));
 
 registerSocketHandlers(io);
+startOfflineMonitor(io);
 
 server.listen(config.port, () => {
   console.log(`Tracking API ouvindo na porta ${config.port}`);

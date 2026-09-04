@@ -1,7 +1,10 @@
 import type { DeliveryPerson, LocationEvent } from "@prisma/client";
 import { Redis } from "ioredis";
+import type { Server } from "socket.io";
 import { config } from "./config.js";
 import { resolveStableHeading } from "./heading.js";
+import { createDeviceNotification } from "./notifications.js";
+import { notificationForTransition, type DeviceOperationalStatus } from "./notification-transition.js";
 import { prisma } from "./prisma.js";
 
 export type LocationMessage = {
@@ -37,8 +40,12 @@ export function computeStatus(timestamp?: Date | string | null): "online" | "off
   return "offline";
 }
 
-export async function saveLocation(message: LocationMessage) {
+export async function saveLocation(message: LocationMessage, io?: Server) {
+  const existingPerson = await prisma.deliveryPerson.findUnique({ where: { device_id: message.device_id } });
   await upsertDeliveryPersonFromDevice(message);
+  const person = await prisma.deliveryPerson.findUnique({ where: { device_id: message.device_id } });
+  const previousStatus = existingPerson?.status as DeviceOperationalStatus | undefined;
+
   const previousLocation = await getLastLocation(message.device_id);
   const stableHeading = resolveStableHeading({
     incomingHeading: message.heading,
@@ -68,6 +75,18 @@ export async function saveLocation(message: LocationMessage) {
       data: { status }
     })
   ]);
+
+  if (io && person && previousStatus) {
+    const transition = notificationForTransition(previousStatus, status);
+    if (transition === "DEVICE_ONLINE") {
+      await createDeviceNotification(io, {
+        type: transition,
+        deviceId: person.device_id,
+        deliveryPersonId: person.id,
+        deliveryPersonName: person.name
+      });
+    }
+  }
 
   return event;
 }
