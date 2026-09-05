@@ -19,43 +19,42 @@ firmware/gps-board/README.md
 docs/requirements-gps-board.md
 ```
 
-## Publicar imagens de producao
+## Publicar imagens e atualizar a VPS
 
-Backend:
+O projeto usa GitHub Actions e Portainer GitOps. Nao publicar imagens manuais
+com a tag `producao` e nao usar `latest`.
 
-```bash
-docker build -f services/backend/Dockerfile -t ghcr.io/mjjuniorr/3dh-trackflow-backend:producao .
-docker push ghcr.io/mjjuniorr/3dh-trackflow-backend:producao
+1. Fazer commit e push no `main`.
+2. Aguardar a automacao `Publicar imagens TrackFlow` terminar com sucesso.
+   Ela publica duas imagens no GHCR usando o SHA completo do commit como tag.
+3. Fixar esse mesmo SHA nas linhas `image:` de `docker-compose.producao-vps.yml`.
+4. Fazer commit e push do YAML atualizado no `main`.
+5. No Portainer, abrir a stack `3dh-trackflow-platform` e usar `Pull and redeploy`.
+6. Aguardar as replicas `1 / 1`; nao marcar `Prune services`.
+7. Testar em aba anonima e consultar os logs do backend caso uma migration seja
+   aplicada no inicio.
+
+O arquivo e a fonte de verdade do deploy. As variaveis `FRONTEND_IMAGE` e
+`BACKEND_IMAGE` exibidas pelo Portainer nao alteram a imagem enquanto o YAML
+usar tags fixas em `image:`.
+
+### Release de notificacoes e Monitor
+
+Tags preparadas:
+
+```text
+ghcr.io/mjjuniorr/3dh-trackflow-web:c26cc892780dcb1d6b9832c37594e3cc5000fde9
+ghcr.io/mjjuniorr/3dh-trackflow-backend:c26cc892780dcb1d6b9832c37594e3cc5000fde9
 ```
 
-Frontend:
+No primeiro inicio desse backend, Prisma aplica
+`20260903223000_add_notification_center`. Essa migration somente cria as
+tabelas `notifications` e `notification_reads`; ela nao remove dados ou
+volumes existentes.
 
-```bash
-docker build -f apps/web/Dockerfile -t ghcr.io/mjjuniorr/3dh-trackflow-web:producao .
-docker push ghcr.io/mjjuniorr/3dh-trackflow-web:producao
-```
-
-## Atualizar na VPS
-
-Pelo terminal da VPS:
-
-```bash
-docker service update --with-registry-auth --force 3dh-trackflow-platform_backend
-docker service update --with-registry-auth --force 3dh-trackflow-platform_frontend
-```
-
-Se a alteracao for apenas frontend/assets:
-
-```bash
-docker service update --with-registry-auth --force 3dh-trackflow-platform_frontend
-```
-
-Pelo Portainer:
-
-1. Abrir stack `3dh-trackflow-platform`.
-2. Usar `Pull and redeploy`, ou entrar no servico e fazer `Force update`.
-3. Aguardar replicas `1 / 1`.
-4. Testar em aba anonima.
+Em caso de incidente, restaurar no Git as tags anteriores do YAML e fazer um
+novo `Pull and redeploy`. Nao executar `down -v`, `prune volumes` ou qualquer
+remocao de volume.
 
 ## Migracoes Prisma em producao
 
