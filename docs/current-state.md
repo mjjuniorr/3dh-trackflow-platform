@@ -1,6 +1,6 @@
 # Estado atual do projeto
 
-Ultima revisao desta documentacao: 2026-09-02.
+Ultima revisao desta documentacao: 2026-09-05.
 
 ## Produto
 
@@ -152,14 +152,19 @@ Nao ha enum no banco para `vehicle_type`, entao adicionar um novo tipo geralment
 
 Nao precisa migration se continuar usando a mesma coluna `vehicle_type` como texto.
 
-## Deploy atual
+## Release preparada para producao
 
-Producao usa imagens GHCR:
+A revisao que inclui a Central de Notificacoes e o modulo Android Monitor foi
+publicada no GHCR pela automacao do GitHub Actions. As imagens imutaveis para
+o proximo redeploy sao:
 
 ```text
-ghcr.io/mjjuniorr/3dh-trackflow-backend:producao
-ghcr.io/mjjuniorr/3dh-trackflow-web:producao
+ghcr.io/mjjuniorr/3dh-trackflow-backend:c26cc892780dcb1d6b9832c37594e3cc5000fde9
+ghcr.io/mjjuniorr/3dh-trackflow-web:c26cc892780dcb1d6b9832c37594e3cc5000fde9
 ```
+
+O `docker-compose.producao-vps.yml` fixa exatamente essas duas tags. Nenhuma
+tag `latest` ou `producao` deve ser usada no ambiente produtivo.
 
 Stack de producao:
 
@@ -200,14 +205,16 @@ O navegador pode manter assets antigos. Sempre validar com:
 - `Ctrl + F5`;
 - ou novo navegador.
 
-### Tags Docker
+### Tags Docker e GitOps
 
-As tags `producao` sao sobrescritas. Depois de publicar nova imagem, e preciso forcar update no Swarm:
+O Portainer le diretamente `docker-compose.producao-vps.yml` do Git. As
+imagens desse arquivo sao referencias imutaveis por commit. As variaveis
+`FRONTEND_IMAGE` e `BACKEND_IMAGE` configuradas no Portainer nao substituem
+as linhas `image:` atuais e nao devem ser usadas para escolher uma versao.
 
-```bash
-docker service update --force 3dh-trackflow-platform_frontend
-docker service update --force 3dh-trackflow-platform_backend
-```
+Para publicar uma nova versao, o fluxo e: commit no `main`, conclusao verde da
+automacao `Publicar imagens TrackFlow`, atualizacao das duas tags no YAML e
+redeploy GitOps autorizado no Portainer.
 
 
 ## Android Monitor e Central de Notificacoes
@@ -236,18 +243,16 @@ Implementado:
 - mesma regra de status ja existente: online <= 90 s, sem sinal <= 5 min, offline > 5 min;
 - protecao contra duplicacao de transicao em ambientes com mais de uma instancia do backend.
 
-Pendente antes de producao:
+Validado localmente para a release `c26cc892780dcb1d6b9832c37594e3cc5000fde9`:
 
-- rodar `prisma generate`;
-- aplicar migration `20260903223000_add_notification_center`;
-- executar typecheck/build do backend;
-- executar teste `test:notifications`;
-- compilar `:app` para garantir que o app dos entregadores nao sofreu regressao;
-- compilar `:monitor`;
-- instalar APK em aparelho real;
-- validar login;
-- validar Socket.IO;
-- validar offline >5 min e recuperacao;
-- validar leitura independente com dois usuarios;
-- revisar experiencia visual dos marcadores;
-- avaliar login OIDC nativo caso o ambiente seja alterado para OIDC-only.
+- `prisma generate`, `prisma validate`, typecheck backend e web;
+- teste de transicoes de notificacao;
+- build TypeScript do backend;
+- APK debug do app de entregadores (`:app`);
+- APK debug do Android Monitor (`:monitor`).
+
+O backend executa a migration
+`20260903223000_add_notification_center` automaticamente no inicio do
+container. Permanecem como validacao pos-deploy: login, Socket.IO, transicao
+offline/online apos cinco minutos, leitura por dois usuarios e instalacao dos
+APKs em dispositivos reais.
