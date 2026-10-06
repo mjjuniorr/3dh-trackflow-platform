@@ -5,7 +5,7 @@ O TrackFlow nao guarda credenciais OAuth do Bling. A validacao de NF usa um webh
 ## Variaveis do backend
 
 ```env
-BLING_VALIDATION_WEBHOOK_URL=https://n8n.3dhmanaus.shop/webhook/trackflow/bling/validate-invoice
+BLING_VALIDATION_WEBHOOK_URL=https://n8n.3dhmanaus.com.br/webhook/trackflow/bling/validate-invoice
 BLING_VALIDATION_SECRET=<segredo forte configurado tambem no n8n>
 ```
 
@@ -288,7 +288,7 @@ Quando nao encontrar em NF-e nem NFC-e:
 Depois de ativar o workflow:
 
 ```bash
-curl -X POST "https://n8n.3dhmanaus.shop/webhook/trackflow/bling/validate-invoice" \
+curl -X POST "https://n8n.3dhmanaus.com.br/webhook/trackflow/bling/validate-invoice" \
   -H "Content-Type: application/json" \
   -H "X-TrackFlow-Bling-Secret: <segredo>" \
   -d "{\"record_id\":\"teste\",\"invoice_number\":\"000445\",\"issue_date\":\"2026-08-25\",\"issue_date_end\":\"2026-08-26\"}"

@@ -149,7 +149,7 @@ O n8n nao deve devolver CPF/CNPJ completo, endereco, telefone, e-mail, token OAu
 ### Variaveis do TrackFlow
 
 ```env
-BLING_VALIDATION_WEBHOOK_URL=https://n8n.3dhmanaus.shop/webhook/trackflow/bling/validate-invoice
+BLING_VALIDATION_WEBHOOK_URL=https://n8n.3dhmanaus.com.br/webhook/trackflow/bling/validate-invoice
 BLING_VALIDATION_SECRET=<segredo forte>
 ```
 

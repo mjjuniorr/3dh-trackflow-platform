@@ -271,7 +271,7 @@ O TrackFlow valida NFs pelo backend, sem expor OAuth do Bling no frontend. A rot
 Configure no backend:
 
 ```env
-BLING_VALIDATION_WEBHOOK_URL=https://n8n.3dhmanaus.shop/webhook/trackflow/bling/validate-invoice
+BLING_VALIDATION_WEBHOOK_URL=https://n8n.3dhmanaus.com.br/webhook/trackflow/bling/validate-invoice
 BLING_VALIDATION_SECRET=troque_este_segredo
 ```
 
