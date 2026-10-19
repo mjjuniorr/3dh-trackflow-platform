@@ -21,7 +21,7 @@ docker run -d --name "$db" --network "$network" --network-alias postgres \
 docker run -d --name "$redis" --network "$network" --network-alias redis redis:7-alpine >/dev/null
 
 attempt=0
-until docker exec "$db" pg_isready -U postgres -d tracking >/dev/null 2>&1; do
+until docker exec "$db" pg_isready -h 127.0.0.1 -U postgres -d tracking >/dev/null 2>&1; do
   attempt=$((attempt + 1))
   if [ "$attempt" -ge 60 ]; then echo 'PostgreSQL de teste nao iniciou'; exit 1; fi
   sleep 1
@@ -30,6 +30,9 @@ done
 # A real Prisma failure must terminate, not keep a running but unusable container.
 docker run -d --name "$broken" --network "$network" \
   -e DATABASE_URL='postgresql://postgres:wrong-password@postgres:5432/tracking?schema=public' \
+  -e REDIS_URL=redis://redis:6379 -e KAFKA_ENABLED=false \
+  -e JWT_SECRET=health-test-only-not-for-production -e AUTH_MODE=hybrid \
+  -e OIDC_ISSUER=https://auth.example.invalid/realms/test \
   "$image" >/dev/null
 attempt=0
 while [ "$(docker inspect -f '{{.State.Running}}' "$broken")" = true ]; do
@@ -39,6 +42,7 @@ while [ "$(docker inspect -f '{{.State.Running}}' "$broken")" = true ]; do
 done
 test "$(docker inspect -f '{{.State.ExitCode}}' "$broken")" -ne 0
 test "$(docker logs "$broken" 2>&1 | grep -c '\[startup\] Aplicando migrations')" -eq 1
+docker logs "$broken" 2>&1 | grep -q '\[startup\] Migration falhou'
 if docker logs "$broken" 2>&1 | grep -q 'Tracking API ouvindo'; then
   echo 'API iniciou apesar da migration com erro'; exit 1
 fi
@@ -52,6 +56,9 @@ docker run -d --name "$api" --network "$network" \
   "$image" >/dev/null
 attempt=0
 until [ "$(docker inspect -f '{{.State.Health.Status}}' "$api")" = healthy ]; do
+  if [ "$(docker inspect -f '{{.State.Running}}' "$api")" != true ]; then
+    docker logs "$api"; echo 'API encerrou antes de ficar healthy'; exit 1
+  fi
   attempt=$((attempt + 1))
   if [ "$attempt" -ge 90 ]; then docker logs "$api"; echo 'API nao ficou healthy'; exit 1; fi
   sleep 1
