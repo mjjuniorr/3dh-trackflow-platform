@@ -1,5 +1,9 @@
 # Inicializacao e saude do backend
 
+Para retomar a release e a triagem dos alertas de dependencias, veja
+[Seguranca e pendencias de release](security-dependencies-followup.md).
+O merge foi adiado pelo responsavel; nao ha autorizacao de deploy.
+
 ## Escopo e requisitos
 
 - Executar `prisma migrate deploy` uma vez por inicializacao do container.
