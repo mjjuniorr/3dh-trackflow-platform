@@ -254,6 +254,7 @@ Usuario padrao configuravel por ambiente:
 - `POST /api/tracking-sessions/:id/revoke`
 - `GET /api/public/:publicToken`
 - `GET /health`
+- `GET /api/health` (liveness pelo proxy do frontend)
 
 ## Auditoria Bling por n8n
 
@@ -295,6 +296,7 @@ O webhook n8n deve validar o header `X-TrackFlow-Bling-Secret`, consultar NF-e e
 
 ## Documentacao complementar
 
+- `docs/backend-startup-health.md`: requisitos, testes e publicacao da melhoria de startup e healthcheck.
 - `docs/architecture.md`: fluxo tecnico, payload Kafka, heading e seguranca do link publico.
 - `docs/testing.md`: simulacoes Kafka e roteiro de validacao manual.
 - `docs/HANDOFF.md`: resumo para continuar em outra conversa Codex.
