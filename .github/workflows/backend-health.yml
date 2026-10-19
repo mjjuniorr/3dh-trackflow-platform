@@ -1,0 +1,42 @@
+name: Validar inicializacao e saude do backend
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backend-health-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  health:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      DATABASE_URL: postgresql://tracking:validation@localhost:5432/tracking?schema=public
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Compilar e testar
+        run: |
+          npm ci
+          npm run prisma:generate --workspace @3dh-trackflow/backend
+          npm run typecheck
+          npm run build
+          node --test services/backend/src/*.test.mjs services/backend/test/*.test.mjs apps/web/src/*.test.mjs
+      - name: Validar Compose sem acessar producao
+        env:
+          POSTGRES_PASSWORD: validation-only
+          JWT_SECRET: validation-only
+        run: docker compose -f docker-compose.producao-vps.yml config --quiet
+      - name: Compilar imagem local de teste
+        run: docker build -f services/backend/Dockerfile -t trackflow-backend-health:${{ github.sha }} .
+      - name: Testar container com PostgreSQL e Redis descartaveis
+        run: sh scripts/test-backend-container.sh trackflow-backend-health:${{ github.sha }}

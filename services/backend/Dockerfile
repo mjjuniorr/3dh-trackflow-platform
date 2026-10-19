@@ -20,5 +20,8 @@ COPY --from=build /app/node_modules /app/node_modules
 COPY --from=build /app/services/backend/dist ./dist
 COPY --from=build /app/services/backend/prisma ./prisma
 COPY --from=build /app/services/backend/package.json ./package.json
+COPY --from=build /app/services/backend/scripts ./scripts
+RUN sed -i 's/\r$//' scripts/start.sh
 EXPOSE 4000
-CMD ["sh", "-c", "until npx prisma migrate deploy; do echo 'Aguardando PostgreSQL para aplicar migrations...'; sleep 3; done; node dist/src/server.js"]
+HEALTHCHECK --interval=20s --timeout=3s --start-period=120s --retries=3 CMD ["node", "scripts/healthcheck.cjs"]
+CMD ["sh", "scripts/start.sh"]

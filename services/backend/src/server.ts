@@ -9,6 +9,7 @@ import { createRouter } from "./routes.js";
 import { startKafkaConsumerWithRetry } from "./kafka.js";
 import { startOfflineMonitor } from "./offline-monitor.js";
 import { registerSocketHandlers } from "./realtime.js";
+import { createHealthRouter } from "./health.js";
 
 const app = express();
 const server = http.createServer(app);
@@ -22,9 +23,10 @@ const io = new Server(server, {
 app.set("trust proxy", 1);
 app.use(helmet());
 app.use(cors({ origin: config.corsOrigin, credentials: true }));
+// Keep liveness independent from auth and shared API rate limits.
+app.use(createHealthRouter());
 app.use(express.json({ limit: "1mb" }));
 app.use(rateLimit({ windowMs: 60_000, limit: 120, standardHeaders: true, legacyHeaders: false }));
-app.get("/health", (_req, res) => res.json({ status: "ok" }));
 app.use("/api", createRouter(io));
 
 registerSocketHandlers(io);
