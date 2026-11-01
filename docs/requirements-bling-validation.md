@@ -1,5 +1,7 @@
 # Requisitos — Validacao de NF no Bling
 
+Rastreabilidade global: `REQ-024` a `REQ-029` em `docs/product/requirements.md`.
+
 ## Objetivo
 
 Permitir que o TrackFlow audite se uma nota fiscal registrada manualmente em uma entrega realmente existe no Bling, sem transformar o Bling na fonte principal de rastreamento e sem expor credenciais fiscais no frontend.
@@ -64,8 +66,7 @@ Responsabilidades:
 5. Backend monta payload com:
    - ID do lancamento;
    - numero da NF preservando zeros;
-   - data do lancamento no fuso de Manaus;
-   - data final como o dia seguinte.
+   - janela de data disponivel para a consulta.
 6. Backend envia payload ao webhook n8n.
 7. n8n consulta:
    - `GET /Api/v3/nfe`;
@@ -93,14 +94,11 @@ GET /Api/v3/nfe
 GET /Api/v3/nfce
 ```
 
-### RF-04 — Usar janela de data segura
+### RF-04 — Consultar a data real de emissao
 
-Para uma entrega lancada em `2026-08-25`, o TrackFlow deve enviar:
+A consulta deve localizar uma nota emitida antes do lancamento da entrega. A regra final para obter ou informar essa data ainda depende de decisao de produto (`PEND-001`).
 
-```text
-issue_date=2026-08-25
-issue_date_end=2026-08-26
-```
+Limitacao atual: o backend deriva `issue_date` de `DeliveryRecord.created_at` e usa o dia seguinte como fim. Essa implementacao nao atende casos em que emissao e entrega ocorrem em dias diferentes.
 
 ### RF-05 — Registrar status da auditoria
 
@@ -211,6 +209,13 @@ BLING_VALIDATION_SECRET=<segredo forte>
 - Se n8n/Bling falhar, a coluna deve mostrar `Erro`.
 - O relatorio deve continuar carregando mesmo quando a automacao n8n estiver fora do ar.
 - O registro manual de entregas deve continuar funcionando mesmo sem Bling.
+- Uma nota emitida em um dia e entregue/lancada posteriormente deve ser localizada segundo a regra aprovada para `PEND-001`.
+
+## Limites da auditoria
+
+- `Validada` comprova que um documento correspondente foi localizado no Bling; nao comprova entrega fisica.
+- O modelo atual identifica documentos somente por `invoice_number`. A composicao final da identidade fiscal depende de `PEND-002`.
+- Qualquer futura correlacao de localizacao deve ser tratada como evidencia ou anomalia, nao como conclusao automatica de fraude.
 
 ## Evidencia de validacao Bling
 

@@ -49,15 +49,18 @@ O firmware inicial fica em:
 firmware/gps-board
 ```
 
-Ele foi criado para a placa LILYGO TTGO T-SIM A7670SA com GNSS interno do modem. Nesta fase, o transporte e Wi-Fi:
+Ele foi criado para a placa LILYGO TTGO T-SIM A7670SA com GNSS interno do modem. O transporte implementado prioriza:
 
 - tenta a rede salva em `include/secrets.h`;
-- opcionalmente procura rede aberta se a rede salva falhar;
+- tenta 4G quando o Wi-Fi salvo falha;
+- opcionalmente procura rede aberta como contingencia;
 - valida que existe acesso externo antes de enviar;
 - le `AT+CGNSSINFO` e usa `AT+CGPSINFO` como fallback;
 - envia para `/api/mobile/telemetry` usando `X-Mobile-Registration-Secret`.
 
-O 4G fica para a fase seguinte, quando houver SIM e APN para teste real.
+O 4G foi validado em teste de campo com SIM/APN e resposta HTTP `202`. A autonomia de bateria, a medicao calibrada de carga e branches adaptativas continuam em avaliacao separada.
+
+Limitacao de seguranca conhecida: caminhos HTTPS do firmware ainda desativam verificacao de certificado. Redes abertas nao devem ser consideradas seguras enquanto a CA nao for fixada e testada.
 
 ## Tipos de veiculo
 

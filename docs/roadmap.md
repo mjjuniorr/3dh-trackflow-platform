@@ -9,6 +9,10 @@
 - Cadastro manual de entregadores no painel.
 - Cadastro automatico pelo Android.
 - Telemetria Android via backend HTTPS.
+- Relatorio operacional por periodo, entregador, NF e status.
+- Permissao `trackflow:view-reports` no backend.
+- Validacao individual de NF-e/NFC-e no Bling por webhook n8n.
+- Firmware A7670SA com GNSS e transporte 4G validado em campo.
 - Tipo de veiculo por entregador:
   - Moto;
   - Carro;
@@ -66,20 +70,21 @@
 
 ## Backlog de relatorios e auditoria
 
-- Relatorio operacional de entregas:
-  - criar permissao `trackflow:view-reports`;
-  - consultar entregas por API;
-  - filtrar por periodo, entregador, status e numero da NF;
-  - exibir total por periodo e por entregador;
-  - exportar dados operacionais quando a primeira tela estiver validada.
+- Corrigir a regra da janela fiscal quando emissao e entrega ocorrerem em dias diferentes.
+- Definir a identidade fiscal, avaliando emitente, serie, tipo e chave de acesso.
+- Diferenciar data de lancamento, data de emissao e data/hora de entrega comprovada.
+- Exportar dados operacionais quando formato e permissao forem aprovados.
 - Cruzamento com localizacao:
   - registrar como evolucao futura do relatorio;
   - cruzar NF registrada com eventos de localizacao do entregador;
   - permitir auditoria por data/hora de entrega e posicao aproximada;
   - definir antes da implementacao qual regra confirma uma entrega por localizacao.
-- Integracao Bling para auditoria de NF:
-  - consultar a NF no Bling pelo numero informado via webhook n8n;
-  - preservar zeros a esquerda no numero da NF;
-  - usar data inicial do lancamento e data final no dia seguinte;
-  - armazenar apenas o resultado necessario para auditoria, sem transformar o Bling em fonte principal do rastreio;
-  - tratar falhas do Bling sem bloquear o registro operacional da entrega, salvo decisao futura em contrario.
+- Auditoria deve apresentar evidencias e anomalias, sem acusar fraude automaticamente.
+
+## Backlog de confiabilidade e seguranca
+
+- Falhar fechado quando o segredo tecnico movel estiver ausente.
+- Fixar e validar CA raiz no firmware.
+- Integrar testes funcionais relevantes ao pipeline de `main`.
+- Aprovar retencao, backup/restore, RPO e RTO.
+- Avaliar e integrar separadamente branches de firmware adaptativo, multiboard e bateria.

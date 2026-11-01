@@ -19,43 +19,40 @@ firmware/gps-board/README.md
 docs/requirements-gps-board.md
 ```
 
+## Fonte permanente do deploy
+
+A definicao versionada da stack e `docker-compose.producao-vps.yml` na `main`. O Git define servicos e imagens; valores de ambiente e secrets reais permanecem fora do repositorio na configuracao da stack.
+
+Uma alteracao feita apenas no servico em execucao nao atualiza essa fonte e pode ser perdida no proximo redeploy GitOps. Por isso, diagnostico, alteracao do Git e deploy devem ser tratados como etapas distintas.
+
 ## Publicar imagens de producao
 
-Backend:
+O workflow `.github/workflows/publish-images.yml` publica automaticamente, depois da validacao da `main`:
 
-```bash
-docker build -f services/backend/Dockerfile -t ghcr.io/mjjuniorr/3dh-trackflow-backend:producao .
-docker push ghcr.io/mjjuniorr/3dh-trackflow-backend:producao
+```text
+ghcr.io/mjjuniorr/3dh-trackflow-backend:<commit_sha>
+ghcr.io/mjjuniorr/3dh-trackflow-web:<commit_sha>
 ```
 
-Frontend:
+Nao publique nem fixe `latest` ou `producao`. Para um build local de verificacao, use uma tag local que nao sera enviada ao GHCR:
 
 ```bash
-docker build -f apps/web/Dockerfile -t ghcr.io/mjjuniorr/3dh-trackflow-web:producao .
-docker push ghcr.io/mjjuniorr/3dh-trackflow-web:producao
+docker build -f services/backend/Dockerfile -t trackflow-backend:local .
+docker build -f apps/web/Dockerfile -t trackflow-web:local .
 ```
 
 ## Atualizar na VPS
 
-Pelo terminal da VPS:
+Deploy nao e automatico apenas porque houve push. Depois que o commit e as imagens forem aprovados:
 
-```bash
-docker service update --with-registry-auth --force 3dh-trackflow-platform_backend
-docker service update --with-registry-auth --force 3dh-trackflow-platform_frontend
-```
+1. confirmar o SHA exato publicado pelo workflow;
+2. preparar um commit de release alterando diretamente os campos `image:` de `docker-compose.producao-vps.yml`;
+3. revisar e integrar o diff do YAML; o compose atual ignora `FRONTEND_IMAGE` e `BACKEND_IMAGE` do ambiente;
+4. obter autorizacao explicita para acessar o Portainer e fazer o redeploy;
+5. preservar volumes de PostgreSQL, Redis e Kafka;
+6. aguardar replicas e executar o checklist.
 
-Se a alteracao for apenas frontend/assets:
-
-```bash
-docker service update --with-registry-auth --force 3dh-trackflow-platform_frontend
-```
-
-Pelo Portainer:
-
-1. Abrir stack `3dh-trackflow-platform`.
-2. Usar `Pull and redeploy`, ou entrar no servico e fazer `Force update`.
-3. Aguardar replicas `1 / 1`.
-4. Testar em aba anonima.
+Nao use `docker service update --force` como configuracao permanente: a mudanca pode se perder no proximo deploy GitOps.
 
 ## Migracoes Prisma em producao
 
@@ -83,11 +80,7 @@ Dentro do container backend:
 npm run seed
 ```
 
-Se precisar resetar senha admin rapidamente dentro do container:
-
-```bash
-node -e "const bcrypt=require('bcryptjs'); const { PrismaClient }=require('@prisma/client'); const prisma=new PrismaClient(); bcrypt.hash('admin123',12).then(hash=>prisma.user.update({where:{email:'admin@3dhmanaus.com.br'},data:{password_hash:hash,role:'admin'}})).then(()=>console.log('Senha atualizada: admin123')).finally(()=>prisma.$disconnect())"
-```
+Recuperacao de credencial deve usar valor fornecido de forma segura e procedimento auditavel. Nao coloque senha em comando, documentacao, historico do shell ou Git.
 
 ## Kafka
 
