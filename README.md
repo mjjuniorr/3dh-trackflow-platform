@@ -113,6 +113,8 @@ KAFKA_TOPIC=rastreamento
 
 ## Producao VPS via Portainer e Git
 
+Todas as operacoes desta secao que acessam VPS, Swarm ou Portainer exigem autorizacao explicita antes de serem executadas.
+
 1. Garanta que a rede externa ja existe no Swarm:
 
 ```bash
@@ -129,29 +131,22 @@ docker network ls | grep PortainerRede
 
 4. Configure as variaveis a partir de `.env.producao-vps.example`.
 
-5. Publique as imagens em um registry antes do deploy. A stack de producao nao faz build no Swarm; ela baixa imagens prontas.
+5. O workflow `.github/workflows/publish-images.yml` valida a `main` e publica imagens imutaveis com o SHA completo do commit. A stack de producao nao faz build no Swarm; ela baixa imagens prontas.
 
-Exemplo:
+Depois de aprovar um commit e confirmar que o workflow concluiu, prepare um commit de release que altere diretamente os campos `image:` de `docker-compose.producao-vps.yml` para o SHA publicado:
 
-```bash
-docker build -f services/backend/Dockerfile -t ghcr.io/mjjuniorr/3dh-trackflow-backend:producao .
-docker build -f apps/web/Dockerfile -t ghcr.io/mjjuniorr/3dh-trackflow-web:producao .
-docker push ghcr.io/mjjuniorr/3dh-trackflow-backend:producao
-docker push ghcr.io/mjjuniorr/3dh-trackflow-web:producao
+```yaml
+image: ghcr.io/mjjuniorr/3dh-trackflow-backend:<commit_sha>
+image: ghcr.io/mjjuniorr/3dh-trackflow-web:<commit_sha>
 ```
 
-Depois configure no Portainer:
-
-```env
-BACKEND_IMAGE=ghcr.io/mjjuniorr/3dh-trackflow-backend:producao
-FRONTEND_IMAGE=ghcr.io/mjjuniorr/3dh-trackflow-web:producao
-```
+O compose atual nao usa `FRONTEND_IMAGE` ou `BACKEND_IMAGE` do ambiente. Nao use `latest` ou `producao`. Revise e integre o commit de release antes do redeploy, que exige nova autorizacao e deve preservar volumes.
 
 6. O dominio publico deve apontar para a VPS: `rastreio.3dhmanaus.com.br`.
 7. O Traefik ja existente publicara o frontend em `https://rastreio.3dhmanaus.com.br`.
 8. O frontend acessa a API por `/api` e Socket.IO por `/socket.io`, ambos roteados pelo Nginx do frontend para o backend.
 9. Kafka nao e exposto publicamente. O backend consome `kafka:9092` no topico `rastreamento`.
-10. Depois do primeiro deploy, execute o seed no container backend pelo console do Portainer:
+10. Depois do primeiro deploy e somente com autorizacao, execute o seed no container backend pelo console do Portainer:
 
 ```bash
 npm run seed
@@ -239,10 +234,12 @@ npm run dev
 npm run seed --workspace @3dh-trackflow/backend
 ```
 
-Usuario padrao configuravel por ambiente:
+Usuario seed configuravel por ambiente:
 
 - `SEED_ADMIN_EMAIL=admin@3dhmanaus.com.br`
-- `SEED_ADMIN_PASSWORD=admin123`
+- `SEED_ADMIN_PASSWORD` deve ser fornecida por secret do ambiente, sem valor padrao documentado.
+
+O codigo e alguns composes ainda possuem fallback legado. Nao dependa dele em producao; sua remocao esta registrada como `REQ-036`.
 
 ## Rotas
 
@@ -299,6 +296,10 @@ O webhook n8n deve validar o header `X-TrackFlow-Bling-Secret`, consultar NF-e e
 - `docs/testing.md`: simulacoes Kafka e roteiro de validacao manual.
 - `docs/HANDOFF.md`: resumo para continuar em outra conversa Codex.
 - `docs/current-state.md`: estado atual do produto, deploy e problemas conhecidos.
+- `docs/product/PRD.md`: visao, escopo e limites do produto.
+- `docs/product/requirements.md`: requisitos com IDs estaveis, origem e estado.
+- `docs/product/traceability.md`: ligacao entre requisitos, codigo, testes e implantacao.
+- `docs/product/decisions.md`: decisoes confirmadas, pendentes e propostas.
 - `docs/requirements-bling-validation.md`: requisitos funcionais, seguranca e aceite da auditoria Bling.
 - `docs/bling-validation-n8n.md`: contrato do webhook n8n para auditoria de NF no Bling.
 - `docs/vehicle-icons.md`: fluxo correto para trocar assets de veiculos.

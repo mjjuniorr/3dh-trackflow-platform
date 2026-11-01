@@ -63,7 +63,9 @@ Ja funciona:
 - firmware inicial da placa LILYGO TTGO T-SIM A7670SA com Wi-Fi, GNSS interno e envio HTTPS;
 - heading estabilizado no backend para evitar giro falso de marcador parado;
 - Kafka consumindo eventos no topico `rastreamento` pela rede interna;
-- registro administrativo de entregas por nota fiscal unica, em homologacao;
+- registro administrativo de entregas por nota fiscal unica;
+- relatorio operacional de entregas com permissao propria;
+- validacao de NF no Bling por webhook n8n;
 - selecao de tipo de veiculo:
   - `motorcycle`;
   - `car`;
@@ -80,16 +82,22 @@ Ja funciona:
 - Scripts de simulacao devem receber `--broker <broker_protegido>` ou `KAFKA_BROKER` explicitamente.
 - Ver detalhes em `docs/kafka-security.md`.
 
-## Credenciais conhecidas
+## Credenciais e segredos
 
-Usuario seed padrao:
+Nao registrar valores de senhas, tokens ou chaves neste handoff. Use somente as variaveis documentadas nos arquivos `.env.example` e configure os valores reais no gerenciador de secrets do ambiente.
+
+## Fonte atual de requisitos
+
+Antes de alterar comportamento, leia:
 
 ```text
-Email: admin@3dhmanaus.com.br
-Senha: admin123
+docs/product/PRD.md
+docs/product/requirements.md
+docs/product/traceability.md
+docs/product/decisions.md
 ```
 
-Essa senha foi usada no desenvolvimento e deve ser trocada em producao quando o projeto estabilizar.
+Esses documentos distinguem implementacao, verificacao e implantacao. Itens `PEND-*` exigem decisao humana.
 
 ## Regra importante para continuar
 
@@ -205,8 +213,7 @@ Frontend:
 
 ```bash
 npm run typecheck --workspace @3dh-trackflow/web
-docker build -f apps/web/Dockerfile -t ghcr.io/mjjuniorr/3dh-trackflow-web:producao .
-docker push ghcr.io/mjjuniorr/3dh-trackflow-web:producao
+docker build -f apps/web/Dockerfile -t trackflow-web:local .
 ```
 
 Backend:
@@ -214,9 +221,10 @@ Backend:
 ```bash
 npm run typecheck --workspace @3dh-trackflow/backend
 npm run test:heading --workspace @3dh-trackflow/backend
-docker build -f services/backend/Dockerfile -t ghcr.io/mjjuniorr/3dh-trackflow-backend:producao .
-docker push ghcr.io/mjjuniorr/3dh-trackflow-backend:producao
+docker build -f services/backend/Dockerfile -t trackflow-backend:local .
 ```
+
+Imagens de producao sao publicadas pelo GitHub Actions com tag imutavel `<commit_sha>`. Deploy exige autorizacao separada.
 
 Firmware A7670SA:
 

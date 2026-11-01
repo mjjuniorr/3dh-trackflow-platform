@@ -115,18 +115,13 @@ Depois:
 
 ```bash
 npm run typecheck --workspace @3dh-trackflow/web
-docker build -f apps/web/Dockerfile -t ghcr.io/mjjuniorr/3dh-trackflow-web:producao .
-docker push ghcr.io/mjjuniorr/3dh-trackflow-web:producao
+docker build -f apps/web/Dockerfile -t trackflow-web:local .
 git add apps/web/public/assets/vehicle-car.png apps/web/src/components/TrackingMap.tsx
 git commit -m "Replace car marker asset"
-git push origin main
+git push -u origin <nome-da-branch>
 ```
 
-Na VPS:
-
-```bash
-docker service update --force 3dh-trackflow-platform_frontend
-```
+Depois da revisao e integracao do PR, o GitHub Actions publica a imagem com o SHA do commit. Atualize a fonte permanente da stack somente com autorizacao explicita para o deploy.
 
 No navegador:
 

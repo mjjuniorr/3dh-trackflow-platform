@@ -2,6 +2,8 @@
 
 Ultima revisao: 2026-09-04.
 
+Rastreabilidade global: `REQ-014` a `REQ-020` em `docs/product/requirements.md`.
+
 ## Objetivo
 
 Permitir que uma placa LILYGO TTGO T-SIM A7670SA envie localizacao para o TrackFlow como dispositivo de rastreio dedicado, preservando a plataforma web, Android, Kafka, Redis, PostgreSQL, rastreamento publico e autenticacoes tecnicas existentes.

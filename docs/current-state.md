@@ -1,6 +1,8 @@
 # Estado atual do projeto
 
-Ultima revisao desta documentacao: 2026-09-02.
+Ultima revisao desta documentacao: 2026-11-01.
+
+Baseline documental: `d2018bfe922d07519c5d0bd49e64954d2141f57d` da `main`. O estado de producao nao foi inspecionado nesta revisao.
 
 ## Produto
 
@@ -92,12 +94,13 @@ A placa LILYGO TTGO T-SIM A7670SA tambem nao publica direto no Kafka nesta fase.
 Fluxo validado:
 
 1. firmware conecta primeiro em Wi-Fi salvo;
-2. se falhar, procura uma rede Wi-Fi aberta e testa acesso externo;
-3. le GNSS interno do modem A7670SA por comandos AT;
-4. envia telemetria por HTTPS para `/api/mobile/telemetry`;
-5. backend persiste e emite Socket.IO usando o mesmo fluxo tecnico do Android.
+2. se falhar, tenta dados 4G pelo SIM/APN configurado;
+3. se o 4G falhar e a contingencia estiver habilitada, procura Wi-Fi aberto e testa acesso externo;
+4. le GNSS interno do modem A7670SA por comandos AT;
+5. envia telemetria por HTTPS para `/api/mobile/telemetry`;
+6. backend persiste e emite Socket.IO usando o mesmo fluxo tecnico do Android.
 
-O firmware foi validado em bancada com `device_id=final_test_carro_amazonas`, GNSS real e resposta HTTP `202` da API.
+O firmware foi validado em bancada com GNSS real e resposta HTTP `202`, e em teste de campo com SIM/4G e telemetria aceita pelo TrackFlow.
 
 Requisitos completos:
 
@@ -152,13 +155,13 @@ Nao ha enum no banco para `vehicle_type`, entao adicionar um novo tipo geralment
 
 Nao precisa migration se continuar usando a mesma coluna `vehicle_type` como texto.
 
-## Deploy atual
+## Deploy definido no repositorio
 
-Producao usa imagens GHCR:
+O pipeline da `main` publica imagens GHCR imutaveis:
 
 ```text
-ghcr.io/mjjuniorr/3dh-trackflow-backend:producao
-ghcr.io/mjjuniorr/3dh-trackflow-web:producao
+ghcr.io/mjjuniorr/3dh-trackflow-backend:<commit_sha>
+ghcr.io/mjjuniorr/3dh-trackflow-web:<commit_sha>
 ```
 
 Stack de producao:
@@ -200,14 +203,19 @@ O navegador pode manter assets antigos. Sempre validar com:
 - `Ctrl + F5`;
 - ou novo navegador.
 
-### Tags Docker
+### Releases e deploy
 
-As tags `producao` sao sobrescritas. Depois de publicar nova imagem, e preciso forcar update no Swarm:
+Nao usar tags mutaveis (`latest` ou `producao`) como referencia permanente. O YAML da stack deve fixar o SHA aprovado. Publicar imagem, alterar o Git e atualizar a stack sao operacoes diferentes; deploy e acesso ao Portainer exigem autorizacao explicita.
 
-```bash
-docker service update --force 3dh-trackflow-platform_frontend
-docker service update --force 3dh-trackflow-platform_backend
-```
+### Entregas e Bling
+
+O codigo possui relatorio, permissao `trackflow:view-reports` e validacao Bling. A busca ainda deriva a janela fiscal da data do lancamento da entrega. Quando emissao e entrega ocorrem em dias diferentes, a nota pode nao ser localizada. A regra correta de data e a identidade fiscal completa estao registradas como decisoes pendentes em `docs/product/decisions.md`.
+
+O modelo atual representa um lancamento administrativo. Ele nao possui `delivered_at` nem comprovante de entrega fisica.
+
+### Credencial seed
+
+O seed e os composes ainda contem fallback legado para a credencial administrativa. O ambiente de producao deve fornecer `SEED_ADMIN_PASSWORD` por secret. Remover o fallback do codigo/configuracao esta registrado como `REQ-036` e nao faz parte desta alteracao documental.
 
 
 ## Android Monitor e Central de Notificacoes

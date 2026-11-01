@@ -1,11 +1,28 @@
 # Testes e simulacoes
 
-## Credenciais locais padrao
+## Credenciais locais
 
-```text
-Email: admin@3dhmanaus.com.br
-Senha: admin123
+Configure `SEED_ADMIN_EMAIL` e `SEED_ADMIN_PASSWORD` no ambiente local. Nao mantenha senha padrao na documentacao ou no Git.
+
+## Verificacoes sem servicos externos
+
+```bash
+npm run prisma:generate --workspace @3dh-trackflow/backend
+npm run typecheck
+npx prisma validate --schema services/backend/prisma/schema.prisma
+docker compose --env-file .env.producao-vps.example -f docker-compose.producao-vps.yml config --quiet
 ```
+
+Os testes de relatorios, entregas e Bling exigem primeiro o build do backend:
+
+```bash
+npm run build --workspace @3dh-trackflow/backend
+node --test services/backend/src/delivery-records.test.mjs
+node --test services/backend/src/reports.test.mjs
+node --test services/backend/src/bling-validation.test.mjs
+```
+
+O workflow principal da `main` ainda nao executa todos esses testes; isso esta registrado como `REQ-033`.
 
 ## Subir ambiente PC
 

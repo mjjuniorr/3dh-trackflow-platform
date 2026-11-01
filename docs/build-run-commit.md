@@ -26,35 +26,15 @@ git status
 npm run typecheck --workspace @3dh-trackflow/web
 ```
 
-### Buildar a imagem Docker do frontend
+### Buildar a imagem Docker local do frontend
 
 ```powershell
-docker build -f apps/web/Dockerfile -t ghcr.io/mjjuniorr/3dh-trackflow-web:producao .
+docker build -f apps/web/Dockerfile -t trackflow-web:local .
 ```
 
-### Enviar imagem para o GHCR
+### Publicar e atualizar frontend
 
-Precisa de internet e login Docker/GHCR ja configurado:
-
-```powershell
-docker push ghcr.io/mjjuniorr/3dh-trackflow-web:producao
-```
-
-### Atualizar frontend na VPS
-
-No terminal da VPS:
-
-```bash
-docker service update --with-registry-auth --force 3dh-trackflow-platform_frontend
-```
-
-Pelo Portainer:
-
-1. Abra a stack `3dh-trackflow-platform`.
-2. Entre no servico `frontend`.
-3. Use `Force update`, ou use `Pull and redeploy` na stack.
-4. Aguarde a replica ficar `1 / 1`.
-5. Abra `https://rastreio.3dhmanaus.com.br` em aba anonima ou use `Ctrl + F5`.
+O GitHub Actions publica `ghcr.io/mjjuniorr/3dh-trackflow-web:<commit_sha>` depois que a alteracao aprovada entra na `main`. O deploy e uma etapa separada: fixe o SHA na fonte permanente da stack e obtenha autorizacao explicita antes de acessar o Portainer.
 
 ## Backend
 
@@ -64,25 +44,15 @@ Pelo Portainer:
 npm run typecheck --workspace @3dh-trackflow/backend
 ```
 
-### Buildar a imagem Docker do backend
+### Buildar a imagem Docker local do backend
 
 ```powershell
-docker build -f services/backend/Dockerfile -t ghcr.io/mjjuniorr/3dh-trackflow-backend:producao .
+docker build -f services/backend/Dockerfile -t trackflow-backend:local .
 ```
 
-### Enviar imagem para o GHCR
+### Publicar e atualizar backend
 
-```powershell
-docker push ghcr.io/mjjuniorr/3dh-trackflow-backend:producao
-```
-
-### Atualizar backend na VPS
-
-No terminal da VPS:
-
-```bash
-docker service update --with-registry-auth --force 3dh-trackflow-platform_backend
-```
+O GitHub Actions publica `ghcr.io/mjjuniorr/3dh-trackflow-backend:<commit_sha>` depois que a alteracao aprovada entra na `main`. Antes do deploy, confirme as migracoes, fixe o SHA e obtenha autorizacao explicita.
 
 ## Buildar e rodar no container local
 
@@ -325,8 +295,10 @@ git commit -m "Fix Android telemetry registration"
 ### Enviar para GitHub
 
 ```powershell
-git push origin main
+git push -u origin <nome-da-branch>
 ```
+
+Abra um Pull Request, revise as verificacoes e so integre na `main` depois da aprovacao.
 
 ### Conferir historico recente
 
@@ -343,11 +315,10 @@ git log --oneline -5
 npm run typecheck --workspace @3dh-trackflow/web
 ```
 
-3. Buildar e publicar imagem:
+3. Buildar a imagem local para validacao:
 
 ```powershell
-docker build -f apps/web/Dockerfile -t ghcr.io/mjjuniorr/3dh-trackflow-web:producao .
-docker push ghcr.io/mjjuniorr/3dh-trackflow-web:producao
+docker build -f apps/web/Dockerfile -t trackflow-web:local .
 ```
 
 4. Commitar e enviar:
@@ -357,16 +328,12 @@ git status
 git diff --stat
 git add barquivos>
 git commit -m "Mensagem curta"
-git push origin main
+git push -u origin <nome-da-branch>
 ```
 
-5. Atualizar VPS:
-
-```bash
-docker service update --with-registry-auth --force 3dh-trackflow-platform_frontend
-```
-
-6. Testar:
+5. Abrir PR e aguardar as validacoes. Depois da integracao, o workflow publica a imagem com o SHA.
+6. Com autorizacao explicita, fixar o SHA na fonte permanente da stack e fazer o deploy.
+7. Testar:
 
 ```powershell
 python scripts\send_vehicle_icon_test.py --broker <broker_protegido>
@@ -403,8 +370,10 @@ git status
 git diff --stat
 git add apps\android
 git commit -m "Update Android app"
-git push origin main
+git push -u origin <nome-da-branch>
 ```
+
+Abra um Pull Request e aguarde as verificacoes antes de integrar na `main`.
 
 ## Problemas comuns
 
